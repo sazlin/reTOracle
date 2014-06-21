@@ -6,6 +6,7 @@ app = Flask(__name__)
 def hello_world():
     return say_hello()
 
+
 def say_hello():
     return u'RheTOracly speaking, how awesome are we?'
 
