@@ -8,7 +8,8 @@ function drawTestVisualization(){
     ['JohnShivero', 83],
     ['Muazify911', 65]
   ]);
-  drawVisualization(data, 'visualization');
+  drawVisualization(data, 'visualization1');
+  drawVisualization(data, 'visualization2');
 }
 
 function drawVisualization(data, target) {
@@ -19,11 +20,15 @@ function drawVisualization(data, target) {
                      sourceColumn: 1,
                      type: "string",
                      role: "annotation" }]);
-  var options = {width:600, height:400,
+  var options = {width:400, height:300,
                  vAxis: {},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" }
                 };
+
   var chart = new google.visualization.BarChart(document.getElementById(target));
   chart.draw(view, options);
+
+
+
 }

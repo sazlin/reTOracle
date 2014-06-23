@@ -2,14 +2,33 @@ body {
   padding-top: 50px;
 }
 .starter-template {
-  padding: 40px 15px;
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+  padding-top: 50px;
+  max-width: 810px;
   text-align: center;
-  min-height: 300px;
+
 }
 
 .container{
     font-size: 20px;
 }
+
+.row{
+    clear: both;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.charts{
+  float: left;
+  width: 400px;
+  height: 300px;
+
+}
+
 
 .about{
     text-align: left;
