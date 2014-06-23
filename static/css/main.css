@@ -4,4 +4,28 @@ body {
 .starter-template {
   padding: 40px 15px;
   text-align: center;
+  min-height: 300px;
+}
+
+.container{
+    font-size: 20px;
+}
+
+.about{
+    text-align: left;
+}
+
+.contact{
+    text-align: center;
+
+}
+
+footer{
+    border-top: 1px solid #666;
+    padding-top: 15px;
+    text-align: center;
+    font-size: 14px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
 }
