@@ -16,11 +16,15 @@ function drawVisualization() {
                      sourceColumn: 1,
                      type: "string",
                      role: "annotation" }]);
-  var options = {width:600, height:400,
+  var options = {width:400, height:300,
                  vAxis: {},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" }
                 };
-  var chart = new google.visualization.BarChart(document.getElementById('visualization'));
-  chart.draw(view, options);
+  var chart_top_left = new google.visualization.BarChart(document.getElementById('visualization1'));
+  var chart_top_right = new google.visualization.BarChart(document.getElementById('visualization2'));
+
+
+  chart_top_right.draw(view, options);
+  chart_top_left.draw(view,options);
 }
