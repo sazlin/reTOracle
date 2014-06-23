@@ -18,15 +18,17 @@ body {
 .row{
     clear: both;
     width: 100%;
-    margin: 0px;
-    padding: 0px;
+    margin: 0;
+    padding: 0;
+}
+
+.row-chunk{
+  float: left;
+  width: 400px;
 }
 
 .charts{
-  float: left;
-  width: 400px;
   height: 300px;
-
 }
 
 
@@ -36,7 +38,14 @@ body {
 
 .contact{
     text-align: center;
+}
 
+.form_content{
+    text-align: left;
+    font-size:  14px;
+}
+.form_text{
+    display: block;
 }
 
 footer{
