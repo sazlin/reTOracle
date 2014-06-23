@@ -1,9 +1,36 @@
 {% extends "base.html" %}
-
 {% block body %}
-
 <h1>Welcome to rheTOracle!</h1>
-<br />
-<p>This is the home page</p>
-
+<section class="row">
+    <section class="row-chunk">
+        <form class="form_content" action="q1">
+            <div class="form_text">Who is tweeting about #<input type="text" name="q1_what">?
+            <input type="submit" value="Go"></div>
+        </form>
+        <div id="visualization1" class="charts"></div>
+    </section>
+    <section class="row-chunk">
+        <form class="form_content" action="q2">
+            <div class="form_text">What is @<input type="text" name="q2_who"> talking about?
+            <input type="submit" value="Go"></div>
+        </form>
+    <div id="visualization2" class="charts"></div>
+    </section>
+</section>
+<section class="row">
+    <section class="row-chunk">
+        <form class="form_content" action="q3">
+            <div class="form_text">Who is tweeting about @<input type="text" name="q3_who">?
+            <input type="submit" value="Go"></div>
+        </form>
+        <div id="visualization3" class="charts"></div>
+    </section>
+    <section class="row-chunk">
+        <form class="form_content" action="q4">
+            <div class="form_text">Who is @<input type="text" name="q4_who"> talking about?
+            <input type="submit" value="Go"></div>
+        </form>
+        <div id="visualization4" class="charts"></div>
+    </section>
+</section>
 {% endblock %}

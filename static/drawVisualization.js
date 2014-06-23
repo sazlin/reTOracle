@@ -10,6 +10,8 @@ function drawTestVisualization(){
   ]);
   drawVisualization(data, 'visualization1');
   drawVisualization(data, 'visualization2');
+  drawVisualization(data, 'visualization3');
+  drawVisualization(data, 'visualization4');
 }
 
 function drawVisualization(data, target) {
