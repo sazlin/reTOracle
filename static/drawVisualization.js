@@ -27,7 +27,7 @@ function drawVisualization(data, target) {
                  vAxis: {},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" },
-                 chartArea:{left:0,top:0,width:"50%",height:"50%"}
+                 chartArea:{top:0,width:"50%",height:"50%"}
                 };
 
   var chart = new google.visualization.BarChart(document.getElementById(target));
