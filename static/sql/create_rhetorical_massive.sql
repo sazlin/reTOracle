@@ -10,7 +10,7 @@ CREATE TABLE massive
   user_mentions text[],
   created_at date,
   screen_name text,
-  url text,
+  urls text[],
   location json,
   inreplytostatusif text,
   retweetcount smallint

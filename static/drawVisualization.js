@@ -1,12 +1,12 @@
 function drawTestVisualization(){
   // Create and populate the data table.
   var data = google.visualization.arrayToDataTable([
-    ['@User', '#Seattle'],
-    ['SeanAzlin2', 123],
-    ['BillG', 102],
-    ['Obama4Prez', 89],
-    ['JohnShivero', 83],
-    ['Muazify911', 65]
+    ["@User", "#Seattle"],
+    ["SeanAzlin2", 123],
+    ["BillG", 102],
+    ["Obama4Prez", 89],
+    ["JohnShivero", 83],
+    ["Muazify911", 65]
   ]);
 
   drawVisualization(data, 'visualization1');
