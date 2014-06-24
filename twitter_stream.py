@@ -46,35 +46,35 @@ class StdOutListener(StreamListener):
         in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
         retweets = json_data.get('retweet_count', None)
 
+        if location:
+            print "Twitter Name: ", screen_name, type(screen_name)
+            print "Tweet ID: ", tweet_id, type(tweet_id)
+            print "Hashtags: ", hashtags, type(hashtags)
+            print "URLs :", url, type(url)
+            print "Text: ", text, type(text)
+            print "retweets: ", retweets, type(retweets)
+            print "User mentions: ", user_mentions, type(user_mentions)
+            print "Created at: ", created_at, type(created_at)
+            print "Location: ", location, type(location)
+            print "In reply to: ", in_reply_to_screen_name, type(in_reply_to_screen_name)
 
-        print "Twitter Name: ", screen_name, type(screen_name)
-        print "Tweet ID: ", tweet_id, type(tweet_id)
-        print "Hashtags: ", hashtags, type(hashtags)
-        print "URLs :", url, type(url)
-        print "Text: ", text, type(text)
-        print "retweets: ", retweets, type(retweets)
-        print "User mentions: ", user_mentions, type(user_mentions)
-        print "Created at: ", created_at, type(created_at)
-        print "Location: ", location, type(location)
-        print "In reply to: ", in_reply_to_screen_name, type(in_reply_to_screen_name)
+            if hashtags:
+                self.hashtags_count += 1
 
-        if hashtags:
-            self.hashtags_count += 1
+            if 'Python' in text or 'Python' in hashtags:
+                self.python_count += 1
 
-        if 'Python' in text or 'Python' in hashtags:
-            self.python_count += 1
+            if 'Seattle' in text or 'Seattle' in hashtags:
+                self.seattle_count += 1
 
-        if 'Seattle' in text or 'Seattle' in hashtags:
-            self.seattle_count += 1
+            self.data_count += 1
 
-        self.data_count += 1
-
-        print '*'*20
-        print "Data count: ", self.data_count
-        print "Hashtag count: ", self.hashtags_count
-        print "Python count: ", self.python_count
-        print "Seattle Count: ", self.seattle_count
-        print "*"*20
+            print '*'*20
+            print "Data count: ", self.data_count
+            print "Hashtag count: ", self.hashtags_count
+            print "Python count: ", self.python_count
+            print "Seattle Count: ", self.seattle_count
+            print "*"*20
 
     def on_error(self, status):
         error_counter = 0
