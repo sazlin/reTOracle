@@ -18,10 +18,11 @@ if __name__ == "__main__":
 
     cur = conn.cursor()
 
-    tweet_id = "123456"
+    tweet_id = "012345983923940446"
     text = "Hey man this is a message"
     hashtags = "{hashtag1, hashtag2}"
     user_mentions = "{user-mention}"
+    created_at = "Tue Jun 24 21:33:24 +0000 2014"
     screen_name = "FatTony"
     url = "http://www.website.com"
     location = """["44", "55"]"""
@@ -30,15 +31,17 @@ if __name__ == "__main__":
 
     PUSH_SQL = """
     INSERT INTO massive(
-        tweet_id, text, hashtags, user_mentions, screen_name, url, location,
+        tweet_id, text, hashtags, user_mentions, created_at,
+        screen_name, url, location,
         inreplytostatusif, retweetcount)
 
     VALUES(
-        '{}', '{}', '{}', '{}', '{}', '{}',
+        '{}', '{}', '{}', '{}', '{}', '{}', '{}',
         '{}', '{}', {}); """
 
     test_sql = PUSH_SQL.format(tweet_id, text, hashtags, user_mentions,
-                                screen_name, url, location, in_reply_to_screen_name, retweets)
+                               created_at, screen_name, url, location,
+                               in_reply_to_screen_name, retweets)
 
     try:
         cur.execute(test_sql)
