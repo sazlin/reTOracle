@@ -21,6 +21,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+*.DS_Store
 
 # Installer logs
 pip-log.txt
@@ -44,6 +45,9 @@ coverage.xml
 
 # Rope
 .ropeproject
+
+#Secret stuff
+secrets.py
 
 # Django stuff:
 *.log
