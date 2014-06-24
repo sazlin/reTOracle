@@ -27,25 +27,38 @@ class StdOutListener(StreamListener):
     def on_data(self, data):
 
         json_data = json.loads(data)
-        # with open('twitter_data.text', 'w') as outfile:
-        #     outfile.write(data + '\n')
+
         # pprint.pprint(json_data)
-        user_id = json_data.get('user').get('id', None)
-        screen_name = json_data.get('user').get('screen_name', None)
-        hashtags = json_data.get('entities').get('hashtags', None)
+        # print "*"*20
+        # print
+        # print
+
+        tweet_id = json_data.get('id', None)
         text = json_data.get('text', None)
+        hashtags = [i['text'] for i in json_data.get('entities').get('hashtags', None)]
+        user_mentions = [i['screen_name'] for i in json_data.get('entities').get('user_mentions', None)]
+        created_at = json_data.get('created_at', None)
+        screen_name = json_data.get('user').get('screen_name', None)
+        url = [i['display_url'] for i in json_data.get('entities').get('urls', None)]
+        location = json_data.get('geo', None)
+        in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
         retweets = json_data.get('retweet_count', None)
 
         print "Twitter Name: ", screen_name
-        print "User ID: ", user_id
+        print "Tweet ID: ", tweet_id
         print "Hashtags: ", hashtags
+        print "URLs :", url
         print "Text: ", text
         print "retweets: ", retweets
+        print "User mentions: ", user_mentions
+        print "Created at: ", created_at
+        print "Location: ", location
+        print "In reply to: ", in_reply_to_screen_name
 
         if hashtags:
             self.hashtags_count += 1
 
-        if 'python' in text or 'python' in hashtags:
+        if 'Python' in text or 'Python' in hashtags:
             self.python_count += 1
 
         if 'Seattle' in text or 'Seattle' in hashtags:
@@ -75,4 +88,4 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
 
     stream = Stream(auth, l)
-    stream.filter(track=['Python', 'Seattle'])
+    stream.filter(track=['Python', 'Seattle', 'wclittle', 'Plone', 'Flask'])
