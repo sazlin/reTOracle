@@ -1,9 +1,35 @@
 import redis
 import psycopg2
 
+sql_query = {
+    'type1': """
+SELECT screen_name, COUNT(screen_name) as TweetCount
+FROM massive
+WHERE '#Seattle' = ANY (hashtags)
+GROUP BY screen_name
+""",
+    'type2': """
+ SELECT screen_name, COUNT(screen_name) as TweetCount
+FROM massive
+WHERE '#Seattle' = ANY (hashtags)
+GROUP BY screen_name
+""",
+    'type3': """
+SELECT screen_name, COUNT(screen_name) as TweetCount
+FROM massive
+WHERE '#Seattle' = ANY (hashtags)
+GROUP BY screen_name
+""",
+    'type4': """
+ SELECT screen_name, COUNT(screen_name) as TweetCount
+FROM massive
+WHERE '#Seattle' = ANY (hashtags)
+GROUP BY screen_name
+"""
+}
+
 POOL = redis.ConnectionPool(host='localhost', port=2000, db=0)
 interest_list = {}
-tmp_interest_list = []
 """
 Who is talking about #q1_what
 What is @q2_who talking about
@@ -25,24 +51,45 @@ def set_to_redis(key, value):
     r_server.set(key, value)
 
 
-def add_search(key, q_type, time_stamp):
+def add_search(key, q_type):
     my_key = str(q_type)+str(key)
-    if my_key in interest_list.keys():
+    if my_key not in interest_list.keys():
+        # it's Sean's turn :)
+        return None
+    if interest_list.get(my_key):
         return get_redis_query(my_key)
-    if time_stamp:
-        # if time_stamp == current time_stamp
-        return False
-    tmp_interest_list.append(my_key)
-    return
+    interest_list[my_key] = []
+
+
+def parse_key(key):
+    return key[:5], key[5:]
+
+
+def is_key_outdated(conn, my_key):
+    q_type, key = parse_key(my_key)
+    cur = conn.cursor()
+    try:
+        cur.execute(sql_query.get(q_type))
+    except Exception as x:
+        print "Error connecting to DB: ", x.args
 
 
 def maint_redis(conn):
+    update_interest_list()
+    # del list for outdated keys
+    del_keys = [key for key in interest_list.keys() if is_key_outdated(conn, key)]
+    for key in del_keys:
+        interest_list.pop(key)
+
+
+
+
+
     # remove all out-dated keys from dictionary
     # add new keys in tmp_interest_list to dictionary
     # seek for new datas for my keys in interest list
     # check time stamp and add them to the dict
-
-
+    # call this method in rheTOracle.py main
 
 
 
