@@ -67,21 +67,26 @@ def parse_key(key):
 
 def is_key_outdated(conn, my_key):
     q_type, key = parse_key(my_key)
-    cur = conn.cursor()
     try:
-        cur.execute(sql_query.get(q_type))
+        cur = conn.cursor()
     except Exception as x:
         print "Error connecting to DB: ", x.args
+    try:
+        json_result = cur.execute(sql_query.get(q_type))
+        return json_result
+    except:
+        return []
 
 
 def maint_redis(conn):
     update_interest_list()
     # del list for outdated keys
-    del_keys = [key for key in interest_list.keys() if is_key_outdated(conn, key)]
-    for key in del_keys:
-        interest_list.pop(key)
-
-
+    for key in interest_list.keys():
+        json_result = is_key_outdated(conn, key)
+        if json_result:
+            del_keys.append(key)
+        else:
+            interest_list[key] = json_result
 
 
 
