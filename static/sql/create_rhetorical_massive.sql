@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS massive;
 CREATE TABLE massive
 (
   tweet_id text NOT NULL PRIMARY KEY,
-  text character(140),
+  text character(280),
   hashtags text[],
   user_mentions text[],
   created_at date,
