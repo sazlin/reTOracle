@@ -24,13 +24,23 @@ def fix_unicode(text):
     # return text
     return text.encode(encoding='UTF-8')
 
+
 def fix_tweet_id(tweet_id):
     tweet_id = str(tweet_id)
     return fix_unicode(tweet_id)
 
 
+def fix_140(text):
+
+    xml_dict = {';': '', '&lt': '<', '&amp': '&', '&gt': '>', '&quot': '"', '&apos': '\''}
+    for key, value in xml_dict.iteritems():
+        text = text.replace(key, value)
+    return text
+
+
 def fix_text(text):
     text = text.replace("'", "")
+    text = fix_140(text)
     return fix_unicode(text)
 
 

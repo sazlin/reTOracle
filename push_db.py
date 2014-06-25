@@ -46,8 +46,16 @@ class StdOutListener(StreamListener):
         text = str(tweet_id)
         return self.fix_unicode(text)
 
+    def fix_140(self, text):
+
+        xml_dict = {';': '', '&lt': '<', '&amp': '&', '&gt': '>', '&quot': '"', '&apos': '\''}
+        for key, value in xml_dict.iteritems():
+            text = text.replace(key, value)
+        return text
+
     def fix_text(self, text):
         text = text.replace("'", "")
+        text = self.fix_140(text)
         return self.fix_unicode(text)
 
     def fix_lists(self, hashtags):
