@@ -29,15 +29,17 @@ GROUP BY screen_name
 }
 
 POOL = redis.ConnectionPool(host='localhost', port=2000, db=0)
-interest_list = {}
+interest_list = {'type1Seattle': [], "type3CodeFellowsOrg": [], 'type4Seattle': [], 'type2crisewing': []}
 
 
 def get_redis_query(key):
+    # returns a string
     r_server = redis.Redis(connection_pool=POOL)
     return r_server.get(key)
 
 
 def set_to_redis(key, value):
+    # need to set value as string
     r_server = redis.Redis(connection_pool=POOL)
     r_server.set(key, value)
 
@@ -71,7 +73,8 @@ def is_key_outdated(conn, my_key):
         return []
 
 
-def maint_redis(conn):
+def maint_redis():
+    conn = connect_db()
     for key in interest_list.keys():
         json_result = is_key_outdated(conn, key)
         if json_result:
