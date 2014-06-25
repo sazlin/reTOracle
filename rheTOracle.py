@@ -113,7 +113,7 @@ def q1_query(q1_what="#Seattle"):
     q1_what = "#"+request.args.get('q1_what', None)
     print "qt_what: ", q1_what
     json_result = None
-    if q1_what == "#":
+    if not q1_what == "#":
         sql = """
         SELECT screen_name, COUNT(screen_name) as TweetCount
         FROM massive
@@ -127,15 +127,14 @@ def q1_query(q1_what="#Seattle"):
 @app.route('/q2', methods=['GET'])
 def q2_query(q2_who="@crisewing"):
     """What is @q2_who talking about?"""
-    q2_who = "#"+request.args.get('q2_who', None)
+    q2_who = "@"+request.args.get('q2_who', None)
     print "q2_who: ", q2_who
     json_result = None
-    if q2_who == "#":
+    if not q2_who == "@":
         sql = """
-        SELECT hashtags, COUNT(screen_name) as HashCount
-        FROM massive
-        WHERE '""" + q2_who + """' = screen_name
-        GROUP BY hashtags
+        SELECT hashtag, COUNT(hashtag) as HashTagCount
+        FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive WHERE screen_name = '""" + q2_who + """') as subquery
+        GROUP BY hashtag
         """
         json_result = execute_query(sql)
     return json_result
