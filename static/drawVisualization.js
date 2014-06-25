@@ -1,10 +1,15 @@
 $(document).ready(function(){
-  var frm = $('#q1_form');
-  frm.submit(function(ev){
+  //Now go bind AJAX-powered event handlers for our forms
+  var frm1 = $('#q1_form');
+  var frm2 = $('#q2_form');
+  var frm3 = $('#q3_form');
+  var frm4 = $('#q4_form');
+  //frm1
+  frm1.submit(function(ev){
     $.ajax({
-        type: frm.attr('method'),
-        url: frm.attr('action'),
-        data: frm.serialize(),
+        type: frm1.attr('method'),
+        url: frm1.attr('action'),
+        data: frm1.serialize(),
         success: function (d) {
           var hashtag = $('#q1_what').val();
           var resultArray = $.parseJSON(d);
@@ -16,7 +21,61 @@ $(document).ready(function(){
         }
     });
     ev.preventDefault();
-  });
+  }); //frm1
+  //frm2
+  frm2.submit(function(ev){
+    $.ajax({
+        type: frm2.attr('method'),
+        url: frm2.attr('action'),
+        data: frm2.serialize(),
+        success: function (d) {
+          var mention = $('#q2_who').val();
+          var resultArray = $.parseJSON(d);
+          var header = ["@User", "@"+mention];
+          resultArray.unshift(header);
+          var data = google.visualization.arrayToDataTable(resultArray);
+          drawVisualization(data, 'visualization2');
+          $('#q2_who').val("");
+        }
+    });
+    ev.preventDefault();
+  }); //frm2
+  //frm3
+  frm3.submit(function(ev){
+    $.ajax({
+        type: frm3.attr('method'),
+        url: frm3.attr('action'),
+        data: frm3.serialize(),
+        success: function (d) {
+          var mention = $('#q3_who').val();
+          var resultArray = $.parseJSON(d);
+          var header = ["@User", "@"+mention];
+          resultArray.unshift(header);
+          var data = google.visualization.arrayToDataTable(resultArray);
+          drawVisualization(data, 'visualization3');
+          $('#q3_who').val("");
+        }
+    });
+    ev.preventDefault();
+  }); //frm3
+  //frm4
+  frm4.submit(function(ev){
+    $.ajax({
+        type: frm4.attr('method'),
+        url: frm4.attr('action'),
+        data: frm4.serialize(),
+        success: function (d) {
+          var mention = $('#q4_who').val();
+          var resultArray = $.parseJSON(d);
+          var header = ["@User", "@"+mention];
+          resultArray.unshift(header);
+          var data = google.visualization.arrayToDataTable(resultArray);
+          drawVisualization(data, 'visualization4');
+          $('#q4_who').val("");
+        }
+    });
+    ev.preventDefault();
+  }); //frm4
 });
 
 function drawTestVisualization(){
