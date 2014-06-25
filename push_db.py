@@ -162,6 +162,8 @@ class StdOutListener(StreamListener):
         else:
             self.conn.commit()
             self.commit_count += 1
+            print "Hashtags: ", hashtags
+            print "User mentions: ", user_mentions
             print "Committed: ", self.commit_count
             print "*" * 45
 
@@ -180,4 +182,9 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
 
     stream = Stream(auth, l)
-    stream.filter(track=['KingJames', 'ff_I_retweet'])
+    stream.filter(track=['#programming', '#cprogramming', '#clanguage'
+                         '#Django', '#Python', '#pyconau', '#numpy', 'gvanrossum'
+                         '#Java', '#Javascript', '#Ruby', '#BackboneJS', '#NodeJS'
+                         '#CSharp', '#PHP'])
+
+
