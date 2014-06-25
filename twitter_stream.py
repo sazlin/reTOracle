@@ -28,11 +28,6 @@ class StdOutListener(StreamListener):
 
         json_data = json.loads(data)
 
-        pprint.pprint(json_data)
-        print "*"*20
-        print
-        print
-
         tweet_id = json_data.get('id', None)
         text = json_data.get('text', None)
         hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
@@ -45,7 +40,6 @@ class StdOutListener(StreamListener):
             location = location.get('coordinates', None)
         in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
         retweets = json_data.get('retweet_count', None)
-
 
         print "Twitter Name: ", screen_name, type(screen_name)
         print "Tweet ID: ", tweet_id, type(tweet_id)

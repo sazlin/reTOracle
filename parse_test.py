@@ -19,13 +19,19 @@ def connect_db():
         return cur, con
 
 
+def fix_unicode(text):
+    # text = ''.join([i if ord(i) < 128 else ' ' for i in text])
+    # return text
+    return text.encode(encoding='UTF-8')
+
 def fix_tweet_id(tweet_id):
-    return str(tweet_id)
+    tweet_id = str(tweet_id)
+    return fix_unicode(tweet_id)
 
 
 def fix_text(text):
     text = text.replace("'", "")
-    return text
+    return fix_unicode(text)
 
 
 def fix_lists(hashtags):
@@ -33,7 +39,7 @@ def fix_lists(hashtags):
     hashtags = ", ".join(hashtags)
     str1 += hashtags
     str1 += '}'
-    return str1
+    return fix_unicode(str1)
 
 
 def fix_location(location):
@@ -41,7 +47,7 @@ def fix_location(location):
     location = ", ".join(location)
     str1 += location
     str1 += ']'
-    return str1
+    return fix_unicode(str1)
 
 
 def on_data():
@@ -59,6 +65,7 @@ def on_data():
         hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
         hashtags = fix_lists(hashtags)
 
+
         user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
         user_mentions = fix_lists(user_mentions)
 
@@ -67,6 +74,7 @@ def on_data():
 
         urls = [i['display_url'] for i in json_data.get('entities', None).get('urls', None)]
         urls = fix_lists(urls)
+        print urls
 
         location = json_data.get('geo', None)
         if location:
