@@ -1,3 +1,4 @@
+from filters_json import filter_list as filters
 import time
 import json
 import psycopg2
@@ -12,6 +13,15 @@ from header import consumer_key, consumer_secret, access_token, access_token_sec
 req_tok_url = 'https://api.twitter.com/oauth/request_token'
 oauth_url = 'https://api.twitter.com/oauth/authorize'
 acc_tok_url = 'https://api.twitter.com/oauth/access_token'
+
+
+def return_filters():
+    filter_list = []
+    for i in filters:
+        for y in filters[i]['search_terms']:
+            for x in filters[i]['search_terms'][y]:
+                filter_list.append(x)
+    return filter_list
 
 
 class StdOutListener(StreamListener):
@@ -180,11 +190,7 @@ if __name__ == '__main__':
     l = StdOutListener()
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-
+    stream_filters = return_filters()
+    print stream_filters
     stream = Stream(auth, l)
-    stream.filter(track=['#programming', '#cprogramming', '#clanguage'
-                         '#Django', '#Python', '#pyconau', '#numpy',
-                         '#Java', '#Javascript', '#Ruby', '#BackboneJS', '#NodeJS'
-                         '#CSharp', '#PHP'])
-
-
+    stream.filter(track=stream_filters)
