@@ -15,7 +15,7 @@ filter_list = {"c": {'search_terms':
            'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': []}},
+                 'keywords': ['monty', 'snake']}},
 "java": {'search_terms':
                 {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE'],
                  'users': ['@java', '@java4iot', '@awsforjava', '@4java'],
@@ -23,7 +23,7 @@ filter_list = {"c": {'search_terms':
          'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': []}},
+                 'keywords': ['javascript ']}},
 "javascript": {'search_terms':
                 {'hashtags': ['#Javascript', '#BackboneJS', '#NodeJS', '#JQuery'],
                  'users': ['@JavaScriptDaily', '@oss_js', '@badass_js', '@jasminebdd', '@nodejs'],
@@ -31,7 +31,7 @@ filter_list = {"c": {'search_terms':
         'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': []}},
+                 'keywords': ['java ']}},
 "ruby": {'search_terms':
                 {'hashtags': ['#Ruby', '#RubyOnRails', '#rubyconfbr', '#rails'],
                  'users': ['@RubyInside', '@rubyrogues', '@rails'],
@@ -67,13 +67,13 @@ filter_list = {"c": {'search_terms':
 "swift": {'search_terms':
                 {'hashtags': ['#swiftlang'],
                  'users': ['@SwiftLang'],
-                 'keywords': []},
+                 'keywords': ['Taylor']},
            'blacklist':
                 {'hashtags': [],
                  'users': [],
                  'keywords': []}},
 "visual_basic": {'search_terms':
-                {'hashtags': ['#VBA'],
+                {'hashtags': ['#VBA', '#VB', '#VB.NET'],
                  'users': ['@visualbasic_net'],
                  'keywords': []},
            'blacklist':
