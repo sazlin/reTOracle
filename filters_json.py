@@ -9,74 +9,74 @@ filter_list = {"c": {'search_terms':
                         'users': [],
                         'keywords': []}},
 "python": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask'],
+                 'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "java": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE'],
+                 'users': ['@java', '@java4iot', '@awsforjava', '@4java'],
                  'keywords': []},
-           'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+         'blacklist':
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "javascript": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#Javascript', '#BackboneJS', '#NodeJS', '#JQuery'],
+                 'users': ['@JavaScriptDaily', '@oss_js', '@badass_js', '@jasminebdd', '@nodejs'],
                  'keywords': []},
-           'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+        'blacklist':
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "ruby": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#Ruby', '#RubyOnRails', '#rubyconfbr', '#rails'],
+                 'users': ['@RubyInside', '@rubyrogues', '@rails'],
                  'keywords': []},
-           'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+        'blacklist':
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "php": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#PHP'],
+                 'users': ['@php_net', '@awsforphp', '@phpc', '@phpizer'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
-"csharpsharp": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+"csharp": {'search_terms':
+                {'hashtags': ['#CSharp'],
+                 'users': ['@csharp_projects', '@CHharpStack', '@CsharpCorner', '@oss_csharp'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "objectivec": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#objectivec'],
+                 'users': ['@objective', '@ObjectiveCDaily', '@idObjectiveC', '@ObjConSO'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
 "swift": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': ['#swiftlang'],
+                 'users': ['@SwiftLang'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}},
-"python": {'search_terms':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+"visual_basic": {'search_terms':
+                {'hashtags': ['#VBA'],
+                 'users': ['@visualbasic_net'],
                  'keywords': []},
            'blacklist':
-                {'hashtags': ['#python', '#django', '#pyconau', '#numpy'],
-                 'users': ['gvanrossum'],
+                {'hashtags': [],
+                 'users': [],
                  'keywords': []}}}
