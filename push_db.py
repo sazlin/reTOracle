@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     stream = Stream(auth, l)
     stream.filter(track=['#programming', '#cprogramming', '#clanguage'
-                         '#Django', '#Python', '#pyconau', '#numpy', 'gvanrossum'
+                         '#Django', '#Python', '#pyconau', '#numpy',
                          '#Java', '#Javascript', '#Ruby', '#BackboneJS', '#NodeJS'
                          '#CSharp', '#PHP'])
 
