@@ -43,11 +43,8 @@ def fix_lists(hashtags):
 
 
 def fix_location(location):
-    str1 = '['
-    location = ", ".join(location)
-    str1 += location
-    str1 += ']'
-    return fix_unicode(str1)
+    location = [str(i) for i in location]
+    return str(location).replace("'", "")
 
 
 def on_data():
