@@ -30,15 +30,6 @@ GROUP BY screen_name
 
 POOL = redis.ConnectionPool(host='localhost', port=2000, db=0)
 interest_list = {}
-"""
-Who is talking about #q1_what
-What is @q2_who talking about
-Who is talking about @q3_who
-Who is @q4_who talking about
-"""
-"""
-interest _list is a dictionary.
-"""
 
 
 def get_redis_query(key):
@@ -53,12 +44,14 @@ def set_to_redis(key, value):
 
 def add_search(key, q_type):
     my_key = str(q_type)+str(key)
-    if my_key not in interest_list.keys():
-        # it's Sean's turn :)
-        return None
-    if interest_list.get(my_key):
+    if my_key not in interest_list.keys() and interest_list.get(my_key):
+        # yay , search is in the redis!
         return get_redis_query(my_key)
-    interest_list[my_key] = []
+    if my_key not in interest_list:
+        interest_list[my_key] = []
+    else:
+        # this is the worst time to search for this key
+        print u"why are you searching same thing"
 
 
 def parse_key(key):
@@ -79,40 +72,12 @@ def is_key_outdated(conn, my_key):
 
 
 def maint_redis(conn):
-    update_interest_list()
-    # del list for outdated keys
     for key in interest_list.keys():
         json_result = is_key_outdated(conn, key)
         if json_result:
-            del_keys.append(key)
+            interest_list[key] = []
         else:
             interest_list[key] = json_result
-
-
-
-    # remove all out-dated keys from dictionary
-    # add new keys in tmp_interest_list to dictionary
-    # seek for new datas for my keys in interest list
-    # check time stamp and add them to the dict
-    # call this method in rheTOracle.py main
-
-
-
-
-
-"""
-1 - Her search yapildiginda
-A. time_stamp i kontrol et.
-    Eger time_stamp  bizim time_stample
-A. search yapilan bilgiyi redis-servera ata
-2 - Her search yapildiginda get_redis i calistir ve bilgileri getir
-3 - her 5 dakikada bir db yi tara ve zaman kisitlamasina gore
-        redis_server i guncelle
-4 - No3 icin gevent olustur ve arkada redisi calistir
-
-"""
-
-
 
 
 def connect_db():
@@ -127,22 +92,23 @@ def connect_db():
         print "Error connecting to DB: ", x.args
 
 
-def get_data_from_db(conn, time_stamp):
-    # get most recent datas in out interest list
-    cur = conn.cursor()
-    try:
-        cur.execute()
-    except:
-
-
-def get_database_connection():
-    db = getattr(g, 'db', None)
-    if db is None:
-        g.db = db = connect_db()
-    return db
-
-
 if __name__ == '__main__':
     conn = connect_db()
 
+"""
+1 - Her search yapildiginda
+A. time_stamp i kontrol et.
+    Eger time_stamp  bizim time_stample
+A. search yapilan bilgiyi redis-servera ata
+2 - Her search yapildiginda get_redis i calistir ve bilgileri getir
+3 - her 5 dakikada bir db yi tara ve zaman kisitlamasina gore
+        redis_server i guncelle
+4 - No3 icin gevent olustur ve arkada redisi calistir
 
+"""
+
+# remove all out-dated keys from dictionary
+# add new keys in tmp_interest_list to dictionary
+# seek for new datas for my keys in interest list
+# check time stamp and add them to the dict
+# call this method in rheTOracle.py main
