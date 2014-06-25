@@ -1,3 +1,24 @@
+$(document).ready(function(){
+  var frm = $('#q1_form');
+  frm.submit(function(ev){
+    $.ajax({
+        type: frm.attr('method'),
+        url: frm.attr('action'),
+        data: frm.serialize(),
+        success: function (d) {
+          var hashtag = $('#q1_what').val();
+          var resultArray = $.parseJSON(d);
+          var header = ["@User", "#"+hashtag];
+          resultArray.unshift(header);
+          var data = google.visualization.arrayToDataTable(resultArray);
+          drawVisualization(data, 'visualization1');
+          $('#q1_what').val("");
+        }
+    });
+    ev.preventDefault();
+  });
+});
+
 function drawTestVisualization(){
   // Create and populate the data table.
   var data = google.visualization.arrayToDataTable([
@@ -27,12 +48,10 @@ function drawVisualization(data, target) {
                  vAxis: {},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" },
-                 chartArea:{left:0,top:0,width:"50%",height:"50%"}
+                 chartArea:{top:0,width:"50%",height:"50%"}
                 };
 
   var chart = new google.visualization.BarChart(document.getElementById(target));
   chart.draw(view, options);
 
 }
-
-
