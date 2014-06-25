@@ -108,19 +108,25 @@ def test_graph():
 
 
 @app.route('/q1', methods=['GET'])
-def q1_query(q1_what="#Seattle"):
-    """Who is talking about #q1_what?"""
-    q1_what = request.args.get('q1_what', None)
-    print "qt_what: ", q1_what
+def q1_query():
+    """Which programming language is bring talked about the most?"""
+    #q1_what = request.args.get('q1_what', None)
+    #print "qt_what: ", q1_what
     json_result = None
-    if not q1_what == "":
-        sql = """
-        SELECT screen_name, COUNT(screen_name) as TweetCount
-        FROM massive
-        WHERE '""" + q1_what + """' = ANY (hashtags)
-        GROUP BY screen_name
-        """
-        json_result = execute_query(sql)
+    #if not q1_what == "":
+    sql = """
+    SELECT hashtag, COUNT(hashtag) as HashTagCount
+    FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery
+    WHERE
+    hashtag = 'Java' OR
+    hashtag = 'Python' OR
+    hashtag = 'JavaScript' OR
+    hashtag = 'CPlusPlus' OR
+    hashtag = 'Ruby'
+    GROUP BY hashtag
+    ORDER BY HashTagCount DESC
+    """
+    json_result = execute_query(sql)
     return json_result
 
 
