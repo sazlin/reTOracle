@@ -4,33 +4,35 @@
 <section class="row">
     <section class="row-chunk">
         <form class="form_content" id="q1_form" action="{{ url_for('q1_query') }}">
-            <div class="form_text">Which programming language is bring talked about the most?
-            <input type="submit" value="Go"></div>
+            <div class="form_text">Which programming language is being talked about the most?
+            <input type="submit" value="Go"/></div>
         </form>
         <div id="visualization1" class="charts"></div>
     </section>
     <section class="row-chunk">
         <form class="form_content"  id="q2_form" action="{{ url_for('q2_query') }}">
-            <div class="form_text">What is @<input type="text" name="q2_who"> talking about?
-            <input type="submit" value="Go"></div>
+            <div class="form_text">Who is *the* guy to follow for a given language?
+            <input type="submit" value="Go"/></div>
         </form>
     <div id="visualization2" class="charts"></div>
     </section>
 </section>
+{%if FALSE %}
 <section class="row">
     <section class="row-chunk">
         <form class="form_content" id="q3_form" action="{{ url_for('q3_query') }}">
             <div class="form_text">Who is tweeting about @<input type="text" name="q3_who">?
-            <input type="submit" value="Go"></div>
+            <input type="submit" value="Go"/></div>
         </form>
         <div id="visualization3" class="charts"></div>
     </section>
     <section class="row-chunk">
         <form class="form_content"  id="q4_form" action="{{ url_for('q4_query') }}">
             <div class="form_text">Who is @<input type="text" name="q4_who"> talking about?
-            <input type="submit" value="Go"></div>
+            <input type="submit" value="Go"/></div>
         </form>
         <div id="visualization4" class="charts"></div>
     </section>
 </section>
+{% endif %}
 {% endblock %}

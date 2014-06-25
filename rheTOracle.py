@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request
+from flask import Flask, redirect, url_for
 from flask import render_template
 import psycopg2
 import json
@@ -14,7 +14,6 @@ app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
-
 
 
 def build_connection_string():
@@ -109,7 +108,7 @@ def test_graph():
 
 @app.route('/q1', methods=['GET'])
 def q1_query():
-    """Which programming language is bring talked about the most?"""
+    """Which programming language is being talked about the most?"""
     #q1_what = request.args.get('q1_what', None)
     #print "qt_what: ", q1_what
     json_result = None
@@ -131,18 +130,35 @@ def q1_query():
 
 
 @app.route('/q2', methods=['GET'])
-def q2_query(q2_who="@crisewing"):
-    """What is @q2_who talking about?"""
-    q2_who = request.args.get('q2_who', None)
-    print "q2_who: ", q2_who
+def q2_query():
+    """Who is *the* guys to follow for a given language?"""
     json_result = None
-    if not q2_who == "":
-        sql = """
-        SELECT hashtag, COUNT(hashtag) as HashTagCount
-        FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive WHERE screen_name = '""" + q2_who + """') as subquery
-        GROUP BY hashtag
-        """
-        json_result = execute_query(sql)
+    sql = """
+    SELECT hashtag, HashTagCount, screen_name
+    FROM
+    (
+        SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos
+        FROM (
+            SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount
+            FROM (
+                SELECT screen_name, unnest(hashtags) as hashtag
+                FROM massive
+            ) as unwrap
+            WHERE
+            hashtag = 'Java' OR
+            hashtag = 'Python' OR
+            hashtag = 'JavaScript' OR
+            hashtag = 'CPlusPlus' OR
+            hashtag = 'Java'
+            GROUP BY screen_name, hashtag
+            ORDER BY hashtag, HashTagCount DESC
+        ) as countedhashtags
+    ) as ss
+    WHERE pos = 1
+    ORDER BY hashtag, HashTagCount DESC
+    """
+    json_result = execute_query(sql)
+    print json.loads(json_result)
     return json_result
 
 
