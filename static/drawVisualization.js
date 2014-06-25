@@ -38,6 +38,10 @@ $(document).ready(function(){
     });
     ev.preventDefault();
   }); //frm2
+
+  //Refresh the forms periodically
+  setInterval(function(){$("#q1_form").submit();}, 3000);
+  setInterval(function(){$("#q2_form").submit();}, 3000);
   //frm3
 //   frm3.submit(function(ev){
 //     $.ajax({
