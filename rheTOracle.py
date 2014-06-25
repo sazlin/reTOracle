@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, redirect, url_for, request
 from flask import render_template
 import psycopg2
 import json
@@ -110,20 +110,35 @@ def test_graph():
 @app.route('/q1', methods=['GET'])
 def q1_query(q1_what="#Seattle"):
     """Who is talking about #q1_what?"""
-    sql = """
-    SELECT screen_name, COUNT(screen_name) as TweetCount
-    FROM massive
-    WHERE '#Seattle' = ANY (hashtags)
-    GROUP BY screen_name
-    """
-    json_result = execute_query(sql)
+    q1_what = "#"+request.args.get('q1_what', None)
+    print "qt_what: ", q1_what
+    json_result = None
+    if q1_what == "#":
+        sql = """
+        SELECT screen_name, COUNT(screen_name) as TweetCount
+        FROM massive
+        WHERE '""" + q1_what + """' = ANY (hashtags)
+        GROUP BY screen_name
+        """
+        json_result = execute_query(sql)
     return json_result
 
 
 @app.route('/q2', methods=['GET'])
 def q2_query(q2_who="@crisewing"):
     """What is @q2_who talking about?"""
-    return redirect(url_for('home_page'))
+    q2_who = "#"+request.args.get('q2_who', None)
+    print "q2_who: ", q2_who
+    json_result = None
+    if q2_who == "#":
+        sql = """
+        SELECT hashtags, COUNT(screen_name) as HashCount
+        FROM massive
+        WHERE '""" + q2_who + """' = screen_name
+        GROUP BY hashtags
+        """
+        json_result = execute_query(sql)
+    return json_result
 
 
 @app.route('/q3', methods=['GET'])
