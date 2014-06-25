@@ -3,14 +3,14 @@
 <h1>Welcome to rheTOracle!</h1>
 <section class="row">
     <section class="row-chunk">
-        <form class="form_content" id="q1_form" action="q1">
+        <form class="form_content" id="q1_form" action="{{ url_for('q1_query') }}">
             <div class="form_text">Who is tweeting about #<input type="text" id="q1_what" name="q1_what">?
             <input type="submit" value="Go"></div>
         </form>
         <div id="visualization1" class="charts"></div>
     </section>
     <section class="row-chunk">
-        <form class="form_content" action="q2">
+        <form class="form_content"  id="q2_form" action="{{ url_for('q2_query') }}">
             <div class="form_text">What is @<input type="text" name="q2_who"> talking about?
             <input type="submit" value="Go"></div>
         </form>
@@ -19,14 +19,14 @@
 </section>
 <section class="row">
     <section class="row-chunk">
-        <form class="form_content" action="q3">
+        <form class="form_content" id="q3_form" action="{{ url_for('q3_query') }}">
             <div class="form_text">Who is tweeting about @<input type="text" name="q3_who">?
             <input type="submit" value="Go"></div>
         </form>
         <div id="visualization3" class="charts"></div>
     </section>
     <section class="row-chunk">
-        <form class="form_content" action="q4">
+        <form class="form_content"  id="q4_form" action="{{ url_for('q4_query') }}">
             <div class="form_text">Who is @<input type="text" name="q4_who"> talking about?
             <input type="submit" value="Go"></div>
         </form>
