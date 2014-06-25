@@ -1,4 +1,3 @@
-import pprint
 import time
 import json
 import psycopg2
@@ -20,8 +19,7 @@ class StdOutListener(StreamListener):
 
     """
     def __init__(self):
-        self.con = None
-        self.cur = None
+        self.connect_db()
 
     def connect_db(self):
         try:
@@ -35,14 +33,21 @@ class StdOutListener(StreamListener):
         except Exception as x:
             print "Error connecting to DB: ", x.args
 
-    def fix_tweet_id(tweet_id):
+    def fix_tweet_id(self, tweet_id):
         return str(tweet_id)
 
-    def fix_hashtags(hashtags):
+    def fix_lists(self, hashtags):
         str1 = '{'
         hashtags = ", ".join(hashtags)
         str1 += hashtags
         str1 += '}'
+        return str1
+
+    def fix_location(self, location):
+        str1 = '['
+        location = ", ".join(location)
+        str1 += location
+        str1 += ']'
         return str1
 
     def on_data(self, data):
@@ -57,37 +62,46 @@ class StdOutListener(StreamListener):
         text = json_data.get('text', None)
 
         hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
-        hashtags = self.fix_hashtags(hashtags)
+        hashtags = self.fix_lists(hashtags)
 
         user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
+        user_mentions = self.fix_lists(user_mentions)
+
         created_at = json_data.get('created_at', None)
         screen_name = json_data.get('user', None).get('screen_name', None)
-        url = [i['display_url'] for i in json_data.get('entities', None).get('urls', None)]
+
+        urls = [i['display_url'] for i in json_data.get('entities', None).get('urls', None)]
+        urls = self.fix_lists(urls)
+
         location = json_data.get('geo', None)
         if location:
             location = location.get('coordinates', None)
+            location = self.fix_location(location)
         if not location:
             location = ''
+
         in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
         if not in_reply_to_screen_name:
             in_reply_to_screen_name = ''
+
         retweets = json_data.get('retweet_count', None)
 
         PUSH_SQL = """
             INSERT INTO massive(
                 tweet_id, text, hashtags, user_mentions,
-                created_at, screen_name, url, location,
+                created_at, screen_name, urls, location,
                 inreplytostatusif, retweetcount)
 
             VALUES(
-                '{}', '{}', '{}', '{}', {}, '{}', '{}',
+                '{}', '{}', '{}', '{}', '{}', '{}', '{}',
                 '{}', '{}', {}); """
 
         PUSH_SQL = PUSH_SQL.format(tweet_id, text, hashtags, user_mentions,
-                                   created_at, screen_name, url, location,
+                                   created_at, screen_name, urls, location,
                                    in_reply_to_screen_name, retweets)
 
         # write to database
+
         try:
             self.cur.execute(PUSH_SQL)
         except psycopg2.Error:
