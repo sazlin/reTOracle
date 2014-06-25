@@ -58,11 +58,8 @@ class StdOutListener(StreamListener):
         return self.fix_unicode(str1)
 
     def fix_location(self, location):
-        str1 = '['
-        location = ", ".join(location)
-        str1 += location
-        str1 += ']'
-        return self.fix_unicode(str1)
+        location = [str(i) for i in location]
+        return str(location).replace("'", "")
 
     def on_data(self, data):
 
