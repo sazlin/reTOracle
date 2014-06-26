@@ -3,7 +3,7 @@ from flask import render_template
 import psycopg2
 import json
 #from passlib.hash import pbkdf2_sha256
-from secrets import SECRETS
+from SECRETS import SECRETS
 app = Flask(__name__)
 
 app.config['DB_HOST'] = "rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com"
@@ -11,7 +11,7 @@ app.config['DB_NAME'] = "rhetorical-db"
 app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
 #app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
-app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
+# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 
@@ -176,7 +176,7 @@ def q4_query(q4_who="#Seattle"):
 
 @app.route('/ticker', methods=['GET'])
 def ticker_fetch():
-    """Return JSOn for recent tweet"""
+    """Return JSON for recent tweet"""
     json_result = None
     sql = """
     SELECT screen_name, text FROM massive
