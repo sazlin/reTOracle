@@ -86,6 +86,7 @@ def maint_redis():
         q_type = str(q_type)
         cur.execute(sql_query.get(q_type))
         json_result = cur.fetchall()
+        print "json_result", json_result
         key_value = ""
         for item in json_result:
             key_value += str(item)
