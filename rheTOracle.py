@@ -5,7 +5,7 @@ import json
 from filters_json import filter_list
 
 #from passlib.hash import pbkdf2_sha256
-from secrets import SECRETS
+from SECRETS import SECRETS
 app = Flask(__name__)
 
 app.config['DB_HOST'] = "rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com"
@@ -13,7 +13,7 @@ app.config['DB_NAME'] = "rhetorical-db"
 app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
 #app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
-app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
+# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 
