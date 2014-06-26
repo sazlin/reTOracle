@@ -11,13 +11,10 @@ $(document).ready(function(){
         url: frm1.attr('action'),
         data: frm1.serialize(),
         success: function (d) {
-          //var hashtag = $('#q1_what').val();
           var resultArray = $.parseJSON(d);
-          var header = ["Hashtag", "HashtagCount"];
-          resultArray.unshift(header);
-          var data = google.visualization.arrayToDataTable(resultArray);
-          drawBarChart1(data, 'visualization1');
-          //$('#q1_what').val("");
+          resultArray.unshift(chart1DataHeader);
+          chart1Data = google.visualization.arrayToDataTable(resultArray);
+          drawChart1();
         }
     });
     ev.preventDefault();
@@ -30,108 +27,116 @@ $(document).ready(function(){
         data: frm2.serialize(),
         success: function (d) {
           var resultArray = $.parseJSON(d);
-          var header = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }",];
-          resultArray.unshift(header);
-          var data = google.visualization.arrayToDataTable(resultArray);
-          drawBarChart2(data, 'visualization2');
+          resultArray.unshift(chart2DataHeader);
+          chart2Data = google.visualization.arrayToDataTable(resultArray);
+          drawChart2();
         }
     });
     ev.preventDefault();
   }); //frm2
 
-  //Refresh the forms periodically
-  setInterval(function(){$("#q1_form").submit();}, 3000);
-  setInterval(function(){$("#q2_form").submit();}, 3000);
-  //frm3
-//   frm3.submit(function(ev){
-//     $.ajax({
-//         type: frm3.attr('method'),
-//         url: frm3.attr('action'),
-//         data: frm3.serialize(),
-//         success: function (d) {
-//           var mention = $('#q3_who').val();
-//           var resultArray = $.parseJSON(d);
-//           var header = ["@User", "@"+mention];
-//           resultArray.unshift(header);
-//           var data = google.visualization.arrayToDataTable(resultArray);
-//           drawBarChart1(data, 'visualization3');
-//           $('#q3_who').val("");
-//         }
-//     });
-//     ev.preventDefault();
-//   }); //frm3
-//   //frm4
-//   frm4.submit(function(ev){
-//     $.ajax({
-//         type: frm4.attr('method'),
-//         url: frm4.attr('action'),
-//         data: frm4.serialize(),
-//         success: function (d) {
-//           var mention = $('#q4_who').val();
-//           var resultArray = $.parseJSON(d);
-//           var header = ["@User", "@"+mention];
-//           resultArray.unshift(header);
-//           var data = google.visualization.arrayToDataTable(resultArray);
-//           drawBarChart1(data, 'visualization4');
-//           $('#q4_who').val("");
-//         }
-//     });
-//     ev.preventDefault();
-//   }); //frm4
-});
+  //Setup for Chart1
+  var chart1;
+  var chart1DataHeader = ["Hashtag", "HashtagCount"];
+  var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0]]);
+  var chart1View;
+  var chart1Options = {width:400, height:300,
+                 vAxis: {},
+                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+                 legend: { position: "none" },
+                 chartArea:{top:0,width:"50%",height:"50%"},
+                 animation:{
+                    duration: 900,
+                    easing: 'out',
+                  },
+  };
 
-function drawTestVisualization(){
-  // Create and populate the data table.
-  var data = google.visualization.arrayToDataTable([
-    ["@User", "#Seattle"],
-    ["SeanAzlin2", 123],
-    ["BillG", 102],
-    ["Obama4Prez", 89],
-    ["JohnShivero", 83],
-    ["Muazify911", 65]
-  ]);
-
-  drawBarChart1(data, 'visualization1');
-  drawBarChart1(data, 'visualization2');
-  //drawBarChart1(data, 'visualization3');
-  //drawBarChart1(data, 'visualization4');
-}
-
-function drawBarChart1(data, target) {
-  // Create and draw the visualization.
-  var view = new google.visualization.DataView(data);
-  view.setColumns([0, 1,
+  //Create the function that will redraw and animate Chart1
+  function drawChart1(){
+    chart1View = new google.visualization.DataView(chart1Data);
+    chart1View.setColumns([0, 1,
                    { calc: "stringify",
                      sourceColumn: 1,
                      type: "string",
                      role: "annotation" }]);
-  var options = {width:400, height:300,
-                 vAxis: {},
-                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
-                 legend: { position: "none" },
-                 chartArea:{top:0,width:"50%",height:"50%"}
-                };
+    if(!chart1){
+      chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));
+      alert("chart 1 created");
+    }
+    chart1.draw(chart1View, chart1Options);
+  }
+  drawChart1(); //first draw
 
-  var chart = new google.visualization.BarChart(document.getElementById(target));
-  chart.draw(view, options);
-}
+  var chart2;
+  var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
+  var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
+  var chart2View;
+  var chart2Options = {width:400, height:300,
+               vAxis: {},
+               hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+               legend: { position: "none" },
+               chartArea:{top:0,width:"50%",height:"50%"},
+               animation:{
+                  duration: 900,
+                  easing: 'out',
+                },
+  };
 
-function drawBarChart2(data, target) {
-  // Create and draw the visualization.
-  var view = new google.visualization.DataView(data);
-  view.setColumns([0, 1,
+  //Create the function that will redraw and animate Chart1
+  function drawChart2(){
+    chart2View = new google.visualization.DataView(chart2Data);
+    chart2View.setColumns([0, 1,
                  { calc: "stringify",
                    sourceColumn: 2,
                    type: "string",
                    role: "annotation" }
                  ]);
-  var options = {width:400, height:300,
-                 vAxis: {},
-                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
-                 legend: { position: "none" },
-                 chartArea:{top:0,width:"50%",height:"50%"}
-                };
+    if(!chart2){
+      chart2 = new google.visualization.BarChart(document.getElementById('visualization2'));
+      alert("chart 2 created");
+    }
+    chart2.draw(chart2View, chart2Options);
+  }
+  drawChart2();
+  //Refresh the graphs periodically
+  setInterval(function(){$("#q1_form").submit();}, 3000);
+  setInterval(function(){$("#q2_form").submit();}, 3000);
+  // setInterval(function(){
+  //   chart1Data.setValue(1,1,20 * Math.random());
+  //   drawChart1();
+  // }, 1000);
+});
 
-  var chart = new google.visualization.BarChart(document.getElementById(target));
-  chart.draw(view, options);
-}
+
+
+// function createBarChart2(data, target) {
+//   // Create and draw the visualization.
+//   var view = new google.visualization.DataView(data);
+//   view.setColumns([0, 1,
+//                  { calc: "stringify",
+//                    sourceColumn: 2,
+//                    type: "string",
+//                    role: "annotation" }
+//                  ]);
+
+
+//   var chart = new google.visualization.BarChart(document.getElementById(target));
+//   chart.draw(view, options);
+// }
+
+// function drawTestVisualization(){
+//   // Create and populate the data table.
+//   var data = google.visualization.arrayToDataTable([
+//     ["@User", "#Seattle"],
+//     ["SeanAzlin2", 123],
+//     ["BillG", 102],
+//     ["Obama4Prez", 89],
+//     ["JohnShivero", 83],
+//     ["Muazify911", 65]
+//   ]);
+
+//   createBarChar1(data, 'visualization1');
+//   createBarChar1(data, 'visualization2');
+//   //createBarChar1(data, 'visualization3');
+//   //createBarChar1(data, 'visualization4');
+// }
