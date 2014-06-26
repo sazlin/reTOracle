@@ -158,7 +158,7 @@ def q2_query():
     ORDER BY hashtag, HashTagCount DESC
     """
     json_result = execute_query(sql)
-    print json.loads(json_result)
+    # print json.loads(json_result)
     return json_result
 
 
@@ -184,6 +184,8 @@ def ticker_fetch():
     LIMIT 1;
     """
     json_result = execute_query(sql)
+    print json_result
+    print "*" * 45
     print json.loads(json_result)
     return json_result
 
