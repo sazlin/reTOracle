@@ -28,8 +28,8 @@ def deploy():
             #Install pip
             run_command_on_server(_setup_pip, instance)
 
-            #Install Flask
-            run_command_on_server(_setup_flask, instance)
+            #Install requirements
+            run_command_on_server(_auto_install_req, instance)
 
             #Remove existing project files
             run_command_on_server(_remove_existing_project_files, instance)
@@ -51,6 +51,18 @@ def _update_apt_get():
     print("Updating apt-get...")
     sudo("apt-get update")
     print("Done.")
+
+
+def _auto_install_req():
+    f = open("requirements.txt", 'r')
+    sudo("apt-get build-dep python-psycopg2")
+    print("DEPENDENCIES BUILT")
+    for line in f:
+        index_ = line.index('==', 0, len(line))
+        module = line[:index_]
+        command = "pip install %s" % module
+        sudo(command)
+
 
 def _setup_pip():
     print("Installing pip...")
@@ -85,7 +97,7 @@ def _setup_supervisor():
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
-    sudo('mv ./rheTOracle/supervisord.conf /etc/supervisor/supervisord.conf')
+    sudo('mv ./rheTOracle/supervisord.conf /etc/supervisord.conf')
     sudo('/etc/init.d/supervisor start')
     print("Supervisor running")
 

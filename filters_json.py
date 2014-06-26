@@ -10,7 +10,7 @@ filter_list = {"c": {'search_terms':
                         'keywords': []}},
 "python": {'search_terms':
                 {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask'],
-                 'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes'],
+                 'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes', '@dstuft', '@raymondh', '@PloneCMS'],
                  'keywords': []},
            'blacklist':
                 {'hashtags': [],
