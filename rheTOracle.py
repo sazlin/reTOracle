@@ -173,5 +173,22 @@ def q4_query(q4_who="#Seattle"):
     """Who is @q4_who talking about?"""
     return redirect(url_for('home_page'))
 
+
+@app.route('/ticker', methods=['GET'])
+def ticker_fetch():
+    """Return JSOn for recent tweet"""
+    json_result = None
+    sql = """
+    SELECT screen_name, text FROM massive
+    ORDER BY created_at DESC
+    LIMIT 1;
+    """
+    json_result = execute_query(sql)
+    print json.loads(json_result)
+    return json_result
+
+
+
+
 if __name__ == '__main__':
     app.run()
