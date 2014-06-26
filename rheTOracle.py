@@ -13,11 +13,8 @@ app.config['DB_NAME'] = "rhetorical-db"
 app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
 #app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
-<<<<<<< HEAD
 # app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
-=======
-#app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
->>>>>>> f7261e8593155a79d271b3164661e0233e364d64
+
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 
