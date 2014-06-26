@@ -67,11 +67,11 @@ filter_list = {"c": {'search_terms':
 "swift": {'search_terms':
                 {'hashtags': ['#swiftlang'],
                  'users': ['@SwiftLang'],
-                 'keywords': ['Taylor']},
+                 'keywords': []},
            'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': []}},
+                 'keywords': ['Taylor ']}},
 "visual_basic": {'search_terms':
                 {'hashtags': ['#VBA', '#VB', '#VB.NET'],
                  'users': ['@visualbasic_net'],
