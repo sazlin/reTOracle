@@ -7,7 +7,6 @@ from SECRETS import SECRETS
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
-from header import consumer_key, consumer_secret, access_token, access_token_secret
 
 
 req_tok_url = 'https://api.twitter.com/oauth/request_token'
@@ -22,6 +21,15 @@ def return_filters():
             for x in filters[i]['search_terms'][y]:
                 filter_list.append(x)
     return filter_list
+
+
+def return_blacklist():
+    blackList = []
+    for i in filters:
+        for y in filters[i]['blacklist']:
+            for x in filters[i]['blacklist'][y]:
+                blackList.append(x)
+    return blackList
 
 
 class StdOutListener(StreamListener):
@@ -188,9 +196,8 @@ class StdOutListener(StreamListener):
 
 if __name__ == '__main__':
     l = StdOutListener()
-    auth = OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
+    auth = OAuthHandler(SECRETS['consumer_key'], SECRETS['consumer_secret'])
+    auth.set_access_token(SECRETS['access_token'], SECRETS['access_token_secret'])
     stream_filters = return_filters()
-    print stream_filters
     stream = Stream(auth, l)
     stream.filter(track=stream_filters)

@@ -19,11 +19,11 @@ filter_list = {"c": {'search_terms':
 "java": {'search_terms':
                 {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE'],
                  'users': ['@java', '@java4iot', '@awsforjava', '@4java'],
-                 'keywords': []},
+                 'keywords': ['java -coffee']},
          'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': ['javascript ']}},
+                 'keywords': ['coffee']}},
 "javascript": {'search_terms':
                 {'hashtags': ['#Javascript', '#BackboneJS', '#NodeJS', '#JQuery'],
                  'users': ['@JavaScriptDaily', '@oss_js', '@badass_js', '@jasminebdd', '@nodejs'],
@@ -35,7 +35,7 @@ filter_list = {"c": {'search_terms':
 "ruby": {'search_terms':
                 {'hashtags': ['#Ruby', '#RubyOnRails', '#rubyconfbr', '#rails'],
                  'users': ['@RubyInside', '@rubyrogues', '@rails'],
-                 'keywords': []},
+                 'keywords': ['ruby -jewelry', 'ruby -ring', 'ruby -gift']},
         'blacklist':
                 {'hashtags': [],
                  'users': [],
