@@ -18,7 +18,6 @@ app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 
-
 def build_connection_string():
         connection_string = []
         connection_string.append("host=" + app.config['DB_HOST'])
@@ -79,12 +78,12 @@ def execute_query(sql):
     cur.execute(sql)
     try:
         results = cur.fetchall()
-        print "Raw Results: ", results
+        #print "Raw Results: ", results
     except Exception as x:
         print "Error executing sql on cursor: ", x.args
     else:
         print "query success!"
-        print "Returning: ", json.dumps(results)
+        #print "Returning: ", json.dumps(results)
         return json.dumps(results)
     return None
 
@@ -130,6 +129,62 @@ def build_q1_querystring():
     sql.append("""ORDER BY HashTagCount DESC""")
     return " \r\n".join(sql)
 
+app.config['Q1_QUERYSTRING'] = build_q1_querystring()
+
+
+def build_q2_querystring():
+    """build a query string for Q2 using filter_list"""
+    sql = []
+    sql.append("""SELECT hashtag, HashTagCount, screen_name""")
+    sql.append("""FROM (SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos""")
+    sql.append("""FROM (SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount""")
+    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as unwrap""")
+    sql.append("""WHERE""")
+    for language in filter_list:
+        search_terms = filter_list[language]['search_terms']
+        for hashtag in search_terms['hashtags']:
+            sql.append("""hashtag = '""" + hashtag[1:] + """'""")
+            sql.append("""OR""")
+        # for user in search_terms['users']:
+        #     sql.append("""screen_name = '""" + user + """'""")
+        #     sql.append(""" OR """)
+        # for keyword in search_terms['keywords']:
+        #     sql.append("""'"""+ keyword + """' LIKE text""")
+        #     sql.append(""" OR """)
+    sql.pop()  # discard last OR statement
+    sql.append("""GROUP BY screen_name, hashtag""")
+    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
+    sql.append(""") as countedhashtags""")
+    sql.append(""") as ss""")
+    sql.append("""WHERE pos = 1""")
+    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
+    return " \r\n".join(sql)
+    """
+    SELECT hashtag, HashTagCount, screen_name
+    FROM
+    (
+        SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos
+        FROM (
+            SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount
+            FROM (
+                SELECT screen_name, unnest(hashtags) as hashtag
+                FROM massive
+            ) as unwrap
+            WHERE
+            hashtag = 'Java' OR
+            hashtag = 'Python' OR
+            hashtag = 'JavaScript' OR
+            hashtag = 'CPlusPlus' OR
+            hashtag = 'Java'
+            GROUP BY screen_name, hashtag
+            ORDER BY hashtag, HashTagCount DESC
+        ) as countedhashtags
+    ) as ss
+    WHERE pos = 1
+    ORDER BY hashtag, HashTagCount DESC
+    """
+app.config['Q2_QUERYSTRING'] = build_q2_querystring()
+
 
 def map_q1_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q1's query results
@@ -140,10 +195,35 @@ def map_q1_results_to_language(parsed_results):
         search_terms = filter_list[language]['search_terms']
         for hashtag in search_terms['hashtags']:
             for result in parsed_results:
-                print "***comparing***", hashtag[1:], result[0]
+                #print "***comparing***", hashtag[1:], result[0]
                 if hashtag[1:] == result[0]:
                     language_count += result[1]
         final_result.append([language, language_count])
+    return json.dumps(final_result)
+
+def map_q2_results_to_language(parsed_results):
+    """use the filter_list to group and sum the results parsed from Q2's query results
+        into a new list of lists that will be returned to the client for rendering"""
+    #print "***Coming into q2 mapping:\r\n", parsed_results
+    final_result = []
+    try:
+        for language in filter_list:
+            userCountForThisLanguage = {}
+            search_terms = filter_list[language]['search_terms']
+            for hashtag in search_terms['hashtags']:
+                for result in parsed_results:
+                    #print "***comparing***", hashtag[1:], result[0]
+                    if hashtag[1:] == result[0]:
+                        if not userCountForThisLanguage.has_key(result[2]):
+                            userCountForThisLanguage[result[2]] = result[1]
+                        userCountForThisLanguage[result[2]] += result[1]
+            top_user_count, top_user = 0, ""
+            if len(userCountForThisLanguage.items()) is not 0:
+                top_user_count, top_user = max((v,k) for  k,v in userCountForThisLanguage.items())
+            #print "For ", language, ": top_user: ",top_user, " top_user_count: ", top_user_count
+            final_result.append([language, top_user_count, top_user])
+    except Exception as x:
+        print "**************Something went wrong:", x.args
     return json.dumps(final_result)
 
 
@@ -166,7 +246,7 @@ def q1_query():
     GROUP BY hashtag
     ORDER BY HashTagCount DESC
     """
-    query_string = build_q1_querystring()
+    query_string = app.config['Q1_QUERYSTRING']
     #print "QUERY STRING: ",query_string
     json_result = execute_query(query_string)
     parsed_results = json.loads(json_result)
@@ -203,9 +283,13 @@ def q2_query():
     WHERE pos = 1
     ORDER BY hashtag, HashTagCount DESC
     """
-    json_result = execute_query(sql)
-    print json.loads(json_result)
-    return json_result
+    query_string = app.config['Q2_QUERYSTRING']
+    #print "QUERY STRING: ",query_string
+    json_result = execute_query(query_string)
+    parsed_results = json.loads(json_result)
+    final_result = map_q2_results_to_language(parsed_results)
+    #print "QUERY RESULT: ",query_result
+    return final_result
 
 if __name__ == '__main__':
     app.run()
