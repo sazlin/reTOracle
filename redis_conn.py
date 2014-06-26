@@ -38,11 +38,9 @@ interest_list = {'type1Java': [], "type3Python": [], 'type4Ruby': []}
 
 # x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
+
 def convert_results_list(result_str):
-    r_list = []
-
-    return r_list
-
+    return re.findall('\([^)]*\)', result_str)
 
 
 def get_redis_query(key):
@@ -109,8 +107,6 @@ def db_connection():
         print "Error connecting to DB: ", x.args
     print "Connection established and stored..."
     return conn
-
-
 
 
 """
