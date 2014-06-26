@@ -40,7 +40,7 @@ class StdOutListener(StreamListener):
     def __init__(self):
         self.conn = self.connect_db()
         self.cursor = self.create_cursor()
-        self.commit_count = 0
+        # self.commit_count = 0
 
     def connect_db(self):
         """Try to connect to db, return connection if successful"""
@@ -179,11 +179,11 @@ class StdOutListener(StreamListener):
 
         else:
             self.conn.commit()
-            self.commit_count += 1
-            print "Hashtags: ", hashtags
-            print "User mentions: ", user_mentions
-            print "Committed: ", self.commit_count
-            print "*" * 45
+            # self.commit_count += 1
+            # print "Hashtags: ", hashtags
+            # print "User mentions: ", user_mentions
+            # print "Committed: ", self.commit_count
+            # print "*" * 45
 
     def on_error(self, status):
         error_counter = 0
