@@ -112,33 +112,3 @@ def db_connection():
         print "Error connecting to DB: ", x.args
     print "Connection established and stored..."
     return conn
-
-
-"""
-def connect_db():
-    try:
-        connection_string = []
-        connection_string.append("host=rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com")
-        connection_string.append("dbname=rhetorical-db")
-        connection_string.append("user=" + "codefellow")
-        connection_string.append("password=" + "teamawesome1!")
-    except Exception as x:
-        print "Error connecting to DB: ", x.args
-    conn = psycopg2.connect(" ".join(connection_string))
-
-1 - Her search yapildiginda
-A. time_stamp i kontrol et.
-    Eger time_stamp  bizim time_stample
-A. search yapilan bilgiyi redis-servera ata
-2 - Her search yapildiginda get_redis i calistir ve bilgileri getir
-3 - her 5 dakikada bir db yi tara ve zaman kisitlamasina gore
-        redis_server i guncelle
-4 - No3 icin gevent olustur ve arkada redisi calistir
-
-"""
-
-# remove all out-dated keys from dictionary
-# add new keys in tmp_interest_list to dictionary
-# seek for new datas for my keys in interest list
-# check time stamp and add them to the dict
-# call this method in rheTOracle.py main
