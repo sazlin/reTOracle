@@ -17,7 +17,6 @@ app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 
-
 def build_connection_string():
         connection_string = []
         connection_string.append("host=" + app.config['DB_HOST'])
@@ -129,6 +128,9 @@ def build_q1_querystring():
     sql.append("""ORDER BY HashTagCount DESC""")
     return " \r\n".join(sql)
 
+app.config['Q1_QUERYSTRING'] = build_q1_querystring()
+
+
 def build_q2_querystring():
     """build a query string for Q2 using filter_list"""
     sql = []
@@ -180,6 +182,8 @@ def build_q2_querystring():
     WHERE pos = 1
     ORDER BY hashtag, HashTagCount DESC
     """
+app.config['Q2_QUERYSTRING'] = build_q2_querystring()
+
 
 def map_q1_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q1's query results
@@ -241,7 +245,7 @@ def q1_query():
     GROUP BY hashtag
     ORDER BY HashTagCount DESC
     """
-    query_string = build_q1_querystring()
+    query_string = app.config['Q1_QUERYSTRING']
     #print "QUERY STRING: ",query_string
     json_result = execute_query(query_string)
     parsed_results = json.loads(json_result)
@@ -278,7 +282,7 @@ def q2_query():
     WHERE pos = 1
     ORDER BY hashtag, HashTagCount DESC
     """
-    query_string = build_q2_querystring()
+    query_string = app.config['Q2_QUERYSTRING']
     #print "QUERY STRING: ",query_string
     json_result = execute_query(query_string)
     parsed_results = json.loads(json_result)
