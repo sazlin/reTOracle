@@ -61,7 +61,6 @@ $(document).ready(function(){
                      role: "annotation" }]);
     if(!chart1){
       chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));
-      alert("chart 1 created");
     }
     chart1.draw(chart1View, chart1Options);
   }
@@ -93,7 +92,6 @@ $(document).ready(function(){
                  ]);
     if(!chart2){
       chart2 = new google.visualization.BarChart(document.getElementById('visualization2'));
-      alert("chart 2 created");
     }
     chart2.draw(chart2View, chart2Options);
   }
