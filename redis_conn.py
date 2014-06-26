@@ -36,21 +36,21 @@ GROUP BY screen_name
 POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
 interest_list = {'type1Java': [], "type3Python": [], 'type4Ruby': []}
 
+# x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
 def convert_results_list(result_str):
+    r_list = []
+
+    return r_list
 
 
 
 def get_redis_query(key):
-    # returns a string
     r_server = redis.Redis(connection_pool=POOL)
-    convert_results_list(r_server.get(key))
-    print r_server.get(key)
+    return r_server.get(key)
 
 
 def set_to_redis(key, value):
-    print u"set_to_redis started"
-    # need to set value as string
     r_server = redis.Redis(connection_pool=POOL)
     r_server.set(key, value)
 
@@ -73,31 +73,20 @@ def parse_key(key):
 
 
 def maint_redis():
-    print u"maint_redis is on work"
     conn = db_connection()
     cur = conn.cursor()
-    print "zzz",
-    print type(cur)
 
     for my_key in interest_list.keys():
         q_type, key = parse_key(my_key)
         json_result = []
         q_type = str(q_type)
-        print "mzzz"
         cur.execute(sql_query.get(q_type))
         json_result = cur.fetchall()
-        print "setting key_value"
-        print "json :",
-        print json_result
         key_value = ''
         for item in json_result:
-            print u"putting json results"
-            key_value += str(item)
-        print "setting json results to redis"
+            key_value += str(item)+" "
+        print key_value
         set_to_redis(my_key, key_value)
-        print" setting to redis is done"
-        print".........."
-    print "maint_redis finished"
 
 
 def db_connection():
