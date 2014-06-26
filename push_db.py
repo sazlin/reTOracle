@@ -24,6 +24,15 @@ def return_filters():
     return filter_list
 
 
+def return_blacklist():
+    blackList = []
+    for i in filters:
+        for y in filters[i]['blacklist']:
+            for x in filters[i]['blacklist'][y]:
+                blackList.append(x)
+    return blackList
+
+
 class StdOutListener(StreamListener):
     """ A listener handles tweets are the received from the stream.
     This is a basic listener that just prints received tweets to stdout.
