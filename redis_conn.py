@@ -1,5 +1,6 @@
 import redis
 import psycopg2
+import re
 from SECRETS import SECRETS
 
 sql_query = {
@@ -39,13 +40,19 @@ interest_list = {'type1Java': [], "type3Python": [], 'type4Ruby': []}
 # x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
 
-def convert_results_list(result_str):
-    return re.findall('\([^)]*\)', result_str)
+def convert_results(result_str):
+    r = re.findall('\([^)]*\)', result_str)
+    l = []
+    for item in r:
+        t1 = re.findall('\'[^)]*\'', item)
+        t2 = re.findall(' [^)]*\)', item)
+        l.append((t1[0][1:-1], t2[0][1:-1]))
+    return l
 
 
 def get_redis_query(key):
     r_server = redis.Redis(connection_pool=POOL)
-    return r_server.get(key)
+    return convert_results(r_server.get(key))
 
 
 def set_to_redis(key, value):
@@ -54,7 +61,6 @@ def set_to_redis(key, value):
 
 
 def add_search(key, q_type):
-    print u"add_search started"
     my_key = str(q_type)+str(key)
     if my_key not in interest_list.keys() and interest_list.get(my_key):
         # yay , search is in the redis!
@@ -80,10 +86,9 @@ def maint_redis():
         q_type = str(q_type)
         cur.execute(sql_query.get(q_type))
         json_result = cur.fetchall()
-        key_value = ''
+        key_value = ""
         for item in json_result:
-            key_value += str(item)+" "
-        print key_value
+            key_value += str(item)
         set_to_redis(my_key, key_value)
 
 
