@@ -1,7 +1,9 @@
-from flask import Flask, redirect, url_for
+from flask import Flask
 from flask import render_template
 import psycopg2
 import json
+from filters_json import filter_list
+
 #from passlib.hash import pbkdf2_sha256
 from secrets import SECRETS
 app = Flask(__name__)
@@ -105,6 +107,44 @@ def contact_page():
 def test_graph():
     return render_template('test_graphs.html')
 
+def build_q1_querystring():
+    """build a query string for Q1 using filter_list"""
+    sql = []
+    sql.append("""SELECT hashtag, COUNT(hashtag) as HashTagCount""")
+    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery""")
+    sql.append("""WHERE""")
+    for language in filter_list:
+        search_terms = filter_list[language]['search_terms']
+        for hashtag in search_terms['hashtags']:
+            sql.append("""hashtag = '""" + hashtag[1:] + """'""")
+            sql.append("""OR""")
+        # for user in search_terms['users']:
+        #     sql.append("""screen_name = '""" + user + """'""")
+        #     sql.append(""" OR """)
+        # for keyword in search_terms['keywords']:
+        #     sql.append("""'"""+ keyword + """' LIKE text""")
+        #     sql.append(""" OR """)
+    sql.pop()  # discard last OR statement
+    sql.append("""GROUP BY hashtag""")
+    sql.append("""ORDER BY HashTagCount DESC""")
+    return " \r\n".join(sql)
+
+
+def map_q1_results_to_language(parsed_results):
+    """use the filter_list to group and sum the results parsed from Q1's query results
+        into a new list of lists that will be returned to the client for rendering"""
+    final_result = []
+    for language in filter_list:
+        language_count = 0
+        search_terms = filter_list[language]['search_terms']
+        for hashtag in search_terms['hashtags']:
+            for result in parsed_results:
+                print "***comparing***", hashtag[1:], result[0]
+                if hashtag[1:] == result[0]:
+                    language_count += result[1]
+        final_result.append([language, language_count])
+    return json.dumps(final_result)
+
 
 @app.route('/q1', methods=['GET'])
 def q1_query():
@@ -125,8 +165,13 @@ def q1_query():
     GROUP BY hashtag
     ORDER BY HashTagCount DESC
     """
-    json_result = execute_query(sql)
-    return json_result
+    query_string = build_q1_querystring()
+    #print "QUERY STRING: ",query_string
+    json_result = execute_query(query_string)
+    parsed_results = json.loads(json_result)
+    final_result = map_q1_results_to_language(parsed_results)
+    #print "QUERY RESULT: ",query_result
+    return final_result
 
 
 @app.route('/q2', methods=['GET'])
@@ -160,18 +205,6 @@ def q2_query():
     json_result = execute_query(sql)
     print json.loads(json_result)
     return json_result
-
-
-@app.route('/q3', methods=['GET'])
-def q3_query(q3_who="@CodeFellowsOrg"):
-    """Who is talking about @q3_who?"""
-    return redirect(url_for('home_page'))
-
-
-@app.route('/q4', methods=['GET'])
-def q4_query(q4_who="#Seattle"):
-    """Who is @q4_who talking about?"""
-    return redirect(url_for('home_page'))
 
 if __name__ == '__main__':
     app.run()
