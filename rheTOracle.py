@@ -1,4 +1,5 @@
 from flask import Flask, redirect, url_for
+from flask import Response
 from flask import render_template
 import psycopg2
 import json
@@ -180,14 +181,15 @@ def ticker_fetch():
     json_result = None
     sql = """
     SELECT screen_name, text FROM massive
-    ORDER BY created_at DESC
+    ORDER BY retweetcount DESC
     LIMIT 1;
     """
     json_result = execute_query(sql)
-    print json_result
-    print "*" * 45
-    print json.loads(json_result)
-    return json_result
+
+    resp = Response(response=json_result,
+                    status=200,
+                    mimetype="application/json")
+    return resp
 
 
 
