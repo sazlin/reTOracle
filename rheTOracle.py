@@ -181,7 +181,7 @@ def ticker_fetch():
     json_result = None
     sql = """
     SELECT screen_name, text FROM massive
-    ORDER BY retweetcount DESC
+    ORDER BY tweet_id DESC
     LIMIT 1;
     """
     json_result = execute_query(sql)

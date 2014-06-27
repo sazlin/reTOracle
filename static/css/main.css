@@ -49,7 +49,12 @@ body {
 }
 
 .twitter_tick{
+    font-size: 15px;
 
+}
+
+.twitter_tick p{
+  font-size:  18px
 
 }
 
