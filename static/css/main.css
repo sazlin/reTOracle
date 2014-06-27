@@ -50,13 +50,21 @@ body {
 
 .twitter_tick{
     font-size: 15px;
-
 }
 
 .twitter_tick p{
-  font-size:  18px
+    background-color: #f1f1f1;
+}
+
+#grey{
+  background-color: #f1f1f1;
+}
+
+#blue{
+  background-color: #66CCFF;
 
 }
+
 
 footer{
     border-top: 1px solid #666;
