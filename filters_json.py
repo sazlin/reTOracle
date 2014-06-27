@@ -17,7 +17,7 @@ filter_list = {"c/cpp": {'search_terms':
                  'users': [],
                  'keywords': ['monty', 'snake']}},
 "java": {'search_terms':
-                {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE', '#springio', '#springboot', '#springframework', '#android'],
+                {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE', '#springio', '#springboot', '#springframework'],
                  'users': ['@java', '@java4iot', '@awsforjava', '@4java', '@springboot', '@springcentral', '@javafact', '@grailsframework'],
                  'keywords': ['java -coffee']},
          'blacklist':
@@ -57,7 +57,7 @@ filter_list = {"c/cpp": {'search_terms':
                  'users': [],
                  'keywords': []}},
 "objectivec": {'search_terms':
-                {'hashtags': ['#objectivec', '#ios'],
+                {'hashtags': ['#objectivec'],
                  'users': ['@objective', '@ObjectiveCDaily', '@idObjectiveC', '@ObjConSO'],
                  'keywords': []},
            'blacklist':
