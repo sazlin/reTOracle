@@ -76,12 +76,15 @@ def maint_redis():
     cur = conn.cursor()
 
     for key, value in interest_list.iteritems():
-        cur.execute(value)
-        json_result = cur.fetchall()
-        key_value = ""
-        for item in json_result:
-            key_value += str(item)
-        set_to_redis(key, key_value)
+        try:
+            cur.execute(value)
+            json_result = cur.fetchall()
+            key_value = ""
+            for item in json_result:
+                key_value += str(item)
+            set_to_redis(key, key_value)
+        except Exception as x:
+            print "Redis->SQL: Something went wrong!: ", x.args
 
 
 def db_connection():

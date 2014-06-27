@@ -49,7 +49,7 @@ $(document).ready(function(){
                     }},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" },
-                 chartArea:{width:"65%",height:"80%"},
+                 chartArea:{width:"67%",height:"80%"},
                  backgroundColor: { fill:'transparent' },
                  title: "Which programming language is being talked about the most?",
                  titleTextStyle: {
@@ -94,8 +94,8 @@ $(document).ready(function(){
                   },
                hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                legend: { position: "none" },
-               chartArea:{width:"65%",height:"80%"},
-               title: "Who is *the* guy to follow for a given language?",
+               chartArea:{width:"67%",height:"80%"},
+               title: "Who is *the* @user to follow for a given language?",
                titleTextStyle: {
                 auraColor: '#FFF',
               },
