@@ -4,25 +4,61 @@ import re
 from SECRETS import SECRETS
 import sql_queries as sql_q
 
-POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
-interest_list = {'type1': sql_q.build_q1_querystring(), "type2": sql_q.build_q2_querystring()}
+#POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
+POOL = redis.ConnectionPool(host='127.0.0.1', port=6379)
+interest_list = {'type1': sql_q.build_q1_querystring(), "type2": sql_q.build_q2_querystring(),
+                      'type3': sql_q.build_q3_querystring()}
 
 # x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
 
-def convert_results(result_str):
+def convert_results_type1(result_str):
     r = re.findall('\([^)]*\)', result_str)
     l = []
+    print result_str
     for item in r:
-        t1 = re.findall('\'[^)]*\'', item)
-        t2 = re.findall(' [^)]*\)', item)
-        l.append((t1[0][1:-1], t2[0][1:-1]))
+        end = len(item)
+        f_index = item.index('\'', 0, end)
+        n_index = item.index('\'', f_index+1, end)
+        f1_index = item.index(',', n_index+1, end)
+        n1_index = item.index(')', f1_index+1, end)
+        l1 = []
+        l1.append(item[f_index+1: n_index])
+        l1.append(int(item[f1_index+2: n1_index-1]))
+        l.append(l1)
+    return l
+
+
+def convert_results_type2(result_str):
+    r = re.findall('\([^)]*\)', result_str)
+    l = []
+    print result_str
+    for item in r:
+        end = len(item)
+        f_index = item.index('\'', 0, end)
+        n_index = item.index('\'', f_index+1, end)
+        f1_index = item.index(',', n_index+1, end)
+        n1_index = item.index(',', f1_index+1, end)
+        f2_index = item.index('\'', n1_index+1, end)
+        n2_index = item.index('\'', f2_index+1, end)
+        l1 = []
+        l1.append(item[f_index+1: n_index])
+        l1.append(int(item[f1_index+2: n1_index-1]))
+        l1.append(item[f2_index+1: n2_index])
+        l.append(l1)
     return l
 
 
 def get_redis_query(q_type):
     r_server = redis.Redis(connection_pool=POOL)
-    return convert_results(r_server.get(q_type))
+    if q_type == 'type1':
+        json_list = convert_results_type1(r_server.get(q_type))
+    else:
+        json_list = convert_results_type2(r_server.get(q_type))
+    if json_list:
+        return json_list
+    else:
+        return ValueError
 
 
 def set_to_redis(key, value):

@@ -2,20 +2,22 @@ from flask import Flask, redirect, url_for, Response, render_template
 import psycopg2
 import json
 from filters_json import filter_list
-
-#from passlib.hash import pbkdf2_sha256
+import sql_queries as sql_q
+import redis_conn as re
 from SECRETS import SECRETS
+# from passlib.hash import pbkdf2_sha256
+
 app = Flask(__name__)
 
 app.config['DB_HOST'] = "rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com"
 app.config['DB_NAME'] = "rhetorical-db"
 app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
-#app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
-# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
-#app.config['LAST_GEO_TWEET_ID'] = -1
+# app.config['LAST_GEO_TWEET_ID'] = -1
+# app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
+# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 
 
 def build_connection_string():
@@ -78,14 +80,10 @@ def execute_query(sql):
     cur.execute(sql)
     try:
         results = cur.fetchall()
-        #print "Raw Results: ", results
     except Exception as x:
         print "Error executing sql on cursor: ", x.args
     else:
         print "query success!"
-        #print "Raw Results: ", results
-        #print "Returning: ", json.dumps(results)
-
     try:
         json_results = json.dumps(results)
     except Exception as x:
@@ -115,84 +113,10 @@ def contact_page():
 def test_graph():
     return render_template('test_graphs.html')
 
-def build_q1_querystring():
-    """build a query string for Q1 using filter_list"""
-    sql = []
-    sql.append("""SELECT hashtag, COUNT(hashtag) as HashTagCount""")
-    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery""")
-    sql.append("""WHERE""")
-    for language in filter_list:
-        search_terms = filter_list[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = '""" + hashtag[1:] + """'""")
-            sql.append("""OR""")
-        # for user in search_terms['users']:
-        #     sql.append("""screen_name = '""" + user + """'""")
-        #     sql.append(""" OR """)
-        # for keyword in search_terms['keywords']:
-        #     sql.append("""'"""+ keyword + """' LIKE text""")
-        #     sql.append(""" OR """)
-    sql.pop()  # discard last OR statement
-    sql.append("""GROUP BY hashtag""")
-    sql.append("""ORDER BY HashTagCount DESC""")
-    return " \r\n".join(sql)
 
-app.config['Q1_QUERYSTRING'] = build_q1_querystring()
-
-
-def build_q2_querystring():
-    """build a query string for Q2 using filter_list"""
-    sql = []
-    sql.append("""SELECT hashtag, HashTagCount, screen_name""")
-    sql.append("""FROM (SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos""")
-    sql.append("""FROM (SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount""")
-    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as unwrap""")
-    sql.append("""WHERE""")
-    for language in filter_list:
-        search_terms = filter_list[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = '""" + hashtag[1:] + """'""")
-            sql.append("""OR""")
-        # for user in search_terms['users']:
-        #     sql.append("""screen_name = '""" + user + """'""")
-        #     sql.append(""" OR """)
-        # for keyword in search_terms['keywords']:
-        #     sql.append("""'"""+ keyword + """' LIKE text""")
-        #     sql.append(""" OR """)
-    sql.pop()  # discard last OR statement
-    sql.append("""GROUP BY screen_name, hashtag""")
-    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
-    sql.append(""") as countedhashtags""")
-    sql.append(""") as ss""")
-    sql.append("""WHERE pos = 1""")
-    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
-    return " \r\n".join(sql)
-    """
-    SELECT hashtag, HashTagCount, screen_name
-    FROM
-    (
-        SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos
-        FROM (
-            SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount
-            FROM (
-                SELECT screen_name, unnest(hashtags) as hashtag
-                FROM massive
-            ) as unwrap
-            WHERE
-            hashtag = 'Java' OR
-            hashtag = 'Python' OR
-            hashtag = 'JavaScript' OR
-            hashtag = 'CPlusPlus' OR
-            hashtag = 'Java'
-            GROUP BY screen_name, hashtag
-            ORDER BY hashtag, HashTagCount DESC
-        ) as countedhashtags
-    ) as ss
-    WHERE pos = 1
-    ORDER BY hashtag, HashTagCount DESC
-    """
-
-app.config['Q2_QUERYSTRING'] = build_q2_querystring()
+app.config['Q1_QUERYSTRING'] = sql_q.build_q1_querystring()
+app.config['Q2_QUERYSTRING'] = sql_q.build_q2_querystring()
+re.maint_redis()
 
 
 def map_q1_results_to_language(parsed_results):
@@ -204,16 +128,15 @@ def map_q1_results_to_language(parsed_results):
         search_terms = filter_list[language]['search_terms']
         for hashtag in search_terms['hashtags']:
             for result in parsed_results:
-                #print "***comparing***", hashtag[1:], result[0]
                 if hashtag[1:] == result[0]:
                     language_count += result[1]
         final_result.append([language, language_count])
     return json.dumps(final_result)
 
+
 def map_q2_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q2's query results
         into a new list of lists that will be returned to the client for rendering"""
-    #print "***Coming into q2 mapping:\r\n", parsed_results
     final_result = []
     try:
         for language in filter_list:
@@ -221,7 +144,6 @@ def map_q2_results_to_language(parsed_results):
             search_terms = filter_list[language]['search_terms']
             for hashtag in search_terms['hashtags']:
                 for result in parsed_results:
-                    #print "***comparing***", hashtag[1:], result[0]
                     if hashtag[1:] == result[0]:
                         if not userCountForThisLanguage.has_key(result[2]):
                             userCountForThisLanguage[result[2]] = result[1]
@@ -229,7 +151,6 @@ def map_q2_results_to_language(parsed_results):
             top_user_count, top_user = 0, ""
             if len(userCountForThisLanguage.items()) is not 0:
                 top_user_count, top_user = max((v,k) for  k,v in userCountForThisLanguage.items())
-            #print "For ", language, ": top_user: ",top_user, " top_user_count: ", top_user_count
             final_result.append([language, top_user_count, top_user])
     except Exception as x:
         print "**************Something went wrong:", x.args
@@ -239,16 +160,14 @@ def map_q2_results_to_language(parsed_results):
 @app.route('/q1', methods=['GET'])
 def q1_query():
     """Which programming language is being talked about the most?"""
-    #q1_what = request.args.get('q1_what', None)
-    #print "qt_what: ", q1_what
     json_result = None
-    #if not q1_what == "":
     query_string = app.config['Q1_QUERYSTRING']
-    #print "QUERY STRING: ",query_string
-    json_result = execute_query(query_string)
-    parsed_results = json.loads(json_result)
+    try:
+        parsed_results = re.get_redis_query('type1')
+    except:
+        json_result = execute_query(query_string)
+        parsed_results = json.loads(json_result)
     final_result = map_q1_results_to_language(parsed_results)
-    #print "QUERY RESULT: ",query_result
     return final_result
 
 
@@ -257,12 +176,15 @@ def q2_query():
     """Who is *the* guys to follow for a given language?"""
     json_result = None
     query_string = app.config['Q2_QUERYSTRING']
-    #print "QUERY STRING: ",query_string
-    json_result = execute_query(query_string)
-    parsed_results = json.loads(json_result)
+    try:
+        # mzzz-- change this type to 2 to run it in redis
+        parsed_results = re.get_redis_query('type5')
+    except:
+        json_result = execute_query(query_string)
+        parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
-    #print "QUERY RESULT: ",query_result
     return final_result
+
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
@@ -272,16 +194,9 @@ def get_latest_geo_tweet():
     sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
     try:
         json_result = execute_query(" ".join(sql))
-        #print "JSON: ", json_result
         parsed_results = json.loads(json_result)
-        #print "PARSED: ", parsed_results
-        #if app.config['LAST_GEO_TWEET_ID'] == parsed_results[0][0]:
-        #    return "unchanged"
-        #app.config['LAST_GEO_TWEET_ID'] = parsed_results[0][0]
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
-        #latitude = random.random() * 40 + 40
-        #longitude = random.random() * 40 - 70.0
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
     except Exception as x:
@@ -318,11 +233,7 @@ def get_latest_geo_tweet():
 def ticker_fetch():
     """Return JSON for recent tweet"""
     json_result = None
-    sql = """
-    SELECT screen_name, text FROM massive
-    ORDER BY tweet_id DESC
-    LIMIT 1;
-    """
+    sql = sql_q.build_q3_querystring()
     json_result = execute_query(sql)
 
     resp = Response(response=json_result,
