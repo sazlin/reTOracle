@@ -1,21 +1,20 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Welcome to rheTOracle!</h1>
+
 <section class="row">
     <section class="row-chunk">
         <form class="form_content" id="q1_form" action="{{ url_for('q1_query') }}">
-            <div class="form_text">Which programming language is being talked about the most?</div>
         </form>
-        <div id="visualization1" class="charts"></div>
+        <div id="visualization1"></div>
     </section>
     <section class="row-chunk">
         <form class="form_content"  id="q2_form" action="{{ url_for('q2_query') }}">
-            <div class="form_text">Who is *the* guy to follow for a given language?</div>
         </form>
-    <div id="visualization2" class="charts"></div>
+    <div id="visualization2"></div>
     </section>
 </section>
-<div id="mapdiv" style="width: 800px; height: 400px;"></div>
+
 {%if FALSE %}
 <section class="row">
     <section class="row-chunk">
