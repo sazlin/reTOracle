@@ -6,7 +6,8 @@ body {
   margin-right: auto;
   margin-left: auto;
   padding-top: 50px;
-  max-width: 810px;
+
+  min-height: 550px;
   text-align: center;
 
 }
@@ -24,7 +25,7 @@ body {
 
 .row-chunk{
   float: left;
-  width: 400px;
+  width: 50%;
 }
 
 .charts{

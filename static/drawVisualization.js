@@ -2,6 +2,7 @@ $(document).ready(function(){
   //Now go bind AJAX-powered event handlers for our forms
   var frm1 = $('#q1_form');
   var frm2 = $('#q2_form');
+
   //var frm3 = $('#q3_form');
   //var frm4 = $('#q4_form');
   //frm1
@@ -40,11 +41,13 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "HashtagCount"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0]]);
   var chart1View;
-  var chart1Options = {width:400, height:200,
+  var chart1Options = {width:500, height:300,
                  vAxis: {},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" },
-                 chartArea:{width:"65%",height:"100%"},
+                 chartArea:{width:"65%",height:"80%"},
+                 backgroundColor: { fill:'transparent' },
+                 title: "Which programming language is being talked about the most?",
                  animation:{
                     duration: 900,
                     easing: 'out',
@@ -70,15 +73,17 @@ $(document).ready(function(){
   var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
   var chart2View;
-  var chart2Options = {width:400, height:200,
+  var chart2Options = {width:500, height:300,
                vAxis: {},
                hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                legend: { position: "none" },
-               chartArea:{width:"65%",height:"100%"},
+               chartArea:{width:"65%",height:"80%"},
+               title: "Who is *the* guy to follow for a given language?",
                animation:{
                   duration: 900,
                   easing: 'out',
                 },
+                backgroundColor: { fill:'transparent' },
   };
 
   //Create the function that will redraw and animate Chart1
