@@ -1,5 +1,4 @@
-from flask import Flask, Response
-from flask import render_template
+from flask import Flask, redirect, url_for, Response, render_template
 import psycopg2
 import json
 from filters_json import filter_list
@@ -14,7 +13,6 @@ app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
 #app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 # app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
-
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
 #app.config['LAST_GEO_TWEET_ID'] = -1
@@ -193,6 +191,7 @@ def build_q2_querystring():
     WHERE pos = 1
     ORDER BY hashtag, HashTagCount DESC
     """
+
 app.config['Q2_QUERYSTRING'] = build_q2_querystring()
 
 
@@ -313,6 +312,24 @@ def get_latest_geo_tweet():
                             status=200,
                             mimetype="application/json")
     return resp
+
+
+@app.route('/ticker', methods=['GET'])
+def ticker_fetch():
+    """Return JSON for recent tweet"""
+    json_result = None
+    sql = """
+    SELECT screen_name, text FROM massive
+    ORDER BY tweet_id DESC
+    LIMIT 1;
+    """
+    json_result = execute_query(sql)
+
+    resp = Response(response=json_result,
+                    status=200,
+                    mimetype="application/json")
+    return resp
+
 
 if __name__ == '__main__':
     app.run()
