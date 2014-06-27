@@ -2,57 +2,64 @@ import redis
 import psycopg2
 import re
 from SECRETS import SECRETS
+import sql_queries as sql_q
 
-sql_query = {
-    u"type1": """
-SELECT hashtag, COUNT(hashtag) as HashTagCount
-FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery
-WHERE
-hashtag = 'Java' OR
-hashtag = 'Python' OR
-hashtag = 'Ruby'
-GROUP BY hashtag
-ORDER BY HashTagCount DESC
-""",
-    'type2': """
- SELECT screen_name, COUNT(screen_name) as TweetCount
-FROM massive
-WHERE '#Seattle' = ANY (hashtags)
-GROUP BY screen_name
-""",
-    'type3': """
-SELECT screen_name, COUNT(screen_name) as TweetCount
-FROM massive
-WHERE '#Seattle' = ANY (hashtags)
-GROUP BY screen_name
-""",
-    'type4': """
- SELECT screen_name, COUNT(screen_name) as TweetCount
-FROM massive
-WHERE '#Seattle' = ANY (hashtags)
-GROUP BY screen_name
-"""
-}
-
-POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
-interest_list = {'type1Java': [], "type3Python": [], 'type4Ruby': []}
+POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
+# for local test :
+# POOL = redis.ConnectionPool(host='127.0.0.1', port=6379)
+interest_list = {'type1': sql_q.build_q1_querystring(), "type2": sql_q.build_q2_querystring(),
+                      'type3': sql_q.build_q3_querystring()}
 
 # x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
 
-def convert_results(result_str):
+def convert_results_type1(result_str):
     r = re.findall('\([^)]*\)', result_str)
     l = []
+    print result_str
     for item in r:
-        t1 = re.findall('\'[^)]*\'', item)
-        t2 = re.findall(' [^)]*\)', item)
-        l.append((t1[0][1:-1], t2[0][1:-1]))
+        end = len(item)
+        f_index = item.index('\'', 0, end)
+        n_index = item.index('\'', f_index+1, end)
+        f1_index = item.index(',', n_index+1, end)
+        n1_index = item.index(')', f1_index+1, end)
+        l1 = []
+        l1.append(item[f_index+1: n_index])
+        l1.append(int(item[f1_index+2: n1_index-1]))
+        l.append(l1)
     return l
 
 
-def get_redis_query(key):
+def convert_results_type2(result_str):
+    r = re.findall('\([^)]*\)', result_str)
+    l = []
+    print result_str
+    for item in r:
+        end = len(item)
+        f_index = item.index('\'', 0, end)
+        n_index = item.index('\'', f_index+1, end)
+        f1_index = item.index(',', n_index+1, end)
+        n1_index = item.index(',', f1_index+1, end)
+        f2_index = item.index('\'', n1_index+1, end)
+        n2_index = item.index('\'', f2_index+1, end)
+        l1 = []
+        l1.append(item[f_index+1: n_index])
+        l1.append(int(item[f1_index+2: n1_index-1]))
+        l1.append(item[f2_index+1: n2_index])
+        l.append(l1)
+    return l
+
+
+def get_redis_query(q_type):
     r_server = redis.Redis(connection_pool=POOL)
-    return convert_results(r_server.get(key))
+    if q_type == 'type1':
+        json_list = convert_results_type1(r_server.get(q_type))
+    else:
+        json_list = convert_results_type2(r_server.get(q_type))
+    if json_list:
+        return json_list
+    else:
+        return ValueError
 
 
 def set_to_redis(key, value):
@@ -60,37 +67,17 @@ def set_to_redis(key, value):
     r_server.set(key, value)
 
 
-def add_search(key, q_type):
-    my_key = str(q_type)+str(key)
-    if my_key not in interest_list.keys() and interest_list.get(my_key):
-        # yay , search is in the redis!
-        return get_redis_query(my_key)
-    if my_key not in interest_list:
-        interest_list[my_key] = []
-    else:
-        # this is the worst time to search for this key
-        print u"why are you searching same thing"
-
-
-def parse_key(key):
-    return key[:5], key[5:]
-
-
 def maint_redis():
     conn = db_connection()
     cur = conn.cursor()
 
-    for my_key in interest_list.keys():
-        q_type, key = parse_key(my_key)
-        json_result = []
-        q_type = str(q_type)
-        cur.execute(sql_query.get(q_type))
+    for key, value in interest_list.iteritems():
+        cur.execute(value)
         json_result = cur.fetchall()
-        print "json_result", json_result
         key_value = ""
         for item in json_result:
             key_value += str(item)
-        set_to_redis(my_key, key_value)
+        set_to_redis(key, key_value)
 
 
 def db_connection():
