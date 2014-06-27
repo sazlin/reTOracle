@@ -335,7 +335,7 @@ def get_latest_geo_tweet():
         response['images'][0]['scale'] = 0.5
         response['images'][0]['labelShiftX'] = 0
         response['images'][0]['labelShiftY'] = 0
-        response['images'][0]['zoomLevel'] = 3
+        #response['images'][0]['zoomLevel'] = 3
         response['images'][0]['title'] = screen_name
         response['images'][0]['label'] = screen_name
         response['images'][0]['description'] = text
