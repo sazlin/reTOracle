@@ -3,7 +3,6 @@ from flask import render_template
 import psycopg2
 import json
 from filters_json import filter_list
-import random
 
 #from passlib.hash import pbkdf2_sha256
 from SECRETS import SECRETS
@@ -18,7 +17,8 @@ app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
-app.config['LAST_GEO_TWEET_ID'] = -1
+#app.config['LAST_GEO_TWEET_ID'] = -1
+
 
 def build_connection_string():
         connection_string = []
@@ -244,18 +244,6 @@ def q1_query():
     #print "qt_what: ", q1_what
     json_result = None
     #if not q1_what == "":
-    sql = """
-    SELECT hashtag, COUNT(hashtag) as HashTagCount
-    FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery
-    WHERE
-    hashtag = 'Java' OR
-    hashtag = 'Python' OR
-    hashtag = 'JavaScript' OR
-    hashtag = 'CPlusPlus' OR
-    hashtag = 'Ruby'
-    GROUP BY hashtag
-    ORDER BY HashTagCount DESC
-    """
     query_string = app.config['Q1_QUERYSTRING']
     #print "QUERY STRING: ",query_string
     json_result = execute_query(query_string)
@@ -269,30 +257,6 @@ def q1_query():
 def q2_query():
     """Who is *the* guys to follow for a given language?"""
     json_result = None
-    sql = """
-    SELECT hashtag, HashTagCount, screen_name
-    FROM
-    (
-        SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos
-        FROM (
-            SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount
-            FROM (
-                SELECT screen_name, unnest(hashtags) as hashtag
-                FROM massive
-            ) as unwrap
-            WHERE
-            hashtag = 'Java' OR
-            hashtag = 'Python' OR
-            hashtag = 'JavaScript' OR
-            hashtag = 'CPlusPlus' OR
-            hashtag = 'Java'
-            GROUP BY screen_name, hashtag
-            ORDER BY hashtag, HashTagCount DESC
-        ) as countedhashtags
-    ) as ss
-    WHERE pos = 1
-    ORDER BY hashtag, HashTagCount DESC
-    """
     query_string = app.config['Q2_QUERYSTRING']
     #print "QUERY STRING: ",query_string
     json_result = execute_query(query_string)
@@ -314,7 +278,7 @@ def get_latest_geo_tweet():
         #print "PARSED: ", parsed_results
         #if app.config['LAST_GEO_TWEET_ID'] == parsed_results[0][0]:
         #    return "unchanged"
-        app.config['LAST_GEO_TWEET_ID'] = parsed_results[0][0]
+        #app.config['LAST_GEO_TWEET_ID'] = parsed_results[0][0]
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
         #latitude = random.random() * 40 + 40
@@ -331,24 +295,16 @@ def get_latest_geo_tweet():
         response['images'][0]['latitude'] = latitude
         response['images'][0]['longitude'] = longitude
         response['images'][0]['svgPath'] = "M26.492,9.493c-0.771,0.343-1.602,0.574-2.473,0.678c0.89-0.533,1.562-1.376,1.893-2.382c-0.832,0.493-1.753,0.852-2.734,1.044c-0.785-0.837-1.902-1.359-3.142-1.359c-2.377,0-4.306,1.928-4.306,4.306c0,0.337,0.039,0.666,0.112,0.979c-3.578-0.18-6.75-1.894-8.874-4.499c-0.371,0.636-0.583,1.375-0.583,2.165c0,1.494,0.76,2.812,1.915,3.583c-0.706-0.022-1.37-0.216-1.95-0.538c0,0.018,0,0.036,0,0.053c0,2.086,1.484,3.829,3.454,4.222c-0.361,0.099-0.741,0.147-1.134,0.147c-0.278,0-0.547-0.023-0.81-0.076c0.548,1.711,2.138,2.955,4.022,2.99c-1.474,1.146-3.33,1.842-5.347,1.842c-0.348,0-0.69-0.021-1.027-0.062c1.905,1.225,4.168,1.938,6.6,1.938c7.919,0,12.248-6.562,12.248-12.25c0-0.187-0.002-0.372-0.01-0.557C25.186,11.115,25.915,10.356,26.492,9.493"
-        response['images'][0]['color'] = '#00F'
-        response['images'][0]['scale'] = 0.5
-        response['images'][0]['labelShiftX'] = 0
-        response['images'][0]['labelShiftY'] = 0
-        #response['images'][0]['zoomLevel'] = 3
+        response['images'][0]['color'] = '#F22'
+        response['images'][0]['scale'] = 2
+        response['images'][0]['labelShiftX'] = 15
+        response['images'][0]['labelShiftY'] = 20
+        response['images'][0]['zoomLevel'] = 10
+        response['images'][0]['zoomLatitude'] = latitude
+        response['images'][0]['zoomLongitude'] = longitude
         response['images'][0]['title'] = screen_name
         response['images'][0]['label'] = screen_name
         response['images'][0]['description'] = text
-        # response.append("""longitude:""" + str(longitude) + """,""")
-        # response.append("""svgPath:icon, """)
-        # response.append("""color:"#00F",""")
-        # response.append("""scale:0.5,""")
-        # response.append("""labelShiftY:2,""")
-        # response.append("""zoomLevel:5,""")
-        # response.append('title:"' + screen_name + '",')
-        # response.append('label:"' + screen_name + '",')
-        # response.append('description:"' + text + '"}]')
-        # response.append("""}""")
         response_json = json.dumps(response)
     except Exception as x:
         print x.args
@@ -357,23 +313,6 @@ def get_latest_geo_tweet():
                             status=200,
                             mimetype="application/json")
     return resp
-
-    """
-    {map: "worldLow",
-     images:[{
-     latitude:40.3951,
-     longitude:-73.5619,
-     svgPath:icon,
-     color:"#CC0000",
-     scale:0.5,
-     label:"New York",
-     labelShiftY:2,
-     zoomLevel:5,
-     title:"New York",
-     description:"New York is the most populous city in the United States and the center of the New York Metropolitan Area, one of the most populous metropolitan areas in the world."
-     }]
-    };
-    """
 
 if __name__ == '__main__':
     app.run()
