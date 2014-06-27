@@ -5,6 +5,7 @@ from filters_json import filter_list
 import sql_queries as sql_q
 import redis_conn as re
 from SECRETS import SECRETS
+from time import time
 # from passlib.hash import pbkdf2_sha256
 
 app = Flask(__name__)
@@ -15,6 +16,7 @@ app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
 app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
+app.config['REDIS_UPDATE_INTERVAL'] = 3
 # app.config['LAST_GEO_TWEET_ID'] = -1
 # app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 # app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
@@ -117,6 +119,7 @@ def test_graph():
 app.config['Q1_QUERYSTRING'] = sql_q.build_q1_querystring()
 app.config['Q2_QUERYSTRING'] = sql_q.build_q2_querystring()
 re.maint_redis()
+app.config['LAST_REDIS_UPDATE'] = time()
 
 
 def map_q1_results_to_language(parsed_results):
@@ -157,9 +160,18 @@ def map_q2_results_to_language(parsed_results):
     return json.dumps(final_result)
 
 
+def update_redis():
+    new_time = time()
+    if (new_time - app.config['LAST_REDIS_UPDATE']) > app.config['REDIS_UPDATE_INTERVAL']:
+        re.maint_redis()
+        app.config['LAST_REDIS_UPDATE'] = new_time
+
+
 @app.route('/q1', methods=['GET'])
 def q1_query():
     """Which programming language is being talked about the most?"""
+    update_redis()
+
     json_result = None
     query_string = app.config['Q1_QUERYSTRING']
     try:
@@ -174,6 +186,7 @@ def q1_query():
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* guys to follow for a given language?"""
+    update_redis()
     json_result = None
     query_string = app.config['Q2_QUERYSTRING']
     try:
@@ -188,6 +201,7 @@ def q2_query():
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
+    update_redis()
     sql = []
     sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
     sql.append("""WHERE json_array_length(location) <> 0""")
