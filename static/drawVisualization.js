@@ -111,6 +111,8 @@ $(document).ready(function(){
   var map = new AmCharts.AmMap();
   // set path to images
   map.pathToImages = "static/ammap/images/";
+  map.zoomControl.zoomControlEnabled = false;
+  map.zoomControl.panControlEnabled = false;
 
   /* create data provider object
    map property is usually the same as the name of the map file.
@@ -135,12 +137,14 @@ $(document).ready(function(){
    */
   map.areasSettings = {
       autoZoom: true,
-      selectedColor: "#00F"
+      selectedColor: "#00A"
   };
+  map.dragMap = false;
+  map.zoomOnDoubleClick = false;
 
   // let's say we want a small map to be displayed, so let's create it
-  map.smallMap = new AmCharts.SmallMap();
-
+  //map.smallMap = new AmCharts.SmallMap();
+  map.removeLegend();
   // write the map to container div
   map.write("mapdiv");
 
@@ -150,6 +154,7 @@ $(document).ready(function(){
     //var newDataProvider = {"map": "worldLow",images:[{latitude:32.1457681573,longitude:-13.13560974398,svgPath:icon, color:"#00F",scale:0.5,zoomLevel:5,title:"NEW",label:"NEW",description:"Hi everyone on #LancashireHour #lancashireh were a PHP Web Development agency based in Chorley. http://t.co/zSg2Y947qN #php #codeigniter"}]};
     //map.dataProvider = newDataProvider;
     map.dataProvider = data;
+
     map.validateNow();
   }
 
