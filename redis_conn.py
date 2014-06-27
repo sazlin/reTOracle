@@ -5,7 +5,11 @@ from SECRETS import SECRETS
 import sql_queries as sql_q
 
 POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
+<<<<<<< HEAD
 # for local test :
+=======
+# local connection for testing:
+>>>>>>> redis_new
 # POOL = redis.ConnectionPool(host='127.0.0.1', port=6379)
 interest_list = {'type1': sql_q.build_q1_querystring(), "type2": sql_q.build_q2_querystring(),
                       'type3': sql_q.build_q3_querystring()}
