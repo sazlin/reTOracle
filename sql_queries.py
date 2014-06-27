@@ -12,12 +12,6 @@ def build_q1_querystring():
         for hashtag in search_terms['hashtags']:
             sql.append("""hashtag = '""" + hashtag[1:] + """'""")
             sql.append("""OR""")
-        # for user in search_terms['users']:
-        #     sql.append("""screen_name = '""" + user + """'""")
-        #     sql.append(""" OR """)
-        # for keyword in search_terms['keywords']:
-        #     sql.append("""'"""+ keyword + """' LIKE text""")
-        #     sql.append(""" OR """)
     sql.pop()  # discard last OR statement
     sql.append("""GROUP BY hashtag""")
     sql.append("""ORDER BY HashTagCount DESC""")
@@ -37,12 +31,6 @@ def build_q2_querystring():
         for hashtag in search_terms['hashtags']:
             sql.append("""hashtag = '""" + hashtag[1:] + """'""")
             sql.append("""OR""")
-        # for user in search_terms['users']:
-        #     sql.append("""screen_name = '""" + user + """'""")
-        #     sql.append(""" OR """)
-        # for keyword in search_terms['keywords']:
-        #     sql.append("""'"""+ keyword + """' LIKE text""")
-        #     sql.append(""" OR """)
     sql.pop()  # discard last OR statement
     sql.append("""GROUP BY screen_name, hashtag""")
     sql.append("""ORDER BY hashtag, HashTagCount DESC""")
@@ -51,3 +39,12 @@ def build_q2_querystring():
     sql.append("""WHERE pos = 1""")
     sql.append("""ORDER BY hashtag, HashTagCount DESC""")
     return " \r\n".join(sql)
+
+
+def build_q3_querystring():
+    sql = """
+    SELECT screen_name, text FROM massive
+    ORDER BY tweet_id DESC
+    LIMIT 1;
+    """
+    return sql
