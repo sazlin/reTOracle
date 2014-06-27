@@ -42,16 +42,28 @@ $(document).ready(function(){
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0]]);
   var chart1View;
   var chart1Options = {width:500, height:300,
-                 vAxis: {},
+                 vAxis: {
+                  textStyle:{
+                    bold: true,
+                    auraColor: '#FFF',
+                    }},
                  hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                  legend: { position: "none" },
                  chartArea:{width:"65%",height:"80%"},
                  backgroundColor: { fill:'transparent' },
                  title: "Which programming language is being talked about the most?",
+                 titleTextStyle: {
+                  auraColor: '#FFF',
+                 },
                  animation:{
                     duration: 900,
                     easing: 'out',
                   },
+                  annotations:{
+                    textStyle:{
+                    auraColor: '#FFF',
+                    }
+                  }
   };
 
   //Create the function that will redraw and animate Chart1
@@ -74,16 +86,30 @@ $(document).ready(function(){
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
   var chart2View;
   var chart2Options = {width:500, height:300,
-               vAxis: {},
+               vAxis: {
+                  textStyle:{
+                    bold: true,
+                    auraColor: '#FFF',
+                    }
+                  },
                hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
                legend: { position: "none" },
                chartArea:{width:"65%",height:"80%"},
                title: "Who is *the* guy to follow for a given language?",
+               titleTextStyle: {
+                auraColor: '#FFF',
+              },
                animation:{
                   duration: 900,
                   easing: 'out',
                 },
                 backgroundColor: { fill:'transparent' },
+                annotations:{
+                    textStyle:{
+                    auraColor: '#FFF',
+                    }
+                }
+
   };
 
   //Create the function that will redraw and animate Chart1
@@ -118,19 +144,6 @@ $(document).ready(function(){
   map.pathToImages = "static/ammap/images/";
   map.zoomControl.zoomControlEnabled = false;
   map.zoomControl.panControlEnabled = false;
-
-  /* create data provider object
-   map property is usually the same as the name of the map file.
-
-   getAreasFromMap indicates that amMap should read all the areas available
-   in the map data and treat them as they are included in your data provider.
-   in case you don't set it to true, all the areas except listed in data
-   provider will be treated as unlisted.
-  */
-  // var dataProvider = {
-  //   map: "worldLow",
-  //   images:[{latitude:40.3951, longitude:-73.5619, svgPath:icon, color:"#00F", scale:0.5, label:"New York", labelShiftY:2}]
-  // };
 
   var dataProvider = {"map": "worldLow",images:[{latitude:42.1457681573,longitude:-3.13560974398,svgPath:icon, color:"#00F",scale:0.5,labelShiftY:2,zoomLevel:5,title:"cicsolutions",label:"cicsolutions",description:"Hi everyone on #LancashireHour #lancashireh were a PHP Web Development agency based in Chorley. http://t.co/zSg2Y947qN #php #codeigniter"}]};
   // pass data provider to the map object
