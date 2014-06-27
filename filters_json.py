@@ -1,13 +1,13 @@
 import json
 
-filter_list = {"c": {'search_terms':
+filter_list = {"c/cpp": {'search_terms':
                        {'hashtags': ['#cprogramming', '#clanguage'],
                         'users': [],
-                        'keywords': []},
+                        'keywords': ['cplusplus', 'C++']},
                      'blacklist':
                        {'hashtags': [],
                         'users': [],
-                        'keywords': []}},
+                        'keywords': ['cpp -investment']}},
 "python": {'search_terms':
                 {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask'],
                  'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes', '@dstuft', '@raymondh', '@PloneCMS'],
