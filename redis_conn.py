@@ -4,7 +4,7 @@ import re
 from SECRETS import SECRETS
 
 sql_query = {
-    u"type1": """
+    u"type5": """
 SELECT hashtag, COUNT(hashtag) as HashTagCount
 FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery
 WHERE
@@ -34,8 +34,8 @@ GROUP BY screen_name
 """
 }
 
-POOL = redis.ConnectionPool(host='localhost', port=6379, db=0)
-interest_list = {'type1Java': [], "type3Python": [], 'type4Ruby': []}
+POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
+interest_list = {'type5Java': [], "type3Python": [], 'type4Ruby': []}
 
 # x = "('Python', 60L) ('Ruby', 44L) ('Java', 9L)"
 
@@ -84,6 +84,7 @@ def maint_redis():
         q_type, key = parse_key(my_key)
         json_result = []
         q_type = str(q_type)
+        print sql_query.get(q_type)
         cur.execute(sql_query.get(q_type))
         json_result = cur.fetchall()
         print "json_result", json_result
