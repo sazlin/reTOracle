@@ -1,40 +1,40 @@
 import json
 
 filter_list = {"c/cpp": {'search_terms':
-                       {'hashtags': ['#cprogramming', '#clanguage'],
-                        'users': [],
+                       {'hashtags': ['#cprogramming', '#clanguage', '#clang', '#cpp11', '#cpp', '#cplusplus'],
+                        'users': ['@cpluspluscom', '@c_plus_plus', '@isocpp', '@visualc', '@cpphl'],
                         'keywords': ['cplusplus', 'C++']},
                      'blacklist':
                        {'hashtags': [],
                         'users': [],
                         'keywords': ['cpp -investment']}},
 "python": {'search_terms':
-                {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask'],
-                 'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes', '@dstuft', '@raymondh', '@PloneCMS'],
+                {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask', '#Grok', '#Pylons', '#Pyramid', '#TurboGears', '#web2py', '#Zope', '#CPython', '#SciPyConf', '#PyPy', '#gevent', '#pydata', '#pycoders', '#pycon', '#ipython'],
+                 'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes', '@dstuft', '@raymondh', '@PloneCMS', '@Flask', '@Grok', '@Pylons', '@Pyramid', '@TurboGears', '@web2py', '@Zope', '@RedditPython', '@SciPyConf', '@pypyproject', '@realpython'],
                  'keywords': []},
            'blacklist':
                 {'hashtags': [],
                  'users': [],
                  'keywords': ['monty', 'snake']}},
 "java": {'search_terms':
-                {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE'],
-                 'users': ['@java', '@java4iot', '@awsforjava', '@4java'],
+                {'hashtags': ['#Java', '#javadeveloper', '#javafx', '#java8', '#JavaEE', '#springio', '#springboot', '#springframework', '#android'],
+                 'users': ['@java', '@java4iot', '@awsforjava', '@4java', '@springboot', '@springcentral', '@javafact', '@grailsframework'],
                  'keywords': ['java -coffee']},
          'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': ['coffee']}},
+                 'keywords': ['java -coffee']}},
 "javascript": {'search_terms':
-                {'hashtags': ['#Javascript', '#BackboneJS', '#NodeJS', '#JQuery'],
-                 'users': ['@JavaScriptDaily', '@oss_js', '@badass_js', '@jasminebdd', '@nodejs'],
+                {'hashtags': ['#Javascript', '#BackboneJS', '#NodeJS', '#JQuery', '#spinejs', '#agilityjs', '#canjs', '#sammyjs', '#snackjs', '#qunitjs', '#serenadejs', '#amplifyjs'],
+                 'users': ['@JavaScriptDaily', '@oss_js', '@badass_js', '@jasminebdd', '@nodejs', '@emberjs'],
                  'keywords': []},
         'blacklist':
                 {'hashtags': [],
                  'users': [],
-                 'keywords': ['java ']}},
+                 'keywords': ['']}},
 "ruby": {'search_terms':
-                {'hashtags': ['#Ruby', '#RubyOnRails', '#rubyconfbr', '#rails'],
-                 'users': ['@RubyInside', '@rubyrogues', '@rails'],
+                {'hashtags': ['#Ruby', '#RubyOnRails', '#rubyconfbr', '#rails', '#merb', '#cancan'],
+                 'users': ['@RubyInside', '@rubyrogues', '@rails', '@rubytoolbox'],
                  'keywords': ['ruby -jewelry', 'ruby -ring', 'ruby -gift']},
         'blacklist':
                 {'hashtags': [],
@@ -57,7 +57,7 @@ filter_list = {"c/cpp": {'search_terms':
                  'users': [],
                  'keywords': []}},
 "objectivec": {'search_terms':
-                {'hashtags': ['#objectivec'],
+                {'hashtags': ['#objectivec', '#ios'],
                  'users': ['@objective', '@ObjectiveCDaily', '@idObjectiveC', '@ObjConSO'],
                  'keywords': []},
            'blacklist':
