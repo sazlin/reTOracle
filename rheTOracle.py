@@ -3,7 +3,7 @@ import psycopg2
 import json
 from filters_json import filter_list
 import sql_queries as sql_q
-import redis as re
+import redis_conn as re
 from SECRETS import SECRETS
 # from passlib.hash import pbkdf2_sha256
 
@@ -116,6 +116,7 @@ def test_graph():
 
 app.config['Q1_QUERYSTRING'] = sql_q.build_q1_querystring()
 app.config['Q2_QUERYSTRING'] = sql_q.build_q2_querystring()
+re.maint_redis()
 
 
 def map_q1_results_to_language(parsed_results):
@@ -161,8 +162,11 @@ def q1_query():
     """Which programming language is being talked about the most?"""
     json_result = None
     query_string = app.config['Q1_QUERYSTRING']
-    json_result = execute_query(query_string)
-    parsed_results = json.loads(json_result)
+    try:
+        parsed_results = re.get_redis_query('type1')
+    except:
+        json_result = execute_query(query_string)
+        parsed_results = json.loads(json_result)
     final_result = map_q1_results_to_language(parsed_results)
     return final_result
 
@@ -172,8 +176,12 @@ def q2_query():
     """Who is *the* guys to follow for a given language?"""
     json_result = None
     query_string = app.config['Q2_QUERYSTRING']
-    json_result = execute_query(query_string)
-    parsed_results = json.loads(json_result)
+    try:
+        # mzzz-- change this type to 2 to run it in redis
+        parsed_results = re.get_redis_query('type5')
+    except:
+        json_result = execute_query(query_string)
+        parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
 
@@ -225,11 +233,7 @@ def get_latest_geo_tweet():
 def ticker_fetch():
     """Return JSON for recent tweet"""
     json_result = None
-    sql = """
-    SELECT screen_name, text FROM massive
-    ORDER BY tweet_id DESC
-    LIMIT 1;
-    """
+    sql = sql_q.build_q3_querystring()
     json_result = execute_query(sql)
 
     resp = Response(response=json_result,
