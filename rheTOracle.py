@@ -1,7 +1,6 @@
-from flask import Flask, redirect, url_for, Response, render_template
-import psycopg2
-import json
+from flask import Flask, Response, render_template
 from filters_json import filter_list
+import json
 import sql_queries as sql_q
 import redis_conn as re
 from SECRETS import SECRETS
@@ -21,80 +20,7 @@ app.config['REDIS_UPDATE_INTERVAL'] = 3
 # app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 # app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 
-
-def build_connection_string():
-        connection_string = []
-        connection_string.append("host=" + app.config['DB_HOST'])
-        connection_string.append("dbname=" + app.config['DB_NAME'])
-        connection_string.append("user=" + app.config['DB_USERNAME'])
-        connection_string.append("password=" + app.config['DB_PASSWORD'])
-        return " ".join(connection_string)
-
-
-def connect_db():
-    """establish a new connection"""
-    connection_string = build_connection_string()
-    try:
-        print "establishing a new connection..."
-        conn = psycopg2.connect(connection_string)
-    except Exception as x:
-        print "Error connecting to DB: ", x.args
-    print "Connection established and stored..."
-    app.config['DB_CONNECTION'] = conn
-    return conn
-
-
-def get_connection():
-    """get the current connection if it exists, else connect."""
-    if app.config['DB_CONNECTION'] is not None:
-        print "connection exists, so reusing it..."
-        return app.config['DB_CONNECTION']
-    else:
-        print "no connection found..."
-        return connect_db()
-
-
-def create_cursor():
-    """create a new cursor and store it"""
-    conn = get_connection()
-    app.config['DB_CURSOR'] = conn.cursor()
-    return app.config['DB_CURSOR']
-
-
-def get_cursor():
-    """get the current cursor if it exist, else create a new cursor"""
-    if app.config['DB_CURSOR'] is not None:
-        print "cursor exists, using that..."
-        return app.config['DB_CURSOR']
-    else:
-        print "no cursor found, so creating one..."
-        return create_cursor()
-
-
-def execute_query(sql):
-    """execute the passed in SQL using the current cursor"""
-    print "executing query..."
-    try:
-        cur = get_cursor()
-    except Exception as x:
-        print "Something went wrong: ", x.args
-    print "got cursor..."
-    cur.execute(sql)
-    try:
-        results = cur.fetchall()
-    except Exception as x:
-        print "Error executing sql on cursor: ", x.args
-    else:
-        print "query success!"
-    try:
-        json_results = json.dumps(results)
-    except Exception as x:
-        print "***Error dumping json: ", json_results
-    else:
-        return json_results
-
-    return None
-
+sql_q.init()
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -116,8 +42,8 @@ def test_graph():
     return render_template('test_graphs.html')
 
 
-app.config['Q1_QUERYSTRING'] = sql_q.build_q1_querystring()
-app.config['Q2_QUERYSTRING'] = sql_q.build_q2_querystring()
+# app.config['Q1_QUERYSTRING'], app.config['Q1_ARGS'] = sql_q.build_q1_querystring()
+# app.config['Q2_QUERYSTRING'], app.config['Q2_ARGS']  = sql_q.build_q2_querystring()
 re.maint_redis()
 app.config['LAST_REDIS_UPDATE'] = time()
 
@@ -171,13 +97,10 @@ def update_redis():
 def q1_query():
     """Which programming language is being talked about the most?"""
     update_redis()
-
-    json_result = None
-    query_string = app.config['Q1_QUERYSTRING']
     try:
-        parsed_results = re.get_redis_query('type1')
+        parsed_results = re.get_redis_query('chart1')
     except:
-        json_result = execute_query(query_string)
+        json_result = sql_q.get_query_results('chart1')
         parsed_results = json.loads(json_result)
     final_result = map_q1_results_to_language(parsed_results)
     return final_result
@@ -185,15 +108,13 @@ def q1_query():
 
 @app.route('/q2', methods=['GET'])
 def q2_query():
-    """Who is *the* guys to follow for a given language?"""
+    """Who is *the* person to follow for a given language?"""
     update_redis()
-    json_result = None
-    query_string = app.config['Q2_QUERYSTRING']
     try:
         # mzzz-- change this type to 2 to run it in redis
-        parsed_results = re.get_redis_query('type5')
+        parsed_results = re.get_redis_query('chart2')
     except:
-        json_result = execute_query(query_string)
+        json_result = sql_q.get_query_results('chart2')
         parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
@@ -202,17 +123,18 @@ def q2_query():
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
     update_redis()
-    sql = []
-    sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
-    sql.append("""WHERE json_array_length(location) <> 0""")
-    sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
+
     try:
-        json_result = execute_query(" ".join(sql))
+        print "Geo: getting query results..."
+        json_result = sql_q.get_query_results('geomap1')
+        print "Geo: parsing json..."
         parsed_results = json.loads(json_result)
+        print "Geo: breaking out needed vals..."
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
+        print "Geo: success"
     except Exception as x:
         print "SOMETHING WENT WRONG: ", x.args
     print "Latest Geo Tweet: ", screen_name, latitude, longitude
@@ -246,9 +168,7 @@ def get_latest_geo_tweet():
 @app.route('/ticker', methods=['GET'])
 def ticker_fetch():
     """Return JSON for recent tweet"""
-    json_result = None
-    sql = sql_q.build_q3_querystring()
-    json_result = execute_query(sql)
+    json_result = sql_q.get_query_results('ticker1')
 
     resp = Response(response=json_result,
                     status=200,
