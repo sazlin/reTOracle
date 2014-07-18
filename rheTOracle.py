@@ -174,11 +174,13 @@ if __name__ == '__main__':
     sql_q.init()
 
     if sys.args[1] == 'Prod':
+        re.init_pool('Prod')
         app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
     elif sys.args[1] == 'Test':
+        re.init_pool('Test')
         app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')

@@ -1,9 +1,8 @@
 import redis
+import os
 #import re
 #from SECRETS import SECRETS
 import sql_queries as sql_q
-
-POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws.com', port=6379)
 # POOL = redis.ConnectionPool(host='127.0.0.1', port=6379)
 # interest_list = {'type1': sql_q.build_q1_querystring(), "type2": sql_q.build_q2_querystring(),
 #                       'type3': sql_q.build_q3_querystring()}
@@ -46,9 +45,19 @@ POOL = redis.ConnectionPool(host='redis-cluster.8uzvxq.0001.usw2.cache.amazonaws
 #         l1.append(item[f2_index+1: n2_index])
 #         l.append(l1)
 #     return l
+POOL = None
+def init_pool(r_config):
+    if r_config == 'Prod':
+        POOL = redis.ConnectionPool(host=os.environ.get('R_REDIS_ENDPOINT'), port=6379)
+    elif r_config == 'Test':
+        POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379)
+    else:
+        raise Exception('Config fail.')
 
 
 def get_redis_query(q_type):
+    if not POOL:
+        raise Exception('POOL not initiated. Call init_pool().')
     r_server = redis.Redis(connection_pool=POOL)
     if q_type in sql_q.QUERY_STRINGS:
         json_list = r_server.get(q_type)
@@ -58,16 +67,22 @@ def get_redis_query(q_type):
 
 
 def _set_to_redis(key, value):
+    if not POOL:
+        raise Exception('POOL not initiated. Call init_pool().')
     r_server = redis.Redis(connection_pool=POOL)
     r_server.set(key, value)
 
 
 def maint_redis():
+    if not POOL:
+        raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        try:
-            _set_to_redis(key, sql_q.get_query_results(key))
-        except Exception as x:
-            print "Redis->SQL: Something went wrong!: ", x.args
+        # HACK - we don't want to redo 'save_tweet'
+        if not key == 'save_tweet':
+            try:
+                _set_to_redis(key, sql_q.get_query_results(key))
+            except Exception as x:
+                print "Redis->SQL: Something went wrong!: ", x.args
 
 # def maint_redis():
 #     conn = db_connection()
