@@ -14,20 +14,23 @@ import os
 env.aws_region = 'us-west-2'
 
 
-def deploy_to_production():
-    #_deploy(os.environ.get('R_HOST_INSTANCE_ID'), 'Prod')
+def deploy_to_production_full():
+    #_deploy(os.environ.get('R_HOST_INSTANCE_ID'), 'Prod', True)
     raise NotImplementedError()
 
+# def stage_for_testing_full():
+#     _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test', True)
+
 def stage_for_testing():
-    _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test')
+    _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test', True)
 
-
-def _deploy(instance_id, r_config):
+def _deploy(instance_id, r_config, full_deploy):
     conn = _get_ec2_connection()
     instance = conn.get_only_instances(instance_ids=[instance_id])[0]
     # running_instances = [i for i in all_instances if i.state == 'running']
     if instance:
         print("Deployment Started for Instance {}:".format(instance.id))
+
         #Update apt-get
         run_command_on_server(_update_apt_get, instance)
 
@@ -44,7 +47,8 @@ def _deploy(instance_id, r_config):
         run_command_on_server(_upload_project_files, instance)
 
         #Install, configure, and start nginx
-        run_command_on_server(_install_nginx, instance)
+        # run_command_on_server(_install_nginx, instance)
+        setup_nginx(r_config, instance)
 
         #Install, configure, and start supervisor
         if r_config == 'Test':
@@ -109,7 +113,7 @@ def _setup_supervisor_test():
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
-    sudo('mv ./rheTOracle/supervisord-test.conf /etc/supervisord.conf')
+    sudo('mv ./rheTOracle/supervisord-test.conf /etc/supervisor/conf.d/supervisord.conf')
     sudo('/etc/init.d/supervisor start')
     print("Supervisor running")
 
@@ -127,19 +131,32 @@ def _setup_supervisor_prod():
     print("Supervisor running")
 
 
-def setup_nginx(instance=None):
-    print("Setting up nginx...")
-    run_command_on_server(_install_nginx, instance)
+def setup_nginx(r_config, instance):
+    if r_config == 'Prod':
+        print("Setting up nginx [PROD]...")
+        run_command_on_server(_install_nginx_prod, instance)
+    elif r_config == 'Test':
+        print("Setting up nginx [TEST]...")
+        run_command_on_server(_install_nginx_test, instance)
     print("nginx installed and started.")
 
 
-def _install_nginx():
+def _install_nginx_prod():
     print("Setting up nginx...")
     sudo('apt-get install nginx')
     sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
-    sudo('mv ./rheTOracle/nginx_config /etc/nginx/sites-available/default')
+    sudo('mv ./rheTOracle/nginx_config_prod /etc/nginx/sites-available/default')
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")
+
+def _install_nginx_test():
+    print("Setting up nginx...")
+    sudo('apt-get install nginx')
+    sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
+    sudo('mv ./rheTOracle/nginx_config_test /etc/nginx/sites-available/default')
+    sudo('/etc/init.d/nginx start')
+    print("nginx installed and started.")
+
 
 
 def _restart_nginx():

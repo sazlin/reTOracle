@@ -55,6 +55,6 @@ secrets.py
 
 # Sphinx documentation
 docs/_build/
-supervisord-prod.conf
-supervisord-test.conf
+supervisord-*.conf
+nginx_config_*
 

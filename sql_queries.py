@@ -23,10 +23,20 @@ def _build_connection_string():
 
 
 def _init_db_config():
-    DB_CONFIG['DB_HOST'] = os.environ.get('R_DB_HOST')
-    DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
-    DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
-    DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
+    r_config = os.environ.get('R_CONFIG')
+    if r_config == 'Prod':
+        DB_CONFIG['DB_HOST'] = os.environ.get('R_DB_HOST')
+        DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
+        DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
+        DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
+    elif r_config == 'Test':
+        DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
+        DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
+        DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
+        DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
+    else:
+        raise Exception("R_CONFIG not set.")
+
     DB_CONFIG['DB_CONNECTION_STRING'] = _build_connection_string()
 
 
@@ -131,7 +141,7 @@ def _build_q1_query():
     for language in FilterMap:
         search_terms = FilterMap[language]['search_terms']
         for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = '%s' """)
+            sql.append("""hashtag = %s """)
             args.append(hashtag[1:])
             sql.append("""OR""")
     sql.pop()  # discard last OR statement
@@ -152,7 +162,7 @@ def _build_q2_query():
     for language in FilterMap:
         search_terms = FilterMap[language]['search_terms']
         for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = '%s' """)
+            sql.append("""hashtag = %s """)
             args.append(hashtag[1:])
             sql.append("""OR""")
     sql.pop()  # discard last OR statement
@@ -190,8 +200,8 @@ def _build_save_tweet_sql():
                 inreplytostatusif, retweetcount)
 
             VALUES(
-                '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-                '%s', '%s', %s); """, [])
+                %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s); """, [])
 
 
 # def save_tweet_to_sql(**tweet_args):

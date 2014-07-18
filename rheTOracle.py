@@ -38,7 +38,7 @@ def test_graph():
 
 # app.config['Q1_QUERYSTRING'], app.config['Q1_ARGS'] = sql_q.build_q1_querystring()
 # app.config['Q2_QUERYSTRING'], app.config['Q2_ARGS']  = sql_q.build_q2_querystring()
-re.maint_redis()
+
 app.config['LAST_REDIS_UPDATE'] = time()
 
 
@@ -51,6 +51,7 @@ def map_q1_results_to_language(parsed_results):
         search_terms = filter_list[language]['search_terms']
         for hashtag in search_terms['hashtags']:
             for result in parsed_results:
+                print "map_q1_results: Comparing ",hashtag[1:], "and", result[0]
                 if hashtag[1:] == result[0]:
                     language_count += result[1]
         final_result.append([language, language_count])
@@ -92,11 +93,15 @@ def q1_query():
     """Which programming language is being talked about the most?"""
     update_redis()
     try:
-        parsed_results = re.get_redis_query('chart1')
+        print "*****Q1********: Getting vals from redis..."
+        json_result = re.get_redis_query('chart1')
     except:
+        print "...ERROR. Trying SQL instead..."
         json_result = sql_q.get_query_results('chart1')
-        parsed_results = json.loads(json_result)
+    parsed_results = json.loads(json_result)
+    print "Got results: ", parsed_results
     final_result = map_q1_results_to_language(parsed_results)
+    print "Formatted Results: ",final_result
     return final_result
 
 
@@ -105,11 +110,10 @@ def q2_query():
     """Who is *the* person to follow for a given language?"""
     update_redis()
     try:
-        # mzzz-- change this type to 2 to run it in redis
-        parsed_results = re.get_redis_query('chart2')
+        json_result = re.get_redis_query('chart2')
     except:
         json_result = sql_q.get_query_results('chart2')
-        parsed_results = json.loads(json_result)
+    parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
 
@@ -171,16 +175,13 @@ def ticker_fetch():
 
 
 if __name__ == '__main__':
-    sql_q.init()
 
-    if sys.args[1] == 'Prod':
-        re.init_pool('Prod')
+    if sys.argv[1] == 'Prod':
         app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif sys.args[1] == 'Test':
-        re.init_pool('Test')
+    elif sys.argv[1] == 'Test':
         app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
@@ -189,4 +190,13 @@ if __name__ == '__main__':
     app.config['DB_CONNECTION'] = None
     app.config['DB_CURSOR'] = None
     app.config['REDIS_UPDATE_INTERVAL'] = 3
+
+    # print app.config['DB_HOST']
+    # print app.config['DB_NAME']
+    # print app.config['DB_USERNAME']
+    # print app.config['DB_PASSWORD']
+
+    sql_q.init()
+    re.init_pool()
+    re.maint_redis()
     app.run()
