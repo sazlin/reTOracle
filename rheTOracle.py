@@ -3,24 +3,18 @@ from filters_json import filter_list
 import json
 import sql_queries as sql_q
 import redis_conn as re
-from SECRETS import SECRETS
+#from SECRETS import SECRETS
 from time import time
+import os
+import sys
 # from passlib.hash import pbkdf2_sha256
 
 app = Flask(__name__)
 
-app.config['DB_HOST'] = "rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com"
-app.config['DB_NAME'] = "rhetorical-db"
-app.config['DB_USERNAME'] = SECRETS['DB_USERNAME']
-app.config['DB_PASSWORD'] = SECRETS['DB_PASSWORD']
-app.config['DB_CONNECTION'] = None
-app.config['DB_CURSOR'] = None
-app.config['REDIS_UPDATE_INTERVAL'] = 3
 # app.config['LAST_GEO_TWEET_ID'] = -1
 # app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
 # app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 
-sql_q.init()
 
 @app.route('/', methods=['GET'])
 def home_page():
@@ -79,7 +73,7 @@ def map_q2_results_to_language(parsed_results):
                         userCountForThisLanguage[result[2]] += result[1]
             top_user_count, top_user = 0, ""
             if len(userCountForThisLanguage.items()) is not 0:
-                top_user_count, top_user = max((v,k) for  k,v in userCountForThisLanguage.items())
+                top_user_count, top_user = max((v, k) for k, v in userCountForThisLanguage.items())
             final_result.append([language, top_user_count, top_user])
     except Exception as x:
         print "**************Something went wrong:", x.args
@@ -177,4 +171,20 @@ def ticker_fetch():
 
 
 if __name__ == '__main__':
+    sql_q.init()
+
+    if sys.args[1] == 'Prod':
+        app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
+        app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
+        app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
+        app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
+    elif sys.args[1] == 'Test':
+        app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
+        app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
+        app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
+        app.config['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
+
+    app.config['DB_CONNECTION'] = None
+    app.config['DB_CURSOR'] = None
+    app.config['REDIS_UPDATE_INTERVAL'] = 3
     app.run()

@@ -34,6 +34,7 @@ def _build_query_strings():
     QUERY_STRINGS['chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
+    QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
 
 
 def _connect_db():
@@ -170,6 +171,27 @@ def _build_q4_query():
     sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
     return (" ".join(sql), None)
 
+
+def _build_save_tweet_sql():
+    return ("""
+            INSERT INTO massive(
+                tweet_id, text, hashtags, user_mentions,
+                created_at, screen_name, urls, location,
+                inreplytostatusif, retweetcount)
+
+            VALUES(
+                '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+                '%s', '%s', %s); """, [])
+
+
+def save_tweet_to_sql(**tweet_args):
+    QUERY_STRINGS['save_tweet'][1].
+    return _execute_query(
+        QUERY_STRINGS['save_tweet'][0],
+        QUERY_STRINGS['save_tweet'][1])
+        PUSH_SQL = PUSH_SQL.format(tweet_id, text, hashtags, user_mentions,
+                                   created_at, screen_name, urls, location,
+                                   in_reply_to_screen_name, retweets)
 
 def get_query_results(chart_string):
     return _execute_query(

@@ -11,41 +11,53 @@ import time
 import os
 
 # This host is an instance SAzlin created just for rheTOracle development
-env.hosts = ['ubuntu@ec2-54-213-173-105.us-west-2.compute.amazonaws.com']
 env.aws_region = 'us-west-2'
 
 
-def deploy():
+def deploy_to_production():
+    #_deploy(os.environ.get('R_HOST_INSTANCE_ID'), 'Prod')
+    raise NotImplementedError()
+
+def stage_for_testing():
+    _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test')
+
+
+def _deploy(instance_id, r_config):
     conn = _get_ec2_connection()
-    all_instances = conn.get_only_instances()
-    running_instances = [i for i in all_instances if i.state == 'running']
-    for instance in running_instances:
-        if instance.public_dns_name in env.hosts[0]:
-            print("Deployment Started for Instance {}:".format(instance.id))
-            #Update apt-get
-            run_command_on_server(_update_apt_get, instance)
+    instance = conn.get_only_instances(instance_ids=[instance_id])[0]
+    # running_instances = [i for i in all_instances if i.state == 'running']
+    if instance:
+        print("Deployment Started for Instance {}:".format(instance.id))
+        #Update apt-get
+        run_command_on_server(_update_apt_get, instance)
 
-            #Install pip
-            run_command_on_server(_setup_pip, instance)
+        #Install pip
+        run_command_on_server(_setup_pip, instance)
 
-            #Install requirements
-            run_command_on_server(_auto_install_req, instance)
+        #Install requirements
+        run_command_on_server(_auto_install_req, instance)
 
-            #Remove existing project files
-            run_command_on_server(_remove_existing_project_files, instance)
+        #Remove existing project files
+        run_command_on_server(_remove_existing_project_files, instance)
 
-            #Upload new project files
-            run_command_on_server(_upload_project_files, instance)
+        #Upload new project files
+        run_command_on_server(_upload_project_files, instance)
 
-            #Install, configure, and start nginx
-            run_command_on_server(_install_nginx, instance)
+        #Install, configure, and start nginx
+        run_command_on_server(_install_nginx, instance)
 
-            #Install, configure, and start supervisor
-            run_command_on_server(_setup_supervisor, instance)
+        #Install, configure, and start supervisor
+        if r_config == 'Test':
+            run_command_on_server(_setup_supervisor_test, instance)
+        elif r_config == 'Prod':
+            run_command_on_server(_setup_supervisor_prod, instance)
+        else:
+            raise Exception('Invalid r_config.')
 
-            #Restart nginx
-            run_command_on_server(_restart_nginx, instance)
-            print("Deployment Complete for Instance {}.".format(instance.id))
+        #Restart nginx
+        run_command_on_server(_restart_nginx, instance)
+        print("Deployment Complete for Instance {}.".format(instance.id))
+
 
 def _update_apt_get():
     print("Updating apt-get...")
@@ -88,8 +100,8 @@ def _remove_existing_project_files():
     print("Old files removed.")
 
 
-def _setup_supervisor():
-    print("Setup and run supervisor...")
+def _setup_supervisor_test():
+    print("Setup and run supervisor [TEST]...")
     # ret code 1 comes back if no process to kill, which is fine
     # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
     env.ok_ret_codes = [0, 1, 127]
@@ -97,7 +109,20 @@ def _setup_supervisor():
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
-    sudo('mv ./rheTOracle/supervisord.conf /etc/supervisord.conf')
+    sudo('mv ./rheTOracle/supervisord-test.conf /etc/supervisord.conf')
+    sudo('/etc/init.d/supervisor start')
+    print("Supervisor running")
+
+def _setup_supervisor_prod():
+    print("Setup and run supervisor [PROD}...")
+    # ret code 1 comes back if no process to kill, which is fine
+    # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
+    env.ok_ret_codes = [0, 1, 127]
+    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('killall -w supervisord')
+    env.ok_ret_codes = [0]
+    sudo('apt-get install supervisor')
+    sudo('mv ./rheTOracle/supervisord-prod.conf /etc/supervisord.conf')
     sudo('/etc/init.d/supervisor start')
     print("Supervisor running")
 
