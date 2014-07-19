@@ -87,6 +87,7 @@ def maint_redis():
         # HACK - we don't want to redo 'save_tweet'
         if not key == 'save_tweet':
             print "Redis: Querying Sql and getting results..."
+            result = None
             try:
                 result = sql_q.get_query_results(key)
             except Exception as x:
