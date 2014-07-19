@@ -93,7 +93,6 @@ def _get_cursor():
 def _execute_query(sql, args=None, need_fetch=True):
     """execute the passed in SQL using the current cursor.
     If the query string takes any args pass those to the cursor as well."""
-    # print "executing query..."
     try:
         print "getting cursor..."
         cur = _get_cursor()
@@ -107,7 +106,6 @@ def _execute_query(sql, args=None, need_fetch=True):
             print "Got results..."
             try:
                 json_results = json.dumps(results)
-                #print "json results: ", json_results
             except Exception as x:
                 print "Error dumping json for: ", results, " Args: ", x.args
             else:
@@ -125,7 +123,6 @@ def _execute_query(sql, args=None, need_fetch=True):
         while conn is None:
             conn = _get_connection()
             time.sleep(5)
-        # cur = _get_cursor()
     else:
         DB_CONFIG['DB_CONNECTION'].commit()
     return None
@@ -203,15 +200,6 @@ def _build_save_tweet_sql():
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s); """, [])
 
-
-# def save_tweet_to_sql(**tweet_args):
-#     QUERY_STRINGS['save_tweet'][1].
-#     return _execute_query(
-#         QUERY_STRINGS['save_tweet'][0],
-#         QUERY_STRINGS['save_tweet'][1])
-#         PUSH_SQL = PUSH_SQL.format(tweet_id, text, hashtags, user_mentions,
-#                                    created_at, screen_name, urls, location,
-#                                    in_reply_to_screen_name, retweets)
 
 def get_query_results(chart_string, args=None, need_fetch=True):
     if args is None:

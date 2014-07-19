@@ -10,24 +10,22 @@ import boto.ec2
 import time
 import os
 
-# This host is an instance SAzlin created just for rheTOracle development
 env.aws_region = 'us-west-2'
 
 
 def deploy_to_production_full():
+    # TBD: implement deploy to production
     #_deploy(os.environ.get('R_HOST_INSTANCE_ID'), 'Prod', True)
     raise NotImplementedError()
 
-# def stage_for_testing_full():
-#     _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test', True)
 
 def stage_for_testing():
     _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test', True)
 
+
 def _deploy(instance_id, r_config, full_deploy):
     conn = _get_ec2_connection()
     instance = conn.get_only_instances(instance_ids=[instance_id])[0]
-    # running_instances = [i for i in all_instances if i.state == 'running']
     if instance:
         print("Deployment Started for Instance {}:".format(instance.id))
 
@@ -117,6 +115,7 @@ def _setup_supervisor_test():
     sudo('/etc/init.d/supervisor start')
     print("Supervisor running")
 
+
 def _setup_supervisor_prod():
     print("Setup and run supervisor [PROD}...")
     # ret code 1 comes back if no process to kill, which is fine
@@ -149,6 +148,7 @@ def _install_nginx_prod():
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")
 
+
 def _install_nginx_test():
     print("Setting up nginx...")
     sudo('apt-get install nginx')
@@ -156,7 +156,6 @@ def _install_nginx_test():
     sudo('mv ./rheTOracle/nginx_config_test /etc/nginx/sites-available/default')
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")
-
 
 
 def _restart_nginx():

@@ -36,12 +36,6 @@ def test_graph():
     return render_template('test_graphs.html')
 
 
-# app.config['Q1_QUERYSTRING'], app.config['Q1_ARGS'] = sql_q.build_q1_querystring()
-# app.config['Q2_QUERYSTRING'], app.config['Q2_ARGS']  = sql_q.build_q2_querystring()
-
-app.config['LAST_REDIS_UPDATE'] = time()
-
-
 def map_q1_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q1's query results
         into a new list of lists that will be returned to the client for rendering"""
@@ -191,12 +185,9 @@ if __name__ == '__main__':
     app.config['DB_CURSOR'] = None
     app.config['REDIS_UPDATE_INTERVAL'] = 3
 
-    # print app.config['DB_HOST']
-    # print app.config['DB_NAME']
-    # print app.config['DB_USERNAME']
-    # print app.config['DB_PASSWORD']
 
     sql_q.init()
     re.init_pool()
     re.maint_redis()
+    app.config['LAST_REDIS_UPDATE'] = time()
     app.run()
