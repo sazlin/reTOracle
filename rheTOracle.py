@@ -8,6 +8,9 @@ from time import time
 import os
 import sys
 # from passlib.hash import pbkdf2_sha256
+from logger import make_logger
+
+logger = make_logger('flask_app', 'retoracle.log')
 
 app = Flask(__name__)
 
@@ -71,7 +74,7 @@ def map_q2_results_to_language(parsed_results):
                 top_user_count, top_user = max((v, k) for k, v in userCountForThisLanguage.items())
             final_result.append([language, top_user_count, top_user])
     except Exception as x:
-        print "**************Something went wrong:", x.args
+        logger.error("Something went wrong: ", x.args)
     return json.dumps(final_result)
 
 
@@ -87,15 +90,13 @@ def q1_query():
     """Which programming language is being talked about the most?"""
     update_redis()
     try:
-        print "*****Q1********: Getting vals from redis..."
+        logger.info("Q1: Getting values from redis")
         json_result = re.get_redis_query('chart1')
     except:
-        print "...ERROR. Trying SQL instead..."
+        logger.error("Q1: redis failed. Trying SQL instead")
         json_result = sql_q.get_query_results('chart1')
     parsed_results = json.loads(json_result)
-    print "Got results: ", parsed_results
     final_result = map_q1_results_to_language(parsed_results)
-    print "Formatted Results: ",final_result
     return final_result
 
 
@@ -117,19 +118,14 @@ def get_latest_geo_tweet():
     update_redis()
 
     try:
-        print "Geo: getting query results..."
         json_result = sql_q.get_query_results('geomap1')
-        print "Geo: parsing json..."
         parsed_results = json.loads(json_result)
-        print "Geo: breaking out needed vals..."
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
-        print "Geo: success"
     except Exception as x:
-        print "SOMETHING WENT WRONG: ", x.args
-    print "Latest Geo Tweet: ", screen_name, latitude, longitude
+        logger.error("Geotweet json error: ", x.args)
     try:
         response = {}
         response['map'] = 'worldLow'
@@ -149,11 +145,10 @@ def get_latest_geo_tweet():
         response['images'][0]['description'] = text
         response_json = json.dumps(response)
     except Exception as x:
-        print x.args
-    print "geomap response: ",response_json
+        logger.error("Geotweet response error: ", x.args)
     resp = Response(response=response_json,
-                            status=200,
-                            mimetype="application/json")
+                    status=200,
+                    mimetype="application/json")
     return resp
 
 
