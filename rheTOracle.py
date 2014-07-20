@@ -1,4 +1,6 @@
 from flask import Flask, Response, render_template
+from flask import Markup
+import markdown
 from filters_json import filter_list
 import json
 import sql_queries as sql_q
@@ -23,7 +25,9 @@ def home_page():
 
 @app.route('/about', methods=['GET'])
 def about_page():
-    return render_template('about.html')
+    with open('/static/markdown/about.md', 'rb') as f:
+        content = Markup(markdown.markdown(f.read()))
+    return render_template('about.html', **locals())
 
 
 @app.route('/contact', methods=['GET'])
