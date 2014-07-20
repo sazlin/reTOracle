@@ -180,7 +180,6 @@ if __name__ == '__main__':
     app.config['DB_CURSOR'] = None
     app.config['REDIS_UPDATE_INTERVAL'] = 3
 
-
     sql_q.init()
     re.init_pool()
     re.maint_redis()
