@@ -157,12 +157,12 @@ def _setup_supervisor_test():
     # ret code 1 comes back if no process to kill, which is fine
     # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
     env.ok_ret_codes = [0, 1, 127]
-    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('supervisorctl stop all')
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
     sudo('mv ./rheTOracle/supervisord-test.conf /etc/supervisor/conf.d/supervisord.conf')
-    sudo('/etc/init.d/supervisor start')
+    sudo('supervisord')
     print("Supervisor running")
 
 
@@ -171,12 +171,12 @@ def _setup_supervisor_prod():
     # ret code 1 comes back if no process to kill, which is fine
     # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
     env.ok_ret_codes = [0, 1, 127]
-    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('supervisorctl stop all')
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
-    sudo('mv ./rheTOracle/supervisord-prod.conf /etc/supervisord.conf')
-    sudo('/etc/init.d/supervisor start')
+    sudo('mv ./rheTOracle/supervisord-prod.conf /etc/supervisor/conf.d/supervisord.conf')
+    sudo('supervisord')
     print("Supervisor running")
 
 
