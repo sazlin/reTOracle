@@ -1,6 +1,7 @@
 from urllib2 import Request, urlopen
 from urllib import urlencode
 import json
+import os
 
 
 class DatumBox():
@@ -52,7 +53,6 @@ class DatumBox():
         f = urlopen(request)
         response = json.loads(f.read())
 
-
         if "error" in response['output']:
             raise DatumBoxError(response['output']['error']['ErrorCode'], response['output']['error']['ErrorMessage'])
         else:
@@ -64,7 +64,24 @@ class DatumBoxError(Exception):
         self.error_code = error_code
         self.error_message = error_message
 
-
-
     def __str__(self):
         return "Datumbox API returned an error: " + str(self.error_code) + " " + self.error_message
+
+
+def box_tweet(tweet):
+    integers = {'positive': 1, 'neutral': 0, 'negative': -1}
+    api_key = os.getenv('DATUM')
+    box = DatumBox(api_key)
+    response = box.twitter_sentiment_analysis(tweet)
+    return integers[response]
+
+
+
+
+
+
+
+
+
+
+
