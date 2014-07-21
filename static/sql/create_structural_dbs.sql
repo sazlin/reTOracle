@@ -1,5 +1,3 @@
-﻿--drop the table if it exists
-DROP TABLE IF EXISTS massive;
 DROP TABLE users;
 DROP TABLE filters;
 DROP TABLE user_filter_join;
@@ -38,24 +36,3 @@ CREATE TABLE user_filter_join(
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id, filter_id)
 );
-
-CREATE TABLE massive
-(
-  tweet_id text NOT NULL PRIMARY KEY,
-  text character(280),
-  hashtags text[],
-  user_mentions text[],
-  created_at date,
-  screen_name text,
-  urls text[],
-  location json,
-  inreplytostatusif text,
-  retweetcount smallint
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE massive
-  OWNER TO codefellow;
-
-
