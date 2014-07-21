@@ -27,6 +27,7 @@ def deploy(r_dest=None, r_option='Full'):
         instance_id = os.environ.get('R_HOST_INSTANCE_ID')
     elif r_dest == 'Test':
         instance_id = os.environ.get('R_TEST_HOST_INSTANCE_ID')
+        print ("Got instance id: ", instance_id)
     else:
         raise Exception('invalid r_dest')
     conn = _get_ec2_connection()

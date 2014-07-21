@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+
 import os
 import psycopg2
 import json

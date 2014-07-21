@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+
 from flask import Flask, Response, render_template
 from filters_json import filter_list
 import json
@@ -8,7 +11,7 @@ from time import time
 import os
 import sys
 # from passlib.hash import pbkdf2_sha256
-from logger import make_logger
+from logger import make_logger, set_level
 
 logger = make_logger('flask_app', 'retoracle.log')
 
@@ -166,15 +169,22 @@ def ticker_fetch():
 if __name__ == '__main__':
 
     if sys.argv[1] == 'Prod':
+        if sys.argv[2]:
+            set_level(sys.argv[2])
         app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
     elif sys.argv[1] == 'Test':
+        if sys.argv[2]:
+            set_level(sys.argv[2])
         app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
+    elif sys.argv[1] == 'Local':
+        if sys.argv[2]:
+            set_level(sys.argv[2])
 
     app.config['DB_CONNECTION'] = None
     app.config['DB_CURSOR'] = None

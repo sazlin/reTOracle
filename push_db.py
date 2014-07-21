@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from filters_json import filter_list as filters
 import time
 import json

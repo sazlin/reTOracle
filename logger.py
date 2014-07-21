@@ -1,4 +1,19 @@
+#!/usr/bin/python
+
 import logging
+import os
+
+
+def set_level(logging='v'):
+
+    if logging == 'vvvv':
+        os.environ['LOGGING'] = 'Debug'
+    elif logging == 'vvv':
+        os.environ['LOGGING'] == 'Info'
+    elif logging == 'vv':
+        os.environ['LOGGING'] == 'Warning'
+    else:
+        os.environ['LOGGING'] = 'File'
 
 
 def make_logger(loggerName, filename):
@@ -12,7 +27,17 @@ def make_logger(loggerName, filename):
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
+    level = os.environ.get('LOGGING', None)
+    if level == 'Debug':
+        ch.setLevel(logging.DEBUG)
+    elif level == 'Info':
+        ch.setLevel(logging.INFO)
+    elif level == 'Warning':
+        ch.setLevel(logging.WARNING)
+    elif level == 'File':
+        ch.setLevel(logging.ERROR)
+    else:
+        ch.setLevel(logging.CRITICAL)# in case there is an issue with env variable
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

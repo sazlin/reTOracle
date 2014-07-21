@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import redis
 import os
 import sql_queries as sql_q
