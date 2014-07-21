@@ -14,6 +14,9 @@ def init_pool():
     elif r_config == 'Test':
         print "REDIS: Using Test Redis Service"
         POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379, db=0)
+    elif r_config == 'Local':
+        print "REDIS: Using Local Redis Service"
+        POOL = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0)
     else:
         raise Exception('R_CONFIG not set.')
 

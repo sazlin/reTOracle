@@ -29,7 +29,7 @@ def _init_db_config():
         DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif r_config == 'Test':
+    elif r_config == 'Test' or r_config == 'Local':
         DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
