@@ -146,16 +146,6 @@ def _build_q1_query():
     sql.append("""ORDER BY HashTagCount DESC""")
     return (" \r\n".join(sql), args)
 
-def _query_tweets_counts_per_filter():
-    """
-    builds a query string for fetching tweet counts per filter
-    """
-    sql = []
-    sql.append("""SELECT * FROM filters;""")
-    sql.append("""ORDER BY total_tweet_count DESC""")
-    return (" \r\n".join(sql), args)
-
-
 
 def _build_q2_query():
     """build a query string for Q2 using FilterMap"""
@@ -182,14 +172,6 @@ def _build_q2_query():
     return (" \r\n".join(sql), args)
 
 
-def _query_popular_users():
-    sql = []
-    for filter_ in FilterMap:
-        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count""")
-    return (" \r\n".join(sql), args)
-
-
-
 def _build_q3_query():
     sql = """
     SELECT screen_name, text FROM massive
@@ -199,12 +181,28 @@ def _build_q3_query():
     return (sql, None)
 
 
-def _build_q4_query():
+def _query_filter_tweets_counts():
+    """
+    builds a query string for fetching tweet counts per filter
+    """
     sql = []
-    sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
-    sql.append("""WHERE json_array_length(location) <> 0""")
-    sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
-    return (" ".join(sql), None)
+    sql.append("""SELECT * FROM filters;""")
+    sql.append("""ORDER BY total_tweet_count DESC""")
+    return (" \r\n".join(sql), args)
+
+def _query_popular_users():
+    sql = []
+    for filter_ in FilterMap:
+        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count""")
+    return (" \r\n".join(sql), args)
+
+def _query_tweet_ids():
+    sql = """
+    SELECT screen_name, text FROM tweets
+    ORDER BY tweet_id DESC
+    LIMIT 1;
+    """
+    return (swl, None)
 
 
 def _build_save_tweet_sql():
@@ -217,6 +215,18 @@ def _build_save_tweet_sql():
             VALUES(
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s); """, [])
+
+
+
+
+def _build_q4_query():
+    sql = []
+    sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
+    sql.append("""WHERE json_array_length(location) <> 0""")
+    sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
+    return (" ".join(sql), None)
+
+
 
 
 def get_query_results(chart_string, args=None, need_fetch=True):
