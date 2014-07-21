@@ -146,6 +146,16 @@ def _build_q1_query():
     sql.append("""ORDER BY HashTagCount DESC""")
     return (" \r\n".join(sql), args)
 
+def _query_tweets_counts_per_filter():
+    """
+    builds a query string for fetching tweet counts per filter
+    """
+    sql = []
+    sql.append("""SELECT * FROM filters;""")
+    sql.append("""ORDER BY total_tweet_count DESC""")
+    return (" \r\n".join(sql), args)
+
+
 
 def _build_q2_query():
     """build a query string for Q2 using FilterMap"""
@@ -170,6 +180,14 @@ def _build_q2_query():
     sql.append("""WHERE pos = 1""")
     sql.append("""ORDER BY hashtag, HashTagCount DESC""")
     return (" \r\n".join(sql), args)
+
+
+def _query_popular_users():
+    sql = []
+    for filter_ in FilterMap:
+        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count""")
+    return (" \r\n".join(sql), args)
+
 
 
 def _build_q3_query():
