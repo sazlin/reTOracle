@@ -1,5 +1,6 @@
 import json
 
+<<<<<<< HEAD
 filter_list = {"c/cpp": {'search_terms':
                        {'hashtags': ['#cprogramming', '#clanguage'],
                         'users': [],
@@ -8,6 +9,16 @@ filter_list = {"c/cpp": {'search_terms':
                        {'hashtags': [],
                         'users': [],
                         'keywords': ['cpp -investment']}},
+=======
+filter_list = {"c": {'search_terms':
+                       {'hashtags': ['#cprogramming', '#clanguage'],
+                        'users': [],
+                        'keywords': []},
+                     'blacklist':
+                       {'hashtags': [],
+                        'users': [],
+                        'keywords': []}},
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 "python": {'search_terms':
                 {'hashtags': ['#Python', '#Django', '#pyconau', '#numpy', '#Flask'],
                  'users': ['@gvanrossum', '@ThePSF', '@SciPyTip', '@brandon_rhodes', '@dstuft', '@raymondh', '@PloneCMS'],

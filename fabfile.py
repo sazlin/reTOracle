@@ -3,17 +3,23 @@ from fabric.api import run
 from fabric.api import env
 from fabric.api import execute
 from fabric.api import prompt
+<<<<<<< HEAD
 from fabric.api import put
 from fabric.api import sudo
 from fabric.utils import abort
 from fabric.contrib.console import confirm
 from fabric.contrib.project import upload_project
 from fabric.contrib.files import exists
+=======
+from fabric.api import sudo
+from fabric.contrib.project import upload_project
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 
 import boto.ec2
 import time
 import os
 
+<<<<<<< HEAD
 env.aws_region = 'us-west-2'
 
 
@@ -77,6 +83,44 @@ def deploy(r_dest=None, r_option='Full'):
     run_command_on_server(_restart_nginx, instance)
     print("Deployment Complete for Instance {}.".format(instance.id))
 
+=======
+# This host is an instance SAzlin created just for rheTOracle development
+env.hosts = ['ubuntu@ec2-54-213-173-105.us-west-2.compute.amazonaws.com']
+env.aws_region = 'us-west-2'
+
+
+def deploy():
+    conn = _get_ec2_connection()
+    all_instances = conn.get_only_instances()
+    running_instances = [i for i in all_instances if i.state == 'running']
+    for instance in running_instances:
+        if instance.public_dns_name in env.hosts[0]:
+            print("Deployment Started for Instance {}:".format(instance.id))
+            #Update apt-get
+            run_command_on_server(_update_apt_get, instance)
+
+            #Install pip
+            run_command_on_server(_setup_pip, instance)
+
+            #Install requirements
+            run_command_on_server(_auto_install_req, instance)
+
+            #Remove existing project files
+            run_command_on_server(_remove_existing_project_files, instance)
+
+            #Upload new project files
+            run_command_on_server(_upload_project_files, instance)
+
+            #Install, configure, and start nginx
+            run_command_on_server(_install_nginx, instance)
+
+            #Install, configure, and start supervisor
+            run_command_on_server(_setup_supervisor, instance)
+
+            #Restart nginx
+            run_command_on_server(_restart_nginx, instance)
+            print("Deployment Complete for Instance {}.".format(instance.id))
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 
 def _update_apt_get():
     print("Updating apt-get...")
@@ -107,6 +151,7 @@ def _setup_flask():
     print("Done.")
 
 
+<<<<<<< HEAD
 def _rm_if_exists(path):
     if exists(path):
         sudo("rm " + path)
@@ -141,12 +186,21 @@ def _upload_project_files():
 
 
 
+=======
+def _upload_project_files():
+    print("Uploading Project files from {}".format(os.getcwd()))
+    upload_project(remote_dir='./', use_sudo=True)
+    print("Upload complete")
+
+
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 def _remove_existing_project_files():
     print("Removing existing project files...")
     sudo('rm -rf ./*')
     print("Old files removed.")
 
 
+<<<<<<< HEAD
 def setup_supervisor(r_dest, instance):
     if r_dest == 'Prod':
         run_command_on_server(_setup_supervisor_prod, instance)
@@ -210,6 +264,33 @@ def _install_nginx_test():
     if exists("/etc/nginx/sites-available/default"):
         sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
     sudo('mv ./rheTOracle/nginx_config_test /etc/nginx/sites-available/default')
+=======
+def _setup_supervisor():
+    print("Setup and run supervisor...")
+    # ret code 1 comes back if no process to kill, which is fine
+    # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
+    env.ok_ret_codes = [0, 1, 127]
+    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('killall -w supervisord')
+    env.ok_ret_codes = [0]
+    sudo('apt-get install supervisor')
+    sudo('mv ./rheTOracle/supervisord.conf /etc/supervisord.conf')
+    sudo('/etc/init.d/supervisor start')
+    print("Supervisor running")
+
+
+def setup_nginx(instance=None):
+    print("Setting up nginx...")
+    run_command_on_server(_install_nginx, instance)
+    print("nginx installed and started.")
+
+
+def _install_nginx():
+    print("Setting up nginx...")
+    sudo('apt-get install nginx')
+    sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
+    sudo('mv ./rheTOracle/nginx_config /etc/nginx/sites-available/default')
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")
 

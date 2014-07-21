@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 redis==2.10.1
+=======
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 Fabric==1.9.0
 Flask==0.10.1
 Jinja2==2.7.3

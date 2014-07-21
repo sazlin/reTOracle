@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 h1 {
   font-size: 40px;
 }
 
+=======
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 body {
   padding-top: 50px;
 }
@@ -10,8 +13,12 @@ body {
   margin-right: auto;
   margin-left: auto;
   padding-top: 50px;
+<<<<<<< HEAD
 
   min-height: 550px;
+=======
+  max-width: 810px;
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
   text-align: center;
 
 }
@@ -29,12 +36,20 @@ body {
 
 .row-chunk{
   float: left;
+<<<<<<< HEAD
   width: 50%;
   min-width: 500px;
 }
 
 .charts{
   height: 200px;
+=======
+  width: 400px;
+}
+
+.charts{
+  height: 300px;
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 }
 
 
@@ -54,6 +69,7 @@ body {
     display: block;
 }
 
+<<<<<<< HEAD
 .twitter_tick{
     font-size: 15px;
 }
@@ -74,6 +90,10 @@ body {
 
 footer{
 
+=======
+footer{
+    border-top: 1px solid #666;
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
     padding-top: 15px;
     text-align: center;
     font-size: 14px;

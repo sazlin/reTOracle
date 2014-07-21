@@ -2,7 +2,10 @@ $(document).ready(function(){
   //Now go bind AJAX-powered event handlers for our forms
   var frm1 = $('#q1_form');
   var frm2 = $('#q2_form');
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
   //var frm3 = $('#q3_form');
   //var frm4 = $('#q4_form');
   //frm1
@@ -41,6 +44,7 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "HashtagCount"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0]]);
   var chart1View;
+<<<<<<< HEAD
   var chart1Options = {width:500, height:300,
                  vAxis: {
                   textStyle:{
@@ -55,15 +59,25 @@ $(document).ready(function(){
                  titleTextStyle: {
                   auraColor: '#FFF',
                  },
+=======
+  var chart1Options = {width:400, height:300,
+                 vAxis: {},
+                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+                 legend: { position: "none" },
+                 chartArea:{top:0,width:"50%",height:"50%"},
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
                  animation:{
                     duration: 900,
                     easing: 'out',
                   },
+<<<<<<< HEAD
                   annotations:{
                     textStyle:{
                     auraColor: '#FFF',
                     }
                   }
+=======
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
   };
 
   //Create the function that will redraw and animate Chart1
@@ -85,6 +99,7 @@ $(document).ready(function(){
   var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
   var chart2View;
+<<<<<<< HEAD
   var chart2Options = {width:500, height:300,
                vAxis: {
                   textStyle:{
@@ -99,10 +114,18 @@ $(document).ready(function(){
                titleTextStyle: {
                 auraColor: '#FFF',
               },
+=======
+  var chart2Options = {width:400, height:300,
+               vAxis: {},
+               hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+               legend: { position: "none" },
+               chartArea:{top:0,width:"50%",height:"50%"},
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
                animation:{
                   duration: 900,
                   easing: 'out',
                 },
+<<<<<<< HEAD
                 backgroundColor: { fill:'transparent' },
                 annotations:{
                     textStyle:{
@@ -110,6 +133,8 @@ $(document).ready(function(){
                     }
                 }
 
+=======
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
   };
 
   //Create the function that will redraw and animate Chart1
@@ -134,6 +159,7 @@ $(document).ready(function(){
   //   chart1Data.setValue(1,1,20 * Math.random());
   //   drawChart1();
   // }, 1000);
+<<<<<<< HEAD
   // add all your code to this method, as this will ensure that page is loaded
   //AmCharts.ready(function() {
   //Twitter icon :)
@@ -186,3 +212,40 @@ $(document).ready(function(){
   }, 3000);
 });
 
+=======
+});
+
+
+
+// function createBarChart2(data, target) {
+//   // Create and draw the visualization.
+//   var view = new google.visualization.DataView(data);
+//   view.setColumns([0, 1,
+//                  { calc: "stringify",
+//                    sourceColumn: 2,
+//                    type: "string",
+//                    role: "annotation" }
+//                  ]);
+
+
+//   var chart = new google.visualization.BarChart(document.getElementById(target));
+//   chart.draw(view, options);
+// }
+
+// function drawTestVisualization(){
+//   // Create and populate the data table.
+//   var data = google.visualization.arrayToDataTable([
+//     ["@User", "#Seattle"],
+//     ["SeanAzlin2", 123],
+//     ["BillG", 102],
+//     ["Obama4Prez", 89],
+//     ["JohnShivero", 83],
+//     ["Muazify911", 65]
+//   ]);
+
+//   createBarChar1(data, 'visualization1');
+//   createBarChar1(data, 'visualization2');
+//   //createBarChar1(data, 'visualization3');
+//   //createBarChar1(data, 'visualization4');
+// }
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe

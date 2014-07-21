@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Welcome to rheTOracle!</h1>
+<<<<<<< HEAD
 
 <section class="row">
     <section class="row-chunk">
@@ -16,6 +17,22 @@
 </section>
 
 
+=======
+<section class="row">
+    <section class="row-chunk">
+        <form class="form_content" id="q1_form" action="{{ url_for('q1_query') }}">
+            <div class="form_text">Which programming language is being talked about the most?</div>
+        </form>
+        <div id="visualization1" class="charts"></div>
+    </section>
+    <section class="row-chunk">
+        <form class="form_content"  id="q2_form" action="{{ url_for('q2_query') }}">
+            <div class="form_text">Who is *the* guy to follow for a given language?</div>
+        </form>
+    <div id="visualization2" class="charts"></div>
+    </section>
+</section>
+>>>>>>> 6d4040e70dd964c6b037ec30067fe8d3b46b62fe
 {%if FALSE %}
 <section class="row">
     <section class="row-chunk">
