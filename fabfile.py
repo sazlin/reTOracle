@@ -135,7 +135,10 @@ def _upload_config_files():
 def _upload_project_files():
     print("Uploading Project files from {}".format(os.getcwd()))
     upload_project(remote_dir='./', use_sudo=True)
+    if exists('~/rheTOracle/retoracle.log'):
+        sudo('chown ubuntu ~/rheTOracle/retoracle.log')
     print("Upload complete")
+
 
 
 def _remove_existing_project_files():
