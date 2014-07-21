@@ -2,21 +2,28 @@
 
 import logging
 import os
+import argparse
 
 
-def set_level(logging='v'):
+parser = argparse.ArgumentParser()
+parser.add_argument('setting')
+parser.add_argument('-v', '--verbosity', type=int)
+ARGS = parser.parse_args()
 
-    if logging == 'vvvv':
-        os.environ['LOGGING'] = 'Debug'
-    elif logging == 'vvv':
-        os.environ['LOGGING'] = 'Info'
-    elif logging == 'vv':
-        os.environ['LOGGING'] = 'Warning'
-    else:
-        os.environ['LOGGING'] = 'File'
+# def set_level(logging='v'):
+
+#     if logging == 'vvvv':
+#         os.environ['LOGGING'] = 'Debug'
+#     elif logging == 'vvv':
+#         os.environ['LOGGING'] = 'Info'
+#     elif logging == 'vv':
+#         os.environ['LOGGING'] = 'Warning'
+#     else:
+#         os.environ['LOGGING'] = 'File'
 
 
 def make_logger(loggerName, filename):
+
     # create logger with 'spam_application'
     logger = logging.getLogger(loggerName)
     logger.setLevel(logging.DEBUG)
@@ -27,14 +34,13 @@ def make_logger(loggerName, filename):
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    level = os.environ.get('LOGGING', None)
-    if level == 'Debug':
+    if ARGS.verbosity == 4:
         ch.setLevel(logging.DEBUG)
-    elif level == 'Info':
+    elif ARGS.verbosity == 3:
         ch.setLevel(logging.INFO)
-    elif level == 'Warning':
+    elif ARGS.verbosity == 2:
         ch.setLevel(logging.WARNING)
-    elif level == 'File':
+    elif ARGS.verbosity == 1:
         ch.setLevel(logging.ERROR)
     else:
         ch.setLevel(logging.CRITICAL)# in case there is an issue with env variable
@@ -49,3 +55,5 @@ def make_logger(loggerName, filename):
     logger.addHandler(ch)
 
     return logger
+
+

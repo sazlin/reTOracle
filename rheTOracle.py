@@ -11,7 +11,9 @@ from time import time
 import os
 import sys
 # from passlib.hash import pbkdf2_sha256
-from logger import make_logger, set_level
+from logger import make_logger
+import argparse
+
 
 logger = make_logger('flask_app', 'retoracle.log')
 
@@ -51,7 +53,7 @@ def map_q1_results_to_language(parsed_results):
         search_terms = filter_list[language]['search_terms']
         for hashtag in search_terms['hashtags']:
             for result in parsed_results:
-                print "map_q1_results: Comparing ",hashtag[1:], "and", result[0]
+                # logger.info("map_q1_results: Comparing %s and %s ", hashtag[1:], result[0])
                 if hashtag[1:] == result[0]:
                     language_count += result[1]
         final_result.append([language, language_count])
@@ -128,7 +130,7 @@ def get_latest_geo_tweet():
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
     except Exception as x:
-        logger.error("Geotweet json error: ", x.args)
+        logger.error("Geotweet json error: %S", x.args, exc_info=True)
     try:
         response = {}
         response['map'] = 'worldLow'
@@ -148,7 +150,7 @@ def get_latest_geo_tweet():
         response['images'][0]['description'] = text
         response_json = json.dumps(response)
     except Exception as x:
-        logger.error("Geotweet response error: ", x.args)
+        logger.error("Geotweet response error: %s", x.args, exc_info=True)
     resp = Response(response=response_json,
                     status=200,
                     mimetype="application/json")
@@ -166,25 +168,24 @@ def ticker_fetch():
     return resp
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('setting')
+parser.add_argument('-v', '--verbosity', type=int)
+ARGS = parser.parse_args()
+
+
 if __name__ == '__main__':
 
-    if sys.argv[1] == 'Prod':
-        if sys.argv[2]:
-            set_level(sys.argv[2])
+    if ARGS.setting == 'Prod':
         app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif sys.argv[1] == 'Test':
-        if sys.argv[2]:
-            set_level(sys.argv[2])
+    elif ARGS.setting == 'Test':
         app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
-    elif sys.argv[1] == 'Local':
-        if sys.argv[2]:
-            set_level(sys.argv[2])
 
     app.config['DB_CONNECTION'] = None
     app.config['DB_CURSOR'] = None
