@@ -20,7 +20,7 @@ def init_pool():
         POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379, db=0)
     else:
         raise Exception('R_CONFIG not set.')
-        logger.error('R_CONFIG not set properly')
+        logger.error('R_CONFIG not set properly', exc_info=True)
 
 
 def get_redis_query(q_type):
@@ -32,7 +32,7 @@ def get_redis_query(q_type):
         return json_list
     else:
         raise ValueError("q_type not in REDIS")
-        logger.error('Requested query not in REDIS')
+        logger.error('Requested query not in REDIS', exc_info=True)
 
 
 def _set_to_redis(key, value):
@@ -40,7 +40,7 @@ def _set_to_redis(key, value):
         raise Exception('POOL not initiated. Call init_pool().')
     logger.info('getting r_server')
     r_server = redis.Redis(connection_pool=POOL)
-    logger.info("setting key value on redis:", key, '=', value)
+    logger.info("setting key value on redis: %s = %s", key, value)
     r_server.set(key, value)
     logger.info('done')
 
@@ -56,15 +56,15 @@ def maint_redis():
             try:
                 result = sql_q.get_query_results(key)
             except Exception as x:
-                logger.error("Redis: something went wrong getting results for ", key, ": ", x.args)
+                logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
             if result is None:
-                raise Exception("REDIS: SQL Query result is None for ", key)
-                logger.error("SQL query result is none for", key)
+                raise Exception("REDIS: SQL Query result is None for %s ", key, exc_info=True)
+                logger.error("SQL query result is none for %s", key, exc_info=True)
             else:
-                logger.info("Redis: Settings query results in redis for ", key)
+                logger.info("Redis: Settings query results in redis for %s", key)
                 try:
                     _set_to_redis(key, result)
                 except Exception as x:
-                    logger.error("Redis: Something went wrong while setting k,v pair on redis: ", x.args)
+                    logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
                 else:
-                    logger.info('Redis: [SUCCESS] results set for ', key)
+                    logger.info('Redis: [SUCCESS] results set for %s ', key)

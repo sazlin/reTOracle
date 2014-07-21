@@ -9,9 +9,9 @@ def set_level(logging='v'):
     if logging == 'vvvv':
         os.environ['LOGGING'] = 'Debug'
     elif logging == 'vvv':
-        os.environ['LOGGING'] == 'Info'
+        os.environ['LOGGING'] = 'Info'
     elif logging == 'vv':
-        os.environ['LOGGING'] == 'Warning'
+        os.environ['LOGGING'] = 'Warning'
     else:
         os.environ['LOGGING'] = 'File'
 
