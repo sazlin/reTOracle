@@ -25,8 +25,12 @@ def home_page():
 
 @app.route('/about', methods=['GET'])
 def about_page():
-    with open('/static/markdown/about.md', 'rb') as f:
-        content = Markup(markdown.markdown(f.read()))
+    try:
+        with open('./static/markdown/about.md', 'rb') as f:
+            content = Markup(markdown.markdown(f.read()))
+    except Exception as e:
+        print "Markdown fail: ", e.args
+        print os.getcwd()
     return render_template('about.html', **locals())
 
 

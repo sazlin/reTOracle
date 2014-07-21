@@ -1,4 +1,4 @@
-###What is reTOracle?
+#What is reTOracle?
 For our first group project at Code Fellows, we (John Shiver, Muazzez Mira, and Sean Azlin) set out to create a service that could collect, analyze, and visualize Twitter data in near real time. We dubbed this service [reTOracle](http://retoracle.com/). With reTOracle, we decided to target data that helped us answer a couple specific questions that we were all interested in answering:
 
 * Which programming language is the most discussed on Twitter?
@@ -34,7 +34,10 @@ We have a second project week coming up and we all intend to continue working on
 * Build out a sentiment analysis service using a composite of multiple machine learning algorithms and run that service against our database of collected tweets.
 
 ###Project Ninjas:
-* John Shiver
-* Muazzez Mira
-* Sean Azlin
-* Jack Tian
+* John Shiver | [LinkedIn](http://www.linkedin.com/pub/john-shiver/49/765/129/) | [Email](mailto:johneshiver@gmail.com) | [Twitter](https://twitter.com/TrustyJohn)
+* Sean Azlin | [LinkedIn](www.linkedin.com/in/seanazlin/) | [Email](mailto:sazlin@gmail.com) | [Twitter](http://twitter.com/SeanAzlin2)
+* Muazzez Mira | [LinkedIn]() | [Email]() | [Twitter]()
+* Jack Tian | [LinkedIn]() | [Email]() | [Twitter]()
+
+###GitHub:
+[GitHub Page](https://github.com/sazlin/reTOracle)
