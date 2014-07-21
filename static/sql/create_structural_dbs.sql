@@ -30,9 +30,13 @@ CREATE TABLE tweets(
 
 CREATE TABLE user_filter_join(
   user_id REFERENCES users ON DELETE CASCADE,
-  filter_id REFERENCES users ON DELETE CASCADE,
+  filter_id REFERENCES filters ON DELETE CASCADE,
   tweet_count smallint CHECK (tweet_count > 0),
   first_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (user_id, filter_id)
+  PRIMARY KEY (user_id, filter_id),
+  FOREIGN KEY (filter_id),
+  FOREIGN KEY (user_id)
 );
+
+
