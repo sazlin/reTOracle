@@ -85,6 +85,7 @@ def _update_apt_get():
 
 def _auto_install_req():
     f = open("requirements.txt", 'r')
+    # sudo("apt-get install libreadline6 libreadline6-dev")
     sudo("apt-get build-dep python-psycopg2")
     print("DEPENDENCIES BUILT")
     for line in f:
