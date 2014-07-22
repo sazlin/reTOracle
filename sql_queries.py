@@ -181,6 +181,7 @@ def _build_q3_query():
     return (sql, None)
 
 
+# New db structure queries
 def _query_filter_tweets_counts():
     """
     builds a query string for fetching tweet counts per filter
@@ -198,15 +199,40 @@ def _query_popular_users():
 
 def _query_tweet_ids():
     sql = """
-    SELECT screen_name, text FROM tweets
+    SELECT screen_name, tweet_text FROM tweets
     ORDER BY tweet_id DESC
     LIMIT 1;
     """
     return (swl, None)
 
+def _save_tweet_sql():
+    return("""
+        INSERT INTO tweets(
+            tweet_id, tweet_url, tweet_text,
+            hashtags, location, retweetcount)
+        VALUES(%s, %s, %s, %s, %s, %s);
+        """, [])
+
+def _save_new_user_sql():
+    return("""
+        INSERT INTO users(
+            user_id, screen_name, account_url,
+            total_tweet_count, last_tweet_timestamp)
+        VALUES(
+            %s, %s, %s, %s, %s); """,[])
+
+def _save_filters():
+    return ("""
+        INSERT INTO filters(
+            filter_id, filter_name,
+            last_tweeted_timestamp,
+            total_tweet_count)
+        VALUES (%s, %s, %s, %s); """,[])
+
+
+
 
 def _build_save_tweet_sql():
-
     return ("""
             INSERT INTO massive(
                 tweet_id, text, hashtags, user_mentions,
@@ -216,6 +242,8 @@ def _build_save_tweet_sql():
             VALUES(
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s); """, [])
+
+
 
 
 def _build_q4_query():
