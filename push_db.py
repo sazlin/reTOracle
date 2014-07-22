@@ -1,5 +1,5 @@
 from filters_json import filter_list as filters
-import time
+import time, datetime
 import json
 import sys
 import os
@@ -100,6 +100,31 @@ class StdOutListener(StreamListener):
         in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
 
         retweets = json_data.get('retweet_count', None)
+
+        # we need to add save tweet informations here
+        sql_g.get_query_results(
+            'save_tweet',
+            [tweet_id, urls, text, hashtags,
+             location, retweets],
+             need_fetch=False)
+            )
+
+
+        sql_g.get_query_results(
+            'save_user',
+            [user_id, screen_name, account_url,
+            user_total_tweet_count, datetime.datetime.now()],
+            need_fetch=False)
+
+        sql_g.get_query_results(
+            'save_filters',
+            [filter_id, filter_name,
+            datetime.datetime.now(),
+            total_tweet_count]
+            )
+
+
+
 
         sql_q.get_query_results(
             'save_tweet',
