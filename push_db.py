@@ -101,7 +101,7 @@ class StdOutListener(StreamListener):
 
         retweets = json_data.get('retweet_count', None)
 
-        # we need to add save tweet informations here
+        # First save the new tweet in tweets table
         sql_q.get_query_results(
             'save_tweet',
             [tweet_id, urls, text, hashtags,
@@ -109,7 +109,8 @@ class StdOutListener(StreamListener):
              need_fetch=False)
             )
 
-        sql_q.QUERY_STRINGS['check_user']=(screen_name)
+        # if screen_name user exists, update its tweet_count number
+        # else create a new user
         user_row = sql_q.get_query_results('check_user', [screen_name], True)
         if user_row:
             tw_count = sql_q.get_query_results('get_tw_count', []) +1
