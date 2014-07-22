@@ -24,7 +24,8 @@ CREATE TABLE filters(
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
   tweet_url text UNIQUE,
-  tweet_text text,
+  tweet_text text(280),
+  location json,
   retweet_count smallint CHECK (retweet_count > 0)
 );
 

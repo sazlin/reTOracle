@@ -206,6 +206,7 @@ def _query_tweet_ids():
 
 
 def _build_save_tweet_sql():
+
     return ("""
             INSERT INTO massive(
                 tweet_id, text, hashtags, user_mentions,
@@ -215,8 +216,6 @@ def _build_save_tweet_sql():
             VALUES(
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s); """, [])
-
-
 
 
 def _build_q4_query():
