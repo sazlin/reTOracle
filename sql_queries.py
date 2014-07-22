@@ -46,6 +46,7 @@ def _build_query_strings():
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
+    QUERY_STRINGS['check_user'] = _find_user()
 
 
 def _connect_db():
@@ -181,57 +182,6 @@ def _build_q3_query():
     return (sql, None)
 
 
-# New db structure queries
-def _query_filter_tweets_counts():
-    """
-    builds a query string for fetching tweet counts per filter
-    """
-    sql = []
-    sql.append("""SELECT * FROM filters;""")
-    sql.append("""ORDER BY total_tweet_count DESC""")
-    return (" \r\n".join(sql), args)
-
-def _query_popular_users():
-    sql = []
-    for filter_ in FilterMap:
-        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count""")
-    return (" \r\n".join(sql), args)
-
-def _query_tweet_ids():
-    sql = """
-    SELECT screen_name, tweet_text FROM tweets
-    ORDER BY tweet_id DESC
-    LIMIT 1;
-    """
-    return (swl, None)
-
-def _save_tweet_sql():
-    return("""
-        INSERT INTO tweets(
-            tweet_id, tweet_url, tweet_text,
-            hashtags, location, retweetcount)
-        VALUES(%s, %s, %s, %s, %s, %s);
-        """, [])
-
-def _save_new_user_sql():
-    return("""
-        INSERT INTO users(
-            screen_name, account_url,
-            user_total_tweet_count, last_tweet_timestamp)
-        VALUES(
-            %s, %s, %s, %s, %s); """,[])
-
-def _save_filters():
-    return ("""
-        INSERT INTO filters(
-            filter_id, filter_name,
-            last_tweeted_timestamp,
-            total_tweet_count)
-        VALUES (%s, %s, %s, %s); """,[])
-
-
-
-
 def _build_save_tweet_sql():
     return ("""
             INSERT INTO massive(
@@ -244,14 +194,55 @@ def _build_save_tweet_sql():
                 %s, %s, %s); """, [])
 
 
-
-
 def _build_q4_query():
     sql = []
     sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
     sql.append("""WHERE json_array_length(location) <> 0""")
     sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
     return (" ".join(sql), None)
+
+
+
+# New db structure queries
+
+def _find_user():
+    sql = """SELECT 1 from users WHERE screen_name = %s;"""
+    return (sql, [])
+
+
+def _query_filter_tweets_counts():
+    sql = []
+    sql.append("""SELECT * FROM filters;""")
+    sql.append("""ORDER BY total_tweet_count DESC""")
+    return (" \r\n".join(sql), args)
+
+def _query_popular_users():
+    sql = []
+    for filter_ in FilterMap:
+        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count;""")
+    return (" \r\n".join(sql), args)
+
+def _query_tweet_ids():
+    sql = """SELECT screen_name, tweet_text FROM tweets;
+    ORDER BY tweet_id DESC
+    LIMIT 1;"""
+    return (sql, None)
+
+def _save_tweet_sql():
+    return("""INSERT INTO tweets (tweet_id, tweet_url, tweet_text,
+                                                hashtags, location, retweetcount)
+                VALUES (%s, %s, %s, %s, %s, %s); """, [])
+
+def _save_new_user_sql():
+    return("""INSERT INTO users (screen_name, account_url,
+                                user_total_tweet_count, last_tweet_timestamp)
+                 VALUES (%s, %s, %s, %s, %s); """,[])
+
+def _save_filters():
+    return ("""INSERT INTO filters( filter_id, filter_name,
+                                                last_tweeted_timestamp,
+                                                total_tweet_count)
+                   VALUES (%s, %s, %s, %s); """,[])
 
 
 
