@@ -4,10 +4,12 @@
 
 # import sys
 import json
-import sql_queries as sql_q
-import boto
-from boto.s3.key import Key
 import time
+import boto
+import sql_queries as sql_q
+from boto.s3.key import Key
+import boto.emr
+from boto.emr.step import StreamingStep
 
 MIN_EXECUTION_PERIOD = 5.0
 
@@ -34,7 +36,27 @@ def main():
                 replace=True,
                 reduced_redundancy=True,)
 
-            #TODO: create and run MapReduce job
+            #Create, start, and monitor a EMR job
+            emr_conn = boto.emr.connect_to_region('us-west-2')
+            step = StreamingStep(
+                name='reTOracle Sentiment Analysis Step',
+                mapper='s3n://retoracle/sa_mapper.py',
+                reducer='NONE',
+                input='s3n://retoracle/sa_input',
+                output='s3n://retoracle/sa_output')
+            jobid = emr_conn.run_jobflow(
+                name='reTOracle Sentiment Analysis Job',
+                log_uri='s3://retoracle/jobflow_logs',
+                steps=[step],
+                num_instances=2,
+                master_instance_type='m1.medium',
+                slave_instance_type='m1.medium')
+            print "Executing EMR Job:", jobid,
+            while emr_conn.describe_jobflow(jobid) == "RUNNING" or\
+                    emr_conn.describe_jobflow(jobid) == "STARTING" or\
+                    emr_conn.describe_jobflow(jobid) == "WAITING":
+                    print ".",
+            print "Job Done"
 
             #get results and pipe back to db
             key.key = 'sa_results'
