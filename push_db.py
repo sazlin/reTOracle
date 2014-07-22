@@ -102,19 +102,29 @@ class StdOutListener(StreamListener):
         retweets = json_data.get('retweet_count', None)
 
         # we need to add save tweet informations here
-        sql_g.get_query_results(
+        sql_q.get_query_results(
             'save_tweet',
             [tweet_id, urls, text, hashtags,
              location, retweets],
              need_fetch=False)
             )
 
+        sql_q.QUERY_STRINGS['check_user']=(screen_name)
+        user_row = sql_q.get_query_results('check_user', [screen_name], True)
+        if user_row:
+            tw_count = sql_q.get_query_results('get_tw_count', []) +1
+            sql_txt = u'user_id = %s'%screen_name
+            sql_q.get_query_results( 'update_tw_count', [u'users', tw_count, sql_txt])
 
-        sql_g.get_query_results(
+        else :
+            sql_g.get_query_results(
             'save_user',
-            [user_id, screen_name, account_url,
+            [screen_name, account_url,
             user_total_tweet_count, datetime.datetime.now()],
             need_fetch=False)
+
+
+
 
         sql_g.get_query_results(
             'save_filters',
@@ -122,6 +132,7 @@ class StdOutListener(StreamListener):
             datetime.datetime.now(),
             total_tweet_count]
             )
+
 
 
 
