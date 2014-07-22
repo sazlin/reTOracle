@@ -8,7 +8,7 @@ CREATE TABLE users
 (
   screen_name text PRIMARY KEY,
   account_url text,
-  total_tweet_count smallint,
+  tweet_count smallint,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   CHECK (total_tweet_count > 0)
 );
@@ -17,7 +17,7 @@ CREATE TABLE filters(
   filter_id SERIAL PRIMARY KEY,
   filter_name text,
   last_tweeted_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  total_tweet_count smallint CHECK (total_tweet_count > 0)
+  tweet_count smallint CHECK (total_tweet_count > 0)
 );
 
 CREATE TABLE tweets(
