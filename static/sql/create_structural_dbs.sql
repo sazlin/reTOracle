@@ -6,8 +6,7 @@ DROP TABLE tweets;
 --create a the table
 CREATE TABLE users
 (
-  user_id SERIAL PRIMARY KEY,
-  screen_name text UNIQUE,
+  screen_name text PRIMARY KEY,
   account_url text,
   total_tweet_count smallint,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
@@ -23,24 +22,24 @@ CREATE TABLE filters(
 
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
-  user_id REFERENCES users ON DELETE CASCADE
+  screen_name REFERENCES users ON DELETE CASCADE
   tweet_url text UNIQUE,
   tweet_text text(280),
   hashtags text[],
   location json,
   retweet_count smallint CHECK (retweet_count > 0)
-  FOREIGN KEY (user_id)
+  FOREIGN KEY (screen_name)
 );
 
 CREATE TABLE user_filter_join(
-  user_id REFERENCES users ON DELETE CASCADE,
+  screen_name REFERENCES users ON DELETE CASCADE,
   filter_id REFERENCES filters ON DELETE CASCADE,
   tweet_count smallint CHECK (tweet_count > 0),
   first_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (user_id, filter_id),
+  PRIMARY KEY (screen_name, filter_id),
   FOREIGN KEY (filter_id),
-  FOREIGN KEY (user_id)
+  FOREIGN KEY (screen_name)
 );
 
 
