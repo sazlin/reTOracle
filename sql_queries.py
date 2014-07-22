@@ -216,8 +216,8 @@ def _save_tweet_sql():
 def _save_new_user_sql():
     return("""
         INSERT INTO users(
-            user_id, screen_name, account_url,
-            total_tweet_count, last_tweet_timestamp)
+            screen_name, account_url,
+            user_total_tweet_count, last_tweet_timestamp)
         VALUES(
             %s, %s, %s, %s, %s); """,[])
 
