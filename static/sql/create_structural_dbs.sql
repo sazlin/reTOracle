@@ -23,10 +23,13 @@ CREATE TABLE filters(
 
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
+  user_id REFERENCES users ON DELETE CASCADE
   tweet_url text UNIQUE,
   tweet_text text(280),
+  hashtags text[],
   location json,
   retweet_count smallint CHECK (retweet_count > 0)
+  FOREIGN KEY (user_id)
 );
 
 CREATE TABLE user_filter_join(
