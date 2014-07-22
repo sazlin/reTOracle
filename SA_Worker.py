@@ -51,17 +51,26 @@ def main():
                 num_instances=2,
                 master_instance_type='m1.medium',
                 slave_instance_type='m1.medium')
-            print "Executing EMR Job:", jobid,
-            while emr_conn.describe_jobflow(jobid) == "RUNNING" or\
-                    emr_conn.describe_jobflow(jobid) == "STARTING" or\
-                    emr_conn.describe_jobflow(jobid) == "WAITING":
-                    print ".",
+            print "Executing EMR Job:", jobid
+            print "Waiting for job to complete..."
+            while emr_conn.describe_jobflow(jobid).state == "RUNNING" or\
+                    emr_conn.describe_jobflow(jobid).state == "STARTING" or\
+                    emr_conn.describe_jobflow(jobid).state == "WAITING":
+                    t1 = time.time()
+                    print "Job in progress",
+                    while time.time() - t1 > 10:
+                        print ".",
+                        time.sleep(2)
+                    print "Checking job status...",
             print "Job Done"
 
             #get results and pipe back to db
-            key.key = 'sa_results'
+            key.key = '/sa_output/'
+            print "Getting results...",
             json_results = key.get_contents_as_string()
             results = json.loads(json_results)
+            print "Done."
+            print "Outputting results..."
             for result in results:
                 # import pdb; pdb.set_trace()
                 sql_q.get_query_results(
@@ -69,6 +78,15 @@ def main():
                     (result[0], 1),
                     False)
                 print result[0], 1
+            print "Done."
+            # clean up output
+            #Clear our sa_output key
+            print "Cleaning up...",
+            for key in bucket.list(prefix='/sa_output/'):
+                key.delete()
+            #Now clear sa_output itself
+            bucket.delete_key(key)
+            print "Done."
         else:
             tweet_batch = json.loads(sql_q.get_query_results('tweet_batch'))
             for tweet in tweet_batch:
