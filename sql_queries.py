@@ -48,6 +48,7 @@ def _build_query_strings():
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
     QUERY_STRINGS['check_user'] = _find_user()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
+    QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
 
 
 def _connect_db():
@@ -210,8 +211,12 @@ def _find_user():
     sql = """SELECT 1 from users WHERE screen_name = %s;"""
     return (sql, [])
 
+def _get_tweet_count():
+    sql=("""SELECT 1 from %s WHERE %s;""")
+    return (sql, [])
+
 def _update_tweet_count():
-    sql = ("""UPDATE %s SET tweet_count = %s WHERE %s""")
+    sql = ("""UPDATE %s SET tweet_count = %s WHERE %s;""")
     return (sql, [])
 
 
