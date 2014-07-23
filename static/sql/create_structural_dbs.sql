@@ -14,8 +14,7 @@ CREATE TABLE users
 );
 
 CREATE TABLE filters(
-  filter_id SERIAL PRIMARY KEY,
-  filter_name text,
+  filter_name PRIMARY KEY,
   last_tweeted_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   tweet_count smallint CHECK (total_tweet_count > 0)
 );
@@ -33,12 +32,12 @@ CREATE TABLE tweets(
 
 CREATE TABLE user_filter_join(
   screen_name REFERENCES users ON DELETE CASCADE,
-  filter_id REFERENCES filters ON DELETE CASCADE,
+  filter_name REFERENCES filters ON DELETE CASCADE,
   tweet_count smallint CHECK (tweet_count > 0),
   first_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (screen_name, filter_id),
-  FOREIGN KEY (filter_id),
+  PRIMARY KEY (screen_name, filter_name),
+  FOREIGN KEY (filter_name),
   FOREIGN KEY (screen_name)
 );
 
