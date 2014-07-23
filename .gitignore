@@ -58,3 +58,6 @@ docs/_build/
 supervisord-*.conf
 nginx_config_*
 
+# ignoring test / training data
+Sentiment Analysis/test_data
+Sentiment Analysis/training_data
