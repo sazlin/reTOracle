@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from filters_json import filter_list as filters
 import time
 import json
@@ -7,11 +9,14 @@ import sql_queries as sql_q
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+from logger import make_logger
 
 
 req_tok_url = 'https://api.twitter.com/oauth/request_token'
 oauth_url = 'https://api.twitter.com/oauth/authorize'
 acc_tok_url = 'https://api.twitter.com/oauth/access_token'
+
+logger = make_logger('push_db', 'retoracle.log')
 
 
 def return_filters():
@@ -106,30 +111,31 @@ class StdOutListener(StreamListener):
             [tweet_id, text, hashtags, user_mentions,
              created_at, screen_name, urls, location,
              in_reply_to_screen_name, retweets],
-             need_fetch=False)
+            need_fetch=False)
 
     def on_error(self, status):
         error_counter = 0
+        logger.error('Twitter stream error, status: ', status)
         if status == 420:
             time.sleep(15)
-            print "Made too many requests!"
-            print '*' * 45
             error_counter += 1
-            print "Errors: ", error_counter
+            logger.info('There have been %d 420 errors', error_counter)
+
 
 if __name__ == '__main__':
     sql_q.init()
+    logger.info('Connected to DB')
     auth = None
     if sys.argv[1] == 'Prod':
         auth = OAuthHandler(os.environ.get('R_TWITTER_CONSUMER_KEY'),
-                                        os.environ.get('R_TWITTER_CONSUMER_SECRET'))
+                            os.environ.get('R_TWITTER_CONSUMER_SECRET'))
         auth.set_access_token(os.environ.get('R_TWITTER_ACCESS_TOKEN'),
-                                         os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
+                              os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
     elif sys.argv[1] == 'Test':
         auth = OAuthHandler(os.environ.get('R_TEST_TWITTER_CONSUMER_KEY'),
-                                        os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
+                            os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
         auth.set_access_token(os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN'),
-                                         os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
+                              os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
 
     l = StdOutListener()
     stream_filters = return_filters()
