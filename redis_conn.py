@@ -43,8 +43,7 @@ def maint_redis():
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        # HACK - we don't want to redo 'save_tweet'
-        if not key == 'save_tweet':
+        if key[:5] == 'fetch' :
             print "Redis: Querying Sql and getting results..."
             result = None
             try:
@@ -61,3 +60,6 @@ def maint_redis():
                     print "Redis: Something went wrong while setting k,v pair on redis: ", x.args
                 else:
                     print 'Redis: [SUCCESS] results set for ', key
+
+
+
