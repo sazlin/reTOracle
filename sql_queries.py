@@ -46,6 +46,7 @@ def _build_query_strings():
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
+    QUERY_STRINGS['save_filters']= _save_filters()
     QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
