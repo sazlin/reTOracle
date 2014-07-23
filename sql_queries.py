@@ -56,6 +56,9 @@ def _build_query_strings():
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
     QUERY_STRINGS['update_timestamp'] = _update_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
+    QUERY_STRINGS['filter_tw_counts'] = _query_filter_tweets_counts()
+    QUERY_STRINGS['popular_users'] = _query_popular_users()
+    QUERY_STRINGS['tweet_ids'] = _query_tweet_ids()
 
 
 def _connect_db():
@@ -225,6 +228,7 @@ def _get_tweet_count():
 def _update_tweet_count():
     sql = ("""UPDATE %s SET tweet_count = %s WHERE %s;""")
     return (sql, [])
+
 def _update_timestamp():
     sql = ("""UPDATE %s SET last_tweet_timestamp = %s WHERE %s;""")
 
@@ -262,12 +266,13 @@ def _save_filters():
                                                 total_tweet_count)
                    VALUES (%s, %s, %s, %s); """,[])
 
-
 def save_user_filter_join():
     return ("""INSERT INTO user_filter_join(screen_name, filter_name, tweet_count,
         first_tweet_timestamp, last_tweet_timestamp)
         VALUES (%s, %s, %s, %s, %s)
         """)
+
+
 
 def get_query_results(chart_string, args=None, need_fetch=True):
     if args is None:
