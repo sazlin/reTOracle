@@ -15,7 +15,7 @@ CREATE TABLE users
 
 CREATE TABLE filters(
   filter_name PRIMARY KEY,
-  last_tweeted_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
+  last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   tweet_count smallint CHECK (total_tweet_count > 0)
 );
 
