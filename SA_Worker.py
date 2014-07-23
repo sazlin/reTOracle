@@ -32,8 +32,14 @@ MAX_BATCH_SIZE = 100000
 # jobs for up to BATCH_SIZE batches of Tweets that need SA?
 ALLOW_EMR = True
 
-# Number and instance type of slave nodes to use for EMR jobs
-EMR_NUM_SLAVE_NODES = 4
+# Number of total nodes to use for EMR jobs
+# 1 Node is always used for Master/Controller node, rest are Slave/Cores
+# EMR_NUM_TOTAL_NODES - 1 = # of slave nodes
+# Ex: EMR_NUM_TOTAL_NODES = 1 --> 1 master node, 1 core node
+# Ex. EMR_NUM_TOTAL_NODES = 4 --> 1 master node, 3 core nodes
+EMR_NUM_TOTAL_NODES = 4
+
+# Instance type of slave nodes
 EMR_TYPE_SLAVE_NODES = 'm1.small'
 
 # Instance type of master node
@@ -55,17 +61,22 @@ def _delete_key_if_exists(bucket, key_str):
     if bucket:
         key = bucket.get_key(key_str)
         if key:
+            print "Deleting ", key.name
             key.delete()
 
 
 def cleanup(bucket):
     """clean up any existing inputs and output from S3"""
+    print "Cleaning up any lingering input and output on S3..."
     _delete_key_if_exists(bucket, 'sa_input')
     _delete_key_if_exists(bucket, 'sa_mapper.py')
     _delete_key_if_exists(bucket, 'sa_reducer.py')
-    _delete_key_if_exists(bucket, 'sa_output/part-00000')
-    _delete_key_if_exists(bucket, 'sa_output/_SUCCESS')
+    if bucket:
+        for output_part in bucket.list(prefix='sa_output'):
+            print "Deleting ", output_part.name
+            output_part.delete()
     _delete_key_if_exists(bucket, 'sa_output')
+    print "Done."
 
 
 def _create_sa_input(key, bs):
@@ -135,7 +146,7 @@ def _create_sa_job(emr_conn):
         name='reTOracle Sentiment Analysis Job',
         log_uri='s3://retoracle/jobflow_logs',
         steps=[step],
-        num_instances=EMR_NUM_SLAVE_NODES,
+        num_instances=EMR_NUM_TOTAL_NODES,
         master_instance_type=EMR_TYPE_MASTER_NODE,
         slave_instance_type=EMR_TYPE_SLAVE_NODES,
         ec2_keyname=EMR_KP,
@@ -168,14 +179,17 @@ def _wait_for_job_to_complete(emr_conn, jobid):
 
 
 def push_sa_results_to_sql_from_s3(bucket):
-    output_key = bucket.get_key('sa_output/part-00000')
-    if not output_key:
-        raise Exception('No output or wrong output key specified')
     print "Getting results from S3...",
-    json_results = output_key.get_contents_as_string()
+    json_result_list = []
+    for output_part in bucket.list(prefix='sa_output'):
+        json_result_list.append(output_part.get_contents_as_string())
+    json_results = "\n".join(json_result_list)
     print "Done."
     print "Outputting results to SQL..."
-    for result in iter(json_results.splitlines()):
+    results = json_results.splitlines()
+    count = 1
+    total = len(results)
+    for result in iter(results):
         try:
             tweet_sent = json.loads(result)
         except:
@@ -185,7 +199,9 @@ def push_sa_results_to_sql_from_s3(bucket):
                 'set_tweet_sent',
                 (tweet_sent[0], int(tweet_sent[1])),
                 False)
-            print tweet_sent[0], int(tweet_sent[1])
+            print tweet_sent[0], int(tweet_sent[1]),
+            print "[", count, "of", total, "]"
+            count += 1
     print "Done."
 
 
@@ -234,15 +250,17 @@ def main():
                     [min(num_todo, MAX_BATCH_SIZE)]))
 
             #Run SA on each Tweet and then upload its results to SQL
+            count = 1
+            total = len(tweet_batch)
             for tweet in tweet_batch:
                 sql_q.get_query_results(
                     'set_tweet_sent',
                     (tweet[0], 1),
                     False)
-                print tweet[0], 1
+                print tweet[0], 1, "[", count, "of", total, "]"
+                count += 1
 
         #Wait a short while (if needed) before checking for more Tweets
-        return  # TEMP - REMOVE
         time_spent = time.time() - last_check
         if time_spent < MIN_EXECUTION_PERIOD:
             time.sleep(MIN_EXECUTION_PERIOD - time_spent)
