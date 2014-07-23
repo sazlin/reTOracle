@@ -45,10 +45,13 @@ def _build_query_strings():
     QUERY_STRINGS['chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
+
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
     QUERY_STRINGS['save_filters']= _save_filters()
+
     QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
+    QUERY_STRINGS['update_timestamp'] = _update_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
 
 
@@ -219,6 +222,8 @@ def _get_tweet_count():
 def _update_tweet_count():
     sql = ("""UPDATE %s SET tweet_count = %s WHERE %s;""")
     return (sql, [])
+def _update_timestamp():
+    sql = ("""UPDATE %s SET last_tweet_timestamp = %s WHERE %s;""")
 
 def _query_filter_tweets_counts():
     sql = []
@@ -250,12 +255,16 @@ def _save_new_user_sql():
 
 def _save_filters():
     return ("""INSERT INTO filters( filter_id, filter_name,
-                                                last_tweeted_timestamp,
+                                                last_tweet_timestamp,
                                                 total_tweet_count)
                    VALUES (%s, %s, %s, %s); """,[])
 
 
-
+def save_user_filter_join():
+    return ("""INSERT INTO user_filter_join(screen_name, filter_name, tweet_count,
+        first_tweet_timestamp, last_tweet_timestamp)
+        VALUES (%s, %s, %s, %s, %s)
+        """)
 
 def get_query_results(chart_string, args=None, need_fetch=True):
     if args is None:
