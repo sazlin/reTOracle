@@ -50,7 +50,7 @@ def _build_query_strings():
 
     QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
-    QUERY_STRINGS['save_users'] = _save_user()
+    QUERY_STRINGS['save_users'] = _save_users()
     QUERY_STRINGS['save_user_filter'] = save_user_filter_join()
     QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
@@ -231,18 +231,18 @@ def _update_tweet_count():
 
 def _update_timestamp():
     sql = ("""UPDATE %s SET last_tweet_timestamp = %s WHERE %s;""")
+    return (sql, [])
 
 def _query_filter_tweets_counts():
-    sql = []
-    sql.append("""SELECT * FROM filters;""")
-    sql.append("""ORDER BY total_tweet_count DESC""")
-    return (" \r\n".join(sql), args)
+    sql = ("""SELECT tweet_count FROM filters ORDER BY tweet_count DESC;""")
+    return (sql, [])
 
 def _query_popular_users():
-    sql = []
+    filter_id = 'filter_id = '
     for filter_ in FilterMap:
-        sql.append = ("""SELECT  user_id FROM user_filter_join WHERE filter_id = filter_ ORDER BY tweet_count;""")
-    return (" \r\n".join(sql), args)
+        filter_id += '{} OR filter_id = '.format(filter_)
+    sql = ("""SELECT screen_name FROM user_filter_join WHERE %s ORDER BY tweet_count DESC;"""%filter_id[:-15])
+    return (sql, [])
 
 def _query_tweet_ids():
     sql = """SELECT screen_name, tweet_text FROM tweets;
@@ -257,13 +257,13 @@ def _save_tweets():
 
 def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
-                                user_total_tweet_count, last_tweet_timestamp)
+                                tweet_count, last_tweet_timestamp)
                  VALUES (%s, %s, %s, %s, %s); """,[])
 
 def _save_filters():
     return ("""INSERT INTO filters( filter_id, filter_name,
                                                 last_tweet_timestamp,
-                                                total_tweet_count)
+                                                tweet_count)
                    VALUES (%s, %s, %s, %s); """,[])
 
 def save_user_filter_join():
