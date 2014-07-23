@@ -7,8 +7,9 @@ import json
 import time
 from filters_json import filter_list as FilterMap
 from logger import make_logger
+import __main__ as main
 
-logger = make_logger('sql_queries', 'retoracle.log')
+logger = make_logger(main.__file__, 'retoracle.log')
 
 QUERY_STRINGS = {}
 DB_CONFIG = {}

@@ -10,17 +10,6 @@ parser.add_argument('setting')
 parser.add_argument('-v', '--verbosity', type=int)
 ARGS = parser.parse_args()
 
-# def set_level(logging='v'):
-
-#     if logging == 'vvvv':
-#         os.environ['LOGGING'] = 'Debug'
-#     elif logging == 'vvv':
-#         os.environ['LOGGING'] = 'Info'
-#     elif logging == 'vv':
-#         os.environ['LOGGING'] = 'Warning'
-#     else:
-#         os.environ['LOGGING'] = 'File'
-
 
 def make_logger(loggerName, filename):
 
@@ -30,7 +19,7 @@ def make_logger(loggerName, filename):
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(filename)
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
