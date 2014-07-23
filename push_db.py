@@ -105,7 +105,7 @@ class StdOutListener(StreamListener):
         # First save the new tweet in tweets table
         sql_q.get_query_results(
             'save_tweets',
-            [tweet_id, urls, text, hashtags,
+            [tweet_id, screen_name, urls, text, hashtags,
              location, retweets],
              need_fetch=False)
             )
