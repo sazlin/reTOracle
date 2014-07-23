@@ -41,8 +41,8 @@ def _init_db_config():
 
 
 def _build_query_strings():
-    QUERY_STRINGS['chart1'] = _build_q1_query()
-    QUERY_STRINGS['chart2'] = _build_q2_query()
+    QUERY_STRINGS['fetch_chart1'] = _build_q1_query()
+    QUERY_STRINGS['fetch_chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
 
@@ -56,8 +56,8 @@ def _build_query_strings():
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
     QUERY_STRINGS['update_timestamp'] = _update_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
-    QUERY_STRINGS['filter_tw_counts'] = _query_filter_tweets_counts()
-    QUERY_STRINGS['popular_users'] = _query_popular_users()
+    QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
+    QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
     QUERY_STRINGS['tweet_ids'] = _query_tweet_ids()
 
 
