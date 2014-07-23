@@ -10,7 +10,9 @@ train_small = load_files('./training_data/')
 test_small = load_files('./test_data/')
 
 # Turn the text documents into vectors of word frequencies
-vectorizer = TfidfVectorizer(min_df=2, stop_words=stop_words)
+vectorizer = TfidfVectorizer(min_df=5, ngram_range=(1, 2),
+                             stop_words=stop_words,
+                             strip_accents='ascii')
 X_train = vectorizer.fit_transform(train_small.data)
 y_train = train_small.target
 
@@ -45,3 +47,4 @@ def predict(tweet):
         print 'negative'
     else:
         print 'positive'
+    print classifier.predict_proba(matrix2)
