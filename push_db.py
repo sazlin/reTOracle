@@ -116,7 +116,8 @@ class StdOutListener(StreamListener):
         user_row = sql_q.get_query_results('find_row', [screen_name, sql_txt], True)
         if user_row:
             tw_count = user_row.tweet_count +1
-            sql_q.get_query_results( 'update_tw_count', [u'users', tw_count, sql_txt])
+            sql_q.get_query_results( 'update_tw_count', [u'users', tw_count, sql_txt], False)
+            sql_q.get_query_results( 'update_timestamp', [u'users', datetime.datetime.now(), sql_txt]. False)
         else :
             sql_g.get_query_results(
             'save_user',
@@ -129,6 +130,7 @@ class StdOutListener(StreamListener):
             if join_row:
                 tw_count = join_row.tweet_count + 1
                 sql_q.get_query_results('find_row', ['user_filter_join', tw_count, sql_join_txt], False)
+                sql_q.get_query_results( 'update_timestamp', [u'user_filter_join', datetime.datetime.now(), sql_join_txt], False)
             else:
 
 
@@ -142,6 +144,7 @@ class StdOutListener(StreamListener):
                     if filter_row :
                         tw_count = filter_row.tweet_count + 1
                         sql_q.get_query_results('update_tw_count', ['filters', tw_count, sql_txt], False)
+                        sql_q.get_query_results( 'update_timestamp', [u'filters', datetime.datetime.now(), sql_txt])
                         _update_create_join_table(screen_name, keyword)
                     else:
                         sql_g.get_query_results( 'save_filters',
