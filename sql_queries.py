@@ -48,7 +48,7 @@ def _build_query_strings():
 
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
 
-    QUERY_STRINGS['save_tweetss']= _save_tweets()
+    QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
     QUERY_STRINGS['save_user_filter'] = save_user_filter_join()
     QUERY_STRINGS['find_row'] = _find_row()
