@@ -53,7 +53,7 @@ def map_q1_results_to_language(parsed_results):
         search_terms = filter_list[language]['search_terms']
         for hashtag in search_terms['hashtags']:
             for result in parsed_results:
-                # logger.info("map_q1_results: Comparing %s and %s ", hashtag[1:], result[0])
+                logger.debug("map_q1_results: Comparing %s and %s ", hashtag[1:], result[0])
                 if hashtag[1:] == result[0]:
                     language_count += result[1]
         final_result.append([language, language_count])
@@ -95,7 +95,7 @@ def q1_query():
     """Which programming language is being talked about the most?"""
     update_redis()
     try:
-        logger.info("Q1: Getting values from redis")
+        logger.debug("Q1: Getting values from redis")
         json_result = re.get_redis_query('chart1')
     except:
         logger.error("Q1: redis failed. Trying SQL instead")

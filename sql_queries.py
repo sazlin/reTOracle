@@ -96,7 +96,7 @@ def _execute_query(sql, args=None, need_fetch=True):
     If the query string takes any args pass those to the cursor as well."""
     try:
         cur = _get_cursor()
-        logger.info("SQL STRING: %s", sql)
+        logger.debug("SQL STRING: %s", sql)
         logger.debug("SQL ARGS: %s", args)
         cur.execute(sql, args)
         if need_fetch:

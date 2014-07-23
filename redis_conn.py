@@ -20,8 +20,9 @@ def init_pool():
         logger.info("REDIS: Using Test Redis Service")
         POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379, db=0)
     else:
-        raise Exception('R_CONFIG not set.')
         logger.error('R_CONFIG not set properly', exc_info=True)
+        raise Exception('R_CONFIG not set.')
+
 
 
 def get_redis_query(q_type):
