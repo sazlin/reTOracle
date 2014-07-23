@@ -92,6 +92,7 @@ def q1_query():
     except:
         print "...ERROR. Trying SQL instead..."
         json_result = sql_q.get_query_results('chart1')
+        # json_result = sql_q.get_query_results('filter_tw_counts')
     parsed_results = json.loads(json_result)
     print "Got results: ", parsed_results
     final_result = map_q1_results_to_language(parsed_results)
@@ -107,6 +108,7 @@ def q2_query():
         json_result = re.get_redis_query('chart2')
     except:
         json_result = sql_q.get_query_results('chart2')
+        # json_result = sql_q.get_query_results('popular_users')
     parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
