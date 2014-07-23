@@ -4,10 +4,11 @@ import redis
 import os
 import sql_queries as sql_q
 from logger import make_logger
+import inspect
 
+
+logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 POOL = None
-logger = make_logger('redis_con', 'retoracle.log')
-
 
 def init_pool():
     global POOL  # HACK, fix later

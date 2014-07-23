@@ -7,7 +7,7 @@ from fabric.api import put
 from fabric.api import sudo
 from fabric.utils import abort
 from fabric.contrib.console import confirm
-from fabric.contrib.project import upload_project
+from fabric.contrib.project import upload_project, rsync_project
 from fabric.contrib.files import exists
 
 import boto.ec2
@@ -38,42 +38,43 @@ def deploy(r_dest=None, r_option='Full'):
 
     print("Deployment Started for Instance {}:".format(instance.id))
 
-    #initial setup related stuff
+    # initial setup related stuff
     if r_option == 'project':
         pass
     elif r_option == 'config':
         pass
     else:
-        #Update apt-get
+        # Update apt-get
         run_command_on_server(_update_apt_get, instance)
 
-        #Install pip
+        # Install pip
         run_command_on_server(_setup_pip, instance)
 
-        #Install requirements
+        # Install requirements
         run_command_on_server(_auto_install_req, instance)
-        #deploy everything
+        # deploy everything
 
     if r_option == 'config':
-        #Remove config files only
+        # Remove config files only
         run_command_on_server(_remove_existing_config_files, instance)
 
-        #Upload config files only
+        # Upload config files only
         run_command_on_server(_upload_config_files, instance)
     else:
-        #Remove all existing project files
+        # Remove all existing project files
         run_command_on_server(_remove_existing_project_files, instance)
 
-        #Upload all new project files
-        run_command_on_server(_upload_project_files, instance)
+        # Upload all new project files
+        # run_command_on_server(_upload_project_files, instance)
+        run_command_on_server(_rsync_project_files, instance)
 
-    #Install, configure, and start nginx
+    # Install, configure, and start nginx
     # run_command_on_server(_install_nginx, instance)
     setup_nginx(r_dest, instance)
 
     setup_supervisor(r_dest, instance)
 
-    #Restart nginx
+    # Restart nginx
     run_command_on_server(_restart_nginx, instance)
     print("Deployment Complete for Instance {}.".format(instance.id))
 
@@ -139,6 +140,13 @@ def _upload_project_files():
         sudo('chown ubuntu ~/rheTOracle/retoracle.log')
     print("Upload complete")
 
+
+def _rsync_project_files():
+    print("Uploading Project files from {}".format(os.getcwd()))
+    rsync_project(remote_dir='./', exclude='.git')
+    if exists('~/rheTOracle/retoracle.log'):
+        sudo('chown ubuntu ~/rheTOracle/retoracle.log')
+    print("Upload complete")
 
 
 def _remove_existing_project_files():

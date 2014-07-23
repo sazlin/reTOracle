@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-
 from flask import Flask, Response, render_template
 from filters_json import filter_list
 import json
@@ -13,9 +12,10 @@ import sys
 # from passlib.hash import pbkdf2_sha256
 from logger import make_logger
 import argparse
+import inspect
 
 
-logger = make_logger('flask_app', 'retoracle.log')
+logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 
 app = Flask(__name__)
 
