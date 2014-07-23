@@ -104,7 +104,7 @@ class StdOutListener(StreamListener):
 
         # First save the new tweet in tweets table
         sql_q.get_query_results(
-            'save_tweet',
+            'save_tweets',
             [tweet_id, urls, text, hashtags,
              location, retweets],
              need_fetch=False)
@@ -132,6 +132,7 @@ class StdOutListener(StreamListener):
                 sql_q.get_query_results('find_row', ['user_filter_join', tw_count, sql_join_txt], False)
                 sql_q.get_query_results( 'update_timestamp', [u'user_filter_join', datetime.datetime.now(), sql_join_txt], False)
             else:
+
 
 
 
