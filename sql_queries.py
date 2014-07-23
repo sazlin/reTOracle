@@ -50,6 +50,7 @@ def _build_query_strings():
 
     QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
+    QUERY_STRINGS['save_users'] = _save_user()
     QUERY_STRINGS['save_user_filter'] = save_user_filter_join()
     QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
@@ -245,12 +246,12 @@ def _query_tweet_ids():
     LIMIT 1;"""
     return (sql, None)
 
-def _save_tweet_sql():
+def _save_tweets():
     return("""INSERT INTO tweets (tweet_id, tweet_url, tweet_text,
                                                 hashtags, location, retweetcount)
                 VALUES (%s, %s, %s, %s, %s, %s); """, [])
 
-def _save_new_user_sql():
+def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
                                 user_total_tweet_count, last_tweet_timestamp)
                  VALUES (%s, %s, %s, %s, %s); """,[])
