@@ -1,13 +1,6 @@
-<<<<<<< HEAD
-import logging
-
-
-def make_logger(loggerName, filename):
-=======
 #!/usr/bin/python
 
 import logging
-import os
 import argparse
 
 
@@ -19,21 +12,16 @@ ARGS = parser.parse_args()
 
 def make_logger(loggerName, filename):
 
->>>>>>> ca2fe7b81228874d468b32f02671c968d710827a
     # create logger with 'spam_application'
     logger = logging.getLogger(loggerName)
     logger.setLevel(logging.DEBUG)
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(filename)
-<<<<<<< HEAD
-    fh.setLevel(logging.DEBUG)
+    fh.setLevel(logging.INFO)
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-=======
-    fh.setLevel(logging.INFO)
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
@@ -47,7 +35,6 @@ def make_logger(loggerName, filename):
         ch.setLevel(logging.ERROR)
     else:
         ch.setLevel(logging.CRITICAL)# in case there is an issue with env variable
->>>>>>> ca2fe7b81228874d468b32f02671c968d710827a
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -59,8 +46,3 @@ def make_logger(loggerName, filename):
     logger.addHandler(ch)
 
     return logger
-<<<<<<< HEAD
-=======
-
-
->>>>>>> ca2fe7b81228874d468b32f02671c968d710827a
