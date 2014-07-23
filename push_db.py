@@ -120,7 +120,7 @@ class StdOutListener(StreamListener):
             sql_q.get_query_results( 'update_timestamp', [u'users', datetime.datetime.now(), sql_txt]. False)
         else :
             sql_g.get_query_results(
-            'save_user',
+            'save_users',
             [screen_name, account_url, 1, datetime.datetime.now()],
             need_fetch=False)
 
