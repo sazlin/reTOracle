@@ -4,6 +4,7 @@ import json
 import sys
 import os
 import sql_queries as sql_q
+import filter_json import filter_list
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -111,30 +112,29 @@ class StdOutListener(StreamListener):
 
         # if screen_name user exists, update its tweet_count number
         # else create a new user
-        user_row = sql_q.get_query_results('check_user', [screen_name], True)
+        sql_txt = u'user_id = %s'%screen_name
+        user_row = sql_q.get_query_results('find_row', [screen_name, sql_txt], True)
         if user_row:
-            tw_count = sql_q.get_query_results('get_tw_count', []) +1
-            sql_txt = u'user_id = %s'%screen_name
+            tw_count = user_row.tweet_count +1
             sql_q.get_query_results( 'update_tw_count', [u'users', tw_count, sql_txt])
-
         else :
             sql_g.get_query_results(
             'save_user',
-            [screen_name, account_url,
-            user_total_tweet_count, datetime.datetime.now()],
+            [screen_name, account_url, 1, datetime.datetime.now()],
             need_fetch=False)
 
 
-
-
-        sql_g.get_query_results(
-            'save_filters',
-            [filter_id, filter_name,
-            datetime.datetime.now(),
-            total_tweet_count]
-            )
-
-
+        for hashtag in hashtags:
+            for keyword in filter_list.iterkeys():
+                if hashtag in keyword['search_terms']['hashtags']:
+                    sql_txt = u'filter_name = %s' %keyword
+                    filter_row = sql_q.get_query_results('find_row', [keyword, sql_txt], True)
+                    if filter_row :
+                        tw_count = filter_row.tweet_count + 1
+                        sql_q.get_query_results('update_tw_count', ['filters', tw_count, sql_txt])
+                    else:
+                        sql_g.get_query_results( 'save_filters',
+                            [filter_id, filter_name, datetime.datetime.now(), total_tweet_count])
 
 
 
