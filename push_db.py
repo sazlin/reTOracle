@@ -132,10 +132,9 @@ class StdOutListener(StreamListener):
                 sql_q.get_query_results('find_row', ['user_filter_join', tw_count, sql_join_txt], False)
                 sql_q.get_query_results( 'update_timestamp', [u'user_filter_join', datetime.datetime.now(), sql_join_txt], False)
             else:
-
-
-
-
+                sql_q.get_query_results('save_user_filter_join',
+                    [screen_name, keyword, 1, datetime.datetime.now(),
+                    datetime.datetime.now()], False)
 
         for hashtag in hashtags:
             for keyword in filter_list.iterkeys():
@@ -145,11 +144,11 @@ class StdOutListener(StreamListener):
                     if filter_row :
                         tw_count = filter_row.tweet_count + 1
                         sql_q.get_query_results('update_tw_count', ['filters', tw_count, sql_txt], False)
-                        sql_q.get_query_results( 'update_timestamp', [u'filters', datetime.datetime.now(), sql_txt])
+                        sql_q.get_query_results( 'update_timestamp', [u'filters', datetime.datetime.now(), sql_txt], False)
                         _update_create_join_table(screen_name, keyword)
                     else:
                         sql_q.get_query_results( 'save_filters',
-                            [filter_id, filter_name, datetime.datetime.now(), total_tweet_count])
+                            [filter_id, filter_name, datetime.datetime.now(), total_tweet_count], False)
 
 
 
