@@ -4,7 +4,6 @@ from sklearn.naive_bayes import MultinomialNB
 from pickleMe import load_pickle, export_pickle
 
 
-
 def export_classifier():
     train_small = load_files('./training_data/')
     test_small = load_files('./test_data/')
