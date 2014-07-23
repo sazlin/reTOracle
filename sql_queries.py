@@ -46,7 +46,7 @@ def _build_query_strings():
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
-    QUERY_STRINGS['check_user'] = _find_user()
+    QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
 
@@ -207,8 +207,8 @@ def _build_q4_query():
 
 # New db structure queries
 
-def _find_user():
-    sql = """SELECT 1 from users WHERE screen_name = %s;"""
+def _find_row():
+    sql = """SELECT 1 from %s WHERE %s;"""
     return (sql, [])
 
 def _get_tweet_count():
@@ -218,7 +218,6 @@ def _get_tweet_count():
 def _update_tweet_count():
     sql = ("""UPDATE %s SET tweet_count = %s WHERE %s;""")
     return (sql, [])
-
 
 def _query_filter_tweets_counts():
     sql = []
