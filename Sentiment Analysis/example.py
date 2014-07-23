@@ -41,14 +41,14 @@ def move_to_file():
     training_data = import_data('data_set.csv')
     negative_index = 1
     positive_index = 1
-    for i in range(10000, 11000):
+    for i in range(60000, 65000):
         if training_data['Sentiment'][i] == 0:
             with open("./test_data/negative/text" + str(negative_index) + '.txt', 'w') as f:
-                f.write(cleanData(training_data['SentimentText'][i]))
+                f.write(training_data['SentimentText'][i])
                 f.close()
                 negative_index += 1
         else:
             with open("./test_data/positive/text" + str(positive_index) + '.txt', 'w') as f:
-                f.write(cleanData(training_data['SentimentText'][i]))
+                f.write(training_data['SentimentText'][i])
                 f.close()
                 positive_index += 1
