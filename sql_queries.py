@@ -20,7 +20,7 @@ FROM massive
 WHERE tweet_id
 IN
 (SELECT tweet_id FROM massive EXCEPT select tweet_id FROM tweet_sent)
-LIMIT 100;
+LIMIT %s;
 """
 SET_TWEET_SENT = """INSERT INTO tweet_sent VALUES (%s, %s);"""
 
@@ -63,7 +63,7 @@ def _build_query_strings():
     QUERY_STRINGS['geomap1'] = _build_q4_query()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
     QUERY_STRINGS['num_tweets_need_sa'] = (NUM_TWEETS_NEED_SA, None)
-    QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 100)
+    QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 10000)
     QUERY_STRINGS['set_tweet_sent'] = (SET_TWEET_SENT, None)
 
 
