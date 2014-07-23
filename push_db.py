@@ -148,9 +148,8 @@ class StdOutListener(StreamListener):
                         _update_create_join_table(screen_name, keyword)
                     else:
                         sql_q.get_query_results( 'save_filters',
-                            [filter_id, filter_name, datetime.datetime.now(), total_tweet_count], False)
-
-
+                                                [keyword, datetime.datetime.now(), 1], False)
+                        _update_create_join_table(screen_name, keyword)
 
         sql_q.get_query_results(
             'save_tweet',
