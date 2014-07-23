@@ -10,18 +10,18 @@ CREATE TABLE users
   account_url text,
   tweet_count smallint,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  CHECK (total_tweet_count > 0)
+  CHECK (tweet_count > 0)
 );
 
 CREATE TABLE filters(
   filter_name PRIMARY KEY,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  tweet_count smallint CHECK (total_tweet_count > 0)
+  tweet_count smallint CHECK (tweet_count > 0)
 );
 
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
-  screen_name REFERENCES users ON DELETE CASCADE
+  screen_name REFERENCES users ON DELETE CASCADE,
   tweet_url text UNIQUE,
   tweet_text text(280),
   hashtags text[],
