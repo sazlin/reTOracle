@@ -1,5 +1,9 @@
 #!
 """
+A Python Worker that watches a reTOracle DB and runs
+sentiment analysis (SA) on any Tweets that need it. If there are
+a lot of Tweets needing SA then use Amazon EMR (Hadoop) to
+run SA on those Tweets in parallel
 """
 
 # import sys
@@ -12,8 +16,38 @@ from boto.s3.key import Key
 import boto.emr
 from boto.emr.step import StreamingStep
 
+# At most the worker will check for more Tweets to
+# analyze every MIN_EXECUTION_PERIOD seconds
 MIN_EXECUTION_PERIOD = 5.0
-BATCH_SIZE = 10000
+
+# If the number of Tweets to analyze is > EMR_THRESHOLD
+# Then this worker will use Hadoop to do SA
+# But only is ALLOW_EMR is also True
+EMR_THRESHOLD = 10000
+
+# When creating a Hadoop job, whats the max batch size to aim for?
+MAX_BATCH_SIZE = 100000
+
+# Allow this worker to spin up EMR (Amazon's Hadoop)
+# jobs for up to BATCH_SIZE batches of Tweets that need SA?
+ALLOW_EMR = True
+
+# Number and instance type of slave nodes to use for EMR jobs
+EMR_NUM_SLAVE_NODES = 4
+EMR_TYPE_SLAVE_NODES = 'm1.small'
+
+# Instance type of master node
+EMR_TYPE_MASTER_NODE = 'm1.small'
+
+# AMI_version for Hadoop
+# !!! Don't change unless you want to debug config failures !!!
+EMR_AMI_VERSION = '2.4.6'
+
+# EC2 Key-Value pair to use for instances
+EMR_KP = 'kp1'
+
+# Enable debugging on instances?
+EMR_DEBUGGING = False
 
 
 def _delete_key_if_exists(bucket, key_str):
@@ -39,7 +73,7 @@ def _create_sa_input(key, bs):
         and upload to S3"""
 
     # put input data on S3 so ElasticMapReduce can get at it
-    json_results = sql_q.get_query_results('tweet_batch', bs)
+    json_results = sql_q.get_query_results('tweet_batch', [bs])
 
     #need to have one tweet per line with a \n in it per:
     #https://docs.aws.amazon.com/ElasticMapReduce/latest/DeveloperGuide/emr-plan-input-accept.html
@@ -83,7 +117,7 @@ def create_inputs(key, bs):
 def _get_num_tweets_need_sa():
     json_results = sql_q.get_query_results('num_tweets_need_sa')
     try:
-        json.loads(json_results)
+        return json.loads(json_results)[0][0]
     except Exception as x:
         print "Could not parse JSON query results for 'num_tweets_need_sa':", x.args
 
@@ -101,14 +135,12 @@ def _create_sa_job(emr_conn):
         name='reTOracle Sentiment Analysis Job',
         log_uri='s3://retoracle/jobflow_logs',
         steps=[step],
-        num_instances=1,
-        master_instance_type='m1.medium',
-        slave_instance_type='m1.medium',
-        ec2_keyname='kp1',
-        enable_debugging=True,
-        # job_flow_role='EMR_EC2_DefaultRole',
-        ami_version='2.4.6',
-        # api_params={'service-role': 'EMR_DefaultRole'}
+        num_instances=EMR_NUM_SLAVE_NODES,
+        master_instance_type=EMR_TYPE_MASTER_NODE,
+        slave_instance_type=EMR_TYPE_SLAVE_NODES,
+        ec2_keyname=EMR_KP,
+        enable_debugging=EMR_DEBUGGING,
+        ami_version=EMR_AMI_VERSION,
         )
 
 
@@ -162,7 +194,8 @@ def main():
     while True:
         num_todo = _get_num_tweets_need_sa()
         last_check = time.time()
-        if num_todo >= BATCH_SIZE:
+        print "Num Todo:", num_todo
+        if num_todo >= EMR_THRESHOLD and ALLOW_EMR:
             # There's a lot of Tweets to analyze, so spin up
             # a EMR job to tackle them one BATCH_SIZE at a time
 
@@ -177,7 +210,8 @@ def main():
             cleanup(bucket)
 
             #Create and upload the data and scripts that the EMR job needs
-            create_inputs(key, BATCH_SIZE)
+            #everything up to MAX_BATCH_SIZE
+            create_inputs(key, min(num_todo, MAX_BATCH_SIZE))
 
             #Create and start the EMR job
             emr_conn = boto.emr.connect_to_region('us-west-2')
@@ -185,18 +219,19 @@ def main():
             print "Started EMR Job", jobid
 
             #Wait for the EMR job to complete
-            _wait_for_job_to_complete(emr_conn)
+            _wait_for_job_to_complete(emr_conn, jobid)
 
             #EMR Job is done, so get SA results and push to SQL
             push_sa_results_to_sql_from_s3(bucket)
 
         else:
-            #There aren't a lot of Tweets left to analyze, so just
-            #process them here
+            #Process Tweets using this worker (not EMR)
 
             #Get the remaining Tweets that need SA
             tweet_batch = json.loads(
-                sql_q.get_query_results('tweet_batch', [num_todo]))
+                sql_q.get_query_results(
+                    'tweet_batch',
+                    [min(num_todo, MAX_BATCH_SIZE)]))
 
             #Run SA on each Tweet and then upload its results to SQL
             for tweet in tweet_batch:
@@ -207,9 +242,16 @@ def main():
                 print tweet[0], 1
 
         #Wait a short while (if needed) before checking for more Tweets
+        return  # TEMP - REMOVE
         time_spent = time.time() - last_check
         if time_spent < MIN_EXECUTION_PERIOD:
             time.sleep(MIN_EXECUTION_PERIOD - time_spent)
 
 if __name__ == "__main__":
+    try:
+        if sys.argv[2]:
+            if sys.argv[2] == 'False':
+                ALLOW_EMR = False
+    except IndexError:
+        pass
     main()
