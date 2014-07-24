@@ -4,7 +4,7 @@ import json
 import sys
 import os
 import sql_queries as sql_q
-import filter_json import filter_list
+from filters_json import filter_list
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -102,14 +102,21 @@ class StdOutListener(StreamListener):
 
         retweets = json_data.get('retweet_count', None)
 
-        # First save the new tweet in tweets table
-        print "-----> saving tweets"
+        # print "--->ORIGINAL"
+        # sql_q.get_query_results(
+        #     'save_tweet',
+        #     [tweet_id, text, hashtags, user_mentions,
+        #      created_at, screen_name, urls, location,
+        #      in_reply_to_screen_name, retweets],
+        #      need_fetch=False)
+
+
+        #First save the new tweet in tweets table
+        print "--->MINE"
         sql_q.get_query_results(
             'save_tweets',
-            [tweet_id, screen_name, urls, text, hashtags,
-             location, retweets],
+            [tweet_id, screen_name, urls, text, hashtags, location, retweets],
              need_fetch=False)
-            )
 
         # if screen_name user exists, update its tweet_count number
         # else create a new user
@@ -122,13 +129,13 @@ class StdOutListener(StreamListener):
             sql_q.get_query_results( 'update_timestamp', [u'users', datetime.datetime.now(), sql_txt]. False)
         else :
             print "-----> creating new user"
-            sql_g.get_query_results(
+            sql_q.get_query_results(
             'save_users',
-            [screen_name, account_url, 1, datetime.datetime.now()],
+            [screen_name, urls, 1, datetime.datetime.now()],
             need_fetch=False)
 
         def _update_create_join_table(screen_name, keyword):
-            sql_join_text = 'screen_name = %s AND filter_name = %s' %screen_name, %keyword
+            sql_join_text = 'screen_name = %s AND filter_name = %s' %screen_name %keyword
             join_row = sql_q.get_query_results('find_row', ['user_filter_join', sql_join_txt], True)
             if join_row:
                 print "-----> join table exists, updating the row"
@@ -142,7 +149,7 @@ class StdOutListener(StreamListener):
                     datetime.datetime.now()], False)
 
         for hashtag in hashtags:
-            for keyword in filter_list.iterkeys():
+            for keyword in filter_list:
                 if hashtag in keyword['search_terms']['hashtags']:
                     sql_txt = u'filter_name = %s' %keyword
                     filter_row = sql_q.get_query_results('find_row', [keyword, sql_txt], True)
@@ -159,12 +166,7 @@ class StdOutListener(StreamListener):
                                                 [keyword, datetime.datetime.now(), 1], False)
                         _update_create_join_table(screen_name, keyword)
 
-        sql_q.get_query_results(
-            'save_tweet',
-            [tweet_id, text, hashtags, user_mentions,
-             created_at, screen_name, urls, location,
-             in_reply_to_screen_name, retweets],
-             need_fetch=False)
+
 
     def on_error(self, status):
         error_counter = 0
