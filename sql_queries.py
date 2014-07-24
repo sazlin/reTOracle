@@ -337,7 +337,7 @@ def save_user_filter_join():
 
 
 
-def get_query_results(chart_string, args=None, need_fetch=True):
+def get_query_results(chart_string, args=None, need_fetch=True, need_dump=True):
     if args is None:
         args = QUERY_STRINGS[chart_string][1]
     if chart_string == 'fetch_popular_users':
@@ -345,4 +345,4 @@ def get_query_results(chart_string, args=None, need_fetch=True):
     return _execute_query(
         QUERY_STRINGS[chart_string][0],
         args,
-        need_fetch)
+        need_fetch, need_dump)
