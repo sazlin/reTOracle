@@ -1,5 +1,12 @@
 #!/usr/bin/python
+"""
+Note: You can test SA_Mapper.py and sa_reducer.py by themselves
+using the following line in the console:
 
+cat sa_input | python SA_Mapper.py | sort | python sa_reducer.py
+
+sa_input is an example input file created for S3 by SQ_Worker.py
+"""
 import json
 import time
 import sys
