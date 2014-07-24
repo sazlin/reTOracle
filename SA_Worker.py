@@ -200,7 +200,7 @@ def push_sa_results_to_sql_from_s3(bucket):
                 'set_tweet_sent',
                 [result],  # must be a iterable, and result is a string
                 False)
-            print tweet_sent[0], tweet_sent[1],
+            print result
             print "[", count, "of", total, "]"
             count += 1
     print "Done."
