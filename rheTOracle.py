@@ -108,9 +108,7 @@ def q2_query():
         json_result = sql_q.get_query_results('fetch_popular_users')
     #parsed_results = json.loads(json_result)
     parsed_results = json_result
-    print "--->PARSED", type(parsed_results), parsed_results
     final_result = map_q2_results_to_language(parsed_results)
-    print "--->FINALR", type(final_result), final_result
     return final_result
 
 
