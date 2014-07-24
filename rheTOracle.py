@@ -40,16 +40,19 @@ def map_q1_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q1's query results
         into a new list of lists that will be returned to the client for rendering"""
     final_result = []
-    for language in filter_list:
-        language_count = 0
-        search_terms = filter_list[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            for result in parsed_results:
-                print "map_q1_results: Comparing ",hashtag[1:], "and", result[0]
-                if hashtag[1:] == result[0]:
-                    language_count += result[1]
-        final_result.append([language, language_count])
+    for item in parsed_results:
+        final_result.append([item[0], item[1]])
+    for lang in filter_list:
+        _found = False
+        for item in parsed_results:
+            if lang.lower() == item[0]:
+                _found = True
+        if not _found:
+            final_result.append([lang, 0])
+
     return json.dumps(final_result)
+
+
 
 
 def map_q2_results_to_language(parsed_results):
@@ -78,7 +81,7 @@ def map_q2_results_to_language(parsed_results):
 def update_redis():
     new_time = time()
     if (new_time - app.config['LAST_REDIS_UPDATE']) > app.config['REDIS_UPDATE_INTERVAL']:
-        re.maint_redis()
+        #re.maint_redis()
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
@@ -91,8 +94,8 @@ def q1_query():
         json_result = re.get_redis_query('chart1')
     except:
         print "...ERROR. Trying SQL instead..."
-        json_result = sql_q.get_query_results('chart1')
-        json_result = sql_q.get_query_results('filter_tw_counts')
+        #json_result = sql_q.get_query_results('fetch_chart1')
+        json_result = sql_q.get_query_results('fetch_filter_tw_counts')
     parsed_results = json.loads(json_result)
     print "Got results: ", parsed_results
     final_result = map_q1_results_to_language(parsed_results)
@@ -107,8 +110,8 @@ def q2_query():
     try:
         json_result = re.get_redis_query('chart2')
     except:
-        json_result = sql_q.get_query_results('chart2')
-        json_result = sql_q.get_query_results('popular_users')
+        json_result = sql_q.get_query_results('fetch_chart2')
+        #json_result = sql_q.get_query_results('fetch_popular_users')
     parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
@@ -190,6 +193,6 @@ if __name__ == '__main__':
 
     sql_q.init()
     re.init_pool()
-    re.maint_redis()
+    #re.maint_redis()
     app.config['LAST_REDIS_UPDATE'] = time()
     app.run()
