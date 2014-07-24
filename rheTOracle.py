@@ -104,6 +104,7 @@ def q1_query():
     update_redis()
     try:
         logger.debug("Q1: Getting values from redis")
+
         json_result = re.get_redis_query('chart1')
     except:
         logger.error("Q1: redis failed. Trying SQL instead")

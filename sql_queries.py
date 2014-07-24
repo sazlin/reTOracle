@@ -6,9 +6,11 @@ import json
 import time
 from filters_json import filter_list as FilterMap
 from logger import make_logger
+
 import inspect
 
 logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
+
 
 QUERY_STRINGS = {}
 DB_CONFIG = {}
@@ -57,8 +59,8 @@ def _init_db_config():
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
         DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
     else:
-        raise Exception("R_CONFIG not set.")
         logger.error("R_CONFIG not set.", exc_info=True)
+        raise Exception("R_CONFIG not set.")
 
     DB_CONFIG['DB_CONNECTION_STRING'] = _build_connection_string()
 
@@ -80,6 +82,7 @@ def _connect_db():
     except Exception as x:
         raise Exception("Error connecting to DB: " + str(x.args))
         logger.error("Error connect to DB: %s", x.args, exc_info=True)
+
     DB_CONFIG['DB_CONNECTION'] = conn
     return conn
 
@@ -115,14 +118,17 @@ def _execute_query(sql, args=None, need_fetch=True):
     If the query string takes any args pass those to the cursor as well."""
     try:
         cur = _get_cursor()
+
         logger.debug("SQL STRING: %s", sql)
         logger.debug("SQL ARGS: %s", args)
+
         cur.execute(sql, args)
         if need_fetch:
             results = cur.fetchall()
             try:
                 json_results = json.dumps(results)
             except Exception as x:
+
                 logger.error("Error dumping json for: %s Args: %s", results, x.args, exc_info=True)
             else:
                 return json_results
