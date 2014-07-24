@@ -5,6 +5,7 @@ from pickleMe import load_pickle, export_pickle
 
 
 def export_classifier():
+    #note that this data is not in the git repo
     train_small = load_files('./training_data/')
     test_small = load_files('./test_data/')
 
@@ -31,8 +32,8 @@ def export_classifier():
     export_pickle('LRvectorizer.txt', vectorizer)
 
 
-classifier_global = load_pickle('LRclassifier.txt')
-vectorizer_global = load_pickle('LRvectorizer.txt')
+classifier_global = load_pickle('SentimentAnalysis/LRclassifier.txt')
+vectorizer_global = load_pickle('SentimentAnalysis/LRvectorizer.txt')
 
 
 def predict(tweet, classifier=classifier_global, vectorizer=vectorizer_global):
@@ -43,8 +44,8 @@ def predict(tweet, classifier=classifier_global, vectorizer=vectorizer_global):
 
     probability = classifier.predict_proba(matrix2)
     if abs(probability[0][0] - probability[0][1]) <= 0.1:
-        return 'neutral', (probability[0][0], probability[0][1])
+        return 0, (probability[0][0], probability[0][1])
     elif predicted == [0]:
-        return 'negative', (probability[0][0], probability[0][1])
+        return -1, (probability[0][0], probability[0][1])
     else:
-        return 'positive', (probability[0][0], probability[0][1])
+        return 1, (probability[0][0], probability[0][1])

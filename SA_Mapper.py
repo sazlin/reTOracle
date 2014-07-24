@@ -5,14 +5,11 @@ import time
 import sys
 #from sentimentML.ML_builder import ML_builder
 #from datum_box import box_tweet
-from SentimentAnalysis import NB
+from SentimentAnalysis import NB, LR
 
 # DBox = None
 # Datum_Integers = {'positive': 1, 'neutral': 0, 'negative': -1}
 SVM = None
-
-def _setup_LR():
-    pass
 
 
 def _setup_SVM():
@@ -30,7 +27,6 @@ def _setup_DatumBox():
 
 
 def setup_SA():
-    _setup_LR()
     _setup_SVM()
     _setup_DatumBox()
 
@@ -47,10 +43,13 @@ def run_SA(tweet, ret_dict=None):
 
 
 def _run_LR_SA(tweet, ret_dict):
-    ret_dict['LR_SENT'] = 1
-    ret_dict['LR_NEG_PROB'] = 0.3
-    ret_dict['LR_POS_PROB'] = 0.89
-    ret_dict['LR_EXEC_TIME'] = 0.424
+    t1 = time.time()
+    results, probs = LR.predict(tweet[1])
+    t2 = time.time()
+    ret_dict['LR_SENT'] = results
+    ret_dict['LR_NEG_PROB'] = probs[0]
+    ret_dict['LR_POS_PROB'] = probs[1]
+    ret_dict['LR_EXEC_TIME'] = t2 - t1
 
     #do magic
     return ret_dict
