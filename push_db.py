@@ -76,42 +76,46 @@ class StdOutListener(StreamListener):
 
         json_data = json.loads(data)
 
-        # need to convert for SQL
-        tweet_id = json_data.get('id', None)
-        tweet_id = self.fix_tweet_id(tweet_id)
+        language = json_data.get('lang', None)
+        if language == 'en':
+            # need to convert for SQL
+            tweet_id = json_data.get('id', None)
+            tweet_id = self.fix_tweet_id(tweet_id)
 
-        text = json_data.get('text', None)
-        text = self.fix_text(text)
+            text = json_data.get('text', None)
+            text = self.fix_text(text)
 
-        hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
-        hashtags = self.fix_lists(hashtags)
+            hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
+            hashtags = self.fix_lists(hashtags)
 
-        user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
-        user_mentions = self.fix_lists(user_mentions)
+            user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
+            user_mentions = self.fix_lists(user_mentions)
 
-        created_at = json_data.get('created_at', None)
-        screen_name = json_data.get('user', None).get('screen_name', None)
+            created_at = json_data.get('created_at', None)
+            screen_name = json_data.get('user', None).get('screen_name', None)
 
-        urls = [i['display_url'] for i in json_data.get('entities', None).get('urls', None)]
-        urls = self.fix_lists(urls)
+            urls = [i['display_url'] for i in json_data.get('entities', None).get('urls', None)]
+            urls = self.fix_lists(urls)
 
-        location = json_data.get('geo', None)
-        if location:
-            location = location.get('coordinates', None)
-            location = self.fix_location(location)
-        if not location:
-            location = '[]'
+            location = json_data.get('geo', None)
+            if location:
+                location = location.get('coordinates', None)
+                location = self.fix_location(location)
+            if not location:
+                location = '[]'
 
-        in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
+            in_reply_to_screen_name = json_data.get('in_reply_to_screen_name', None)
 
-        retweets = json_data.get('retweet_count', None)
+            retweets = json_data.get('retweet_count', None)
 
-        sql_q.get_query_results(
-            'save_tweet',
-            [tweet_id, text, hashtags, user_mentions,
-             created_at, screen_name, urls, location,
-             in_reply_to_screen_name, retweets],
-            need_fetch=False)
+            sql_q.get_query_results(
+                'save_tweet',
+                [tweet_id, text, hashtags, user_mentions,
+                 created_at, screen_name, urls, location,
+                 in_reply_to_screen_name, retweets],
+                need_fetch=False)
+        else:
+            print language
 
     def on_error(self, status):
         error_counter = 0
