@@ -115,5 +115,57 @@ class ML_builder(object):
         return (self.classifier.predict(self.vectorize(tweet))[0],
                 self.classifier.predict_proba(self.vectorize(tweet))[0])
 
-                
-                
+    def unsupervised_predict(tweet):
+    
+        def get_good_chunks(chunks):
+            good_chunks = []
+            for subtree in chunks:
+                if type(subtree) is nltk.Tree:
+                    good_chunks.append(' '.join([leaves[0] for index, leaves in enumerate(subtree.leaves()) if index<2]))
+            return good_chunks
+        
+        tokenized = nltk.word_tokenize(tweet)
+        tagged = nltk.pos_tag(tokenized)
+
+        chunk_gram = r"Chunk: {(<JJ><NNS?>)|(<RB\w?><VB[DNG]?>)|(<JJ><JJ><[^N]\w\w?|NNPS?>)" \
+        "|(<RB\w?><JJ><[^N]\w\w?|NNPS?>)|(<NNS?><JJ><[^N]\w\w?|NNPS?>)}"
+
+        chunk_parser = nltk.RegexpParser(chunk_gram)
+        chunks = chunk_parser.parse(tagged)
+        good_chunks = get_good_chunks(chunks)
+        
+        if not good_chunks:
+            backup_chunk_gram = r"Chunk: {(<NN\w?\w?><VB\w?>)|(<RB\w?><JJ>)|(<N\w?\w?\w?|PR\w?><VB\w?>)}"
+            chunk_parser = nltk.RegexpParser(backup_chunk_gram)
+            chunks = chunk_parser.parse(tagged)
+            good_chunks = get_good_chunks(chunks)
+
+        print good_chunks
+        SO = 0
+        for chunk in good_chunks:
+            close_good = hits("happy", chunk)
+            close_bad = hits("sad", chunk)
+            good = hits("good")
+            bad = hits("bad")
+            ratio1 = 1.0* close_good / close_bad
+            ratio2 = 1.0* bad/good
+            ratio = ratio1*ratio2
+            SO += log(ratio)
+        
+        if SO=0:
+            return 'Cannot predict'
+        elif SO>0:
+            return 'Positive'
+        return 'Negative'
+
+    
+    def hits(word, phrase=None):
+        query = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q={}"
+        if not phrase:
+            results = requests.get(query.format(word))
+        else:
+            results = requests.get(query.format(phrase+" AROUND(10) "+word))
+        json_res = results.json()
+        print json_res
+        google_hits=int(json_res['responseData']['cursor']['estimatedResultCount'])
+        return google_hits
