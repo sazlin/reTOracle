@@ -102,14 +102,6 @@ class StdOutListener(StreamListener):
 
         retweets = json_data.get('retweet_count', None)
 
-        # print "--->ORIGINAL"
-        # sql_q.get_query_results(
-        #     'save_tweet',
-        #     [tweet_id, text, hashtags, user_mentions,
-        #      created_at, screen_name, urls, location,
-        #      in_reply_to_screen_name, retweets],
-        #      need_fetch=False)
-
         # if screen_name user exists, update its tweet_count number
         # else create a new user
         user_row = sql_q.get_query_results('find_user', [screen_name], True, False)
