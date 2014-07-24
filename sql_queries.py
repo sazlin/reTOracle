@@ -123,8 +123,8 @@ def _execute_query(sql, args=None, need_fetch=True):
         if need_fetch:
             print "Getting results..."
             results = cur.fetchall()
-            return results
-            print "----->", results
+            if not need_fetch:
+                return results
             print "Got results..."
             try:
                 json_results = json.dumps(results)
@@ -276,15 +276,11 @@ def _update_join_timestamp():
     sql = []
     sql.append ("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
     sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
-    return (sql, [])
-
-
-
+    return (" ".join(sql), None)
 
 
 def _query_filter_tweets_counts():
-    print "----> _query_filter_tweets_counts"
-    sql = ("""SELECT tweet_count FROM filters ORDER BY tweet_count DESC;""")
+    sql = ("""SELECT filter_name, tweet_count FROM filters ORDER BY tweet_count DESC;""")
     return (sql, [])
 
 def _query_popular_users():
@@ -339,7 +335,12 @@ def get_query_results(chart_string, args=None, need_fetch=True):
         args = QUERY_STRINGS[chart_string][1]
     if chart_string == 'fetch_popular_users':
         return _query_popular_users()
-    return _execute_query(
-        QUERY_STRINGS[chart_string][0],
-        args,
-        need_fetch)
+    else:
+        print "------->"
+        print chart_string
+        print QUERY_STRINGS[chart_string][0]
+        print "------->"
+        return _execute_query(
+            QUERY_STRINGS[chart_string][0],
+            args,
+            need_fetch)
