@@ -103,7 +103,7 @@ def _get_cursor():
         return _create_cursor()
 
 
-def _execute_query(sql, args=None, need_fetch=True, need_dump = True):
+def _execute_query(sql, args=None, need_fetch=True):
     """execute the passed in SQL using the current cursor.
     If the query string takes any args pass those to the cursor as well."""
     try:
@@ -117,8 +117,6 @@ def _execute_query(sql, args=None, need_fetch=True, need_dump = True):
             print "Getting results..."
             results = cur.fetchall()
             print results
-            if not need_dump:
-                return results
             print "Got results..."
             try:
                 json_results = json.dumps(results)
@@ -209,25 +207,20 @@ def _update_join_timestamp():
 
 def _query_filter_tweets_counts():
     sql = ("""SELECT filter_name, tweet_count FROM filters ORDER BY tweet_count DESC;""")
-    return (sql, [])
+    return sql
 
 def _query_popular_users():
     final_result = []
-    sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""", None, True, False)
+    sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""")
+    sql1_result = json.loads(sql1_result)
     for filter_ in sql1_result:
         tmp_sql = []
         tmp_sql.append("""SELECT filter_name, tweet_count, screen_name FROM  user_filter_join""")
         tmp_sql.append("""WHERE filter_name = %s ORDER BY tweet_count DESC LIMIT 1""")
         json_result = _execute_query(" ".join(tmp_sql), [filter_[0]])
-        json_result = json_result.split(', ')
-        tmp_json = []
-        tmp_json.append(json_result[0][3:-1])
-        tmp_json.append(int(json_result[1]))
-        tmp_json.append(json_result[2][1:-3])
-        if  json_result:
-            final_result.append(tmp_json)
-    return final_result
-
+        json_result = json.loads(json_result)
+        final_result.append(json_result[0])
+    return json.dumps(final_result)
 
 
 def _save_tweets():
@@ -259,12 +252,12 @@ def save_user_filter_join():
 
 
 
-def get_query_results(chart_string, args=None, need_fetch=True, need_dump=True):
+def get_query_results(chart_string, args=None, need_fetch=True):
     if args is None:
         args = QUERY_STRINGS[chart_string][1]
     if chart_string == 'fetch_popular_users':
         return _query_popular_users()
     return _execute_query(
-        QUERY_STRINGS[chart_string][0],
+        QUERY_STRINGS[chart_string],
         args,
-        need_fetch, need_dump)
+        need_fetch)
