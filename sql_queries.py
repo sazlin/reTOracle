@@ -51,10 +51,17 @@ def _build_query_strings():
     QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
     QUERY_STRINGS['save_users'] = _save_users()
-    QUERY_STRINGS['save_user_filter'] = save_user_filter_join()
+    QUERY_STRINGS['save_user_filter_join'] = save_user_filter_join()
     QUERY_STRINGS['find_row'] = _find_row()
-    QUERY_STRINGS['update_tw_count'] = _update_tweet_count()
-    QUERY_STRINGS['update_timestamp'] = _update_timestamp()
+    QUERY_STRINGS['find_user'] = _find_user()
+    QUERY_STRINGS['find_filter'] = _find_filter()
+    QUERY_STRINGS['find_join'] = _find_join()
+    QUERY_STRINGS['update_user_tw_count'] = _update_user_tweet_count()
+    QUERY_STRINGS['update_filter_tw_count'] = _update_filter_tweet_count()
+    QUERY_STRINGS['update_join_tw_count'] = _update_join_tweet_count()
+    QUERY_STRINGS['update_user_timestamp'] = _update_user_timestamp()
+    QUERY_STRINGS['update_filter_timestamp'] = _update_filter_timestamp()
+    QUERY_STRINGS['update_join_timestamp'] = _update_join_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
     QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
     # QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
@@ -116,6 +123,8 @@ def _execute_query(sql, args=None, need_fetch=True):
         if need_fetch:
             print "Getting results..."
             results = cur.fetchall()
+            return results
+            print "----->", results
             print "Got results..."
             try:
                 json_results = json.dumps(results)
@@ -218,26 +227,68 @@ def _build_q4_query():
 # New db structure queries
 
 def _find_row():
-    sql = """SELECT 1 from %s WHERE %s;"""
+    sql = []
+    sql.append("""SELECT 1 FROM %s WHERE %s""")
     return (sql, [])
+
+def _find_user():
+    sql = ("""SELECT * FROM users WHERE screen_name = %s """)
+    return (sql, [])
+
+def _find_filter():
+    sql = ("""SELECT * FROM filters WHERE filter_name = %s """)
+    return (sql, [])
+
+def _find_join():
+    sql = []
+    sql.append ("""SELECT * FROM user_filter_join""")
+    sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
+    return (" ".join(sql), None)
+
 
 def _get_tweet_count():
     sql=("""SELECT 1 from %s WHERE %s;""")
     return (sql, [])
 
-def _update_tweet_count():
-    sql = ("""UPDATE %s SET tweet_count = %s WHERE %s;""")
+def _update_user_tweet_count():
+    sql = ("""UPDATE users SET tweet_count = %s WHERE screen_name = %s;""")
     return (sql, [])
 
-def _update_timestamp():
-    sql = ("""UPDATE %s SET last_tweet_timestamp = %s WHERE %s;""")
+def _update_user_timestamp():
+    sql = ("""UPDATE users SET last_tweet_timestamp = %s WHERE screen_name = %s;""")
     return (sql, [])
+
+def _update_filter_tweet_count():
+    sql = ("""UPDATE filters SET tweet_count = %s WHERE filter_name = %s;""")
+    return (sql, [])
+
+def _update_filter_timestamp():
+    sql = ("""UPDATE filters SET last_tweet_timestamp = %s WHERE filter_name = %s;""")
+    return (sql, [])
+
+def _update_join_tweet_count():
+    sql = []
+    sql .append("""UPDATE user_filter_join SET tweet_count = %s """)
+    sql.append("""WHERE screen_name = %s AND filter_name = %s""")
+    return (" ".join(sql), None)
+
+def _update_join_timestamp():
+    sql = []
+    sql.append ("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
+    sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
+    return (sql, [])
+
+
+
+
 
 def _query_filter_tweets_counts():
+    print "----> _query_filter_tweets_counts"
     sql = ("""SELECT tweet_count FROM filters ORDER BY tweet_count DESC;""")
     return (sql, [])
 
 def _query_popular_users():
+    print "----> _query_popular_users"
     json_result = []
     for filter_ in FilterMap:
         tmp_sql = _execute_query("""SELECT 1 FROM user_filter_join WHERE filter_name = %s ORDER BY tweet_count DESC;"""%filter_, [])
@@ -274,10 +325,12 @@ def _save_filters():
                    VALUES (%s, %s, %s); """,[])
 
 def save_user_filter_join():
-    return ("""INSERT INTO user_filter_join(screen_name, filter_name, tweet_count,
-        first_tweet_timestamp, last_tweet_timestamp)
-        VALUES (%s, %s, %s, %s, %s)
-        """)
+    return ("""INSERT INTO user_filter_join( screen_name,
+                                                filter_name,
+                                                tweet_count,
+                                                first_tweet_timestamp,
+                                                last_tweet_timestamp)
+                   VALUES (%s, %s, %s, %s, %s); """,[])
 
 
 

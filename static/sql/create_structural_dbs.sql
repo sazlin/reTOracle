@@ -7,7 +7,7 @@ DROP TABLE tweets;
 CREATE TABLE users
 (
   screen_name text PRIMARY KEY,
-  account_url text,
+  account_url text[],
   tweet_count smallint,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   CHECK (tweet_count > 0)
@@ -16,13 +16,13 @@ CREATE TABLE users
 CREATE TABLE filters(
   filter_name text PRIMARY KEY,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  tweet_count smallint CHECK (tweet_count > 0)
+  tweet_count smallint
 );
 
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
   screen_name text,
-  tweet_url text[] UNIQUE,
+  tweet_url text[],
   tweet_text char(280),
   hashtags text[],
   location json,
