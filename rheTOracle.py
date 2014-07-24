@@ -19,6 +19,7 @@ import inspect
 
 logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 
+
 app = Flask(__name__)
 
 # app.config['LAST_GEO_TWEET_ID'] = -1
@@ -139,6 +140,7 @@ def get_latest_geo_tweet():
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
     except Exception as x:
+
         logger.error("Geotweet json error: %S", x.args, exc_info=True)
     try:
         response = {}
@@ -160,6 +162,7 @@ def get_latest_geo_tweet():
         response_json = json.dumps(response)
     except Exception as x:
         logger.error("Geotweet response error: %s", x.args, exc_info=True)
+
     resp = Response(response=response_json,
                     status=200,
                     mimetype="application/json")

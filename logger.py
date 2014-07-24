@@ -18,6 +18,7 @@ def make_logger(loggerName, filename):
 
     # create file handler which logs even debug messages
     fh = logging.FileHandler(filename)
+
     fh.setLevel(logging.INFO)
 
     # create console handler with a higher log level
