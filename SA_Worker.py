@@ -16,6 +16,7 @@ from boto.s3.key import Key
 import boto.emr
 from boto.emr.step import StreamingStep
 import SA_Mapper
+from SentimentAnalysis import agg_sent
 
 # At most the worker will check for more Tweets to
 # analyze every MIN_EXECUTION_PERIOD seconds
@@ -24,10 +25,10 @@ MIN_EXECUTION_PERIOD = 5.0
 # If the number of Tweets to analyze is > EMR_THRESHOLD
 # Then this worker will use Hadoop to do SA
 # But only is ALLOW_EMR is also True
-EMR_THRESHOLD = 10000
+EMR_THRESHOLD = 100
 
 # When creating a Hadoop job, whats the max batch size to aim for?
-MAX_BATCH_SIZE = 100000
+MAX_BATCH_SIZE = 1000
 
 # Allow this worker to spin up EMR (Amazon's Hadoop)
 # jobs for up to BATCH_SIZE batches of Tweets that need SA?
@@ -192,6 +193,7 @@ def push_sa_results_to_sql_from_s3(bucket):
     total = len(results)
     for result in iter(results):
         try:
+            #make sure the result is valid json, else skip
             tweet_sent = json.loads(result)
         except:
             print "Invalid output on this line, skipping..."
@@ -256,7 +258,18 @@ def main():
             total = len(tweet_batch)
             for tweet in tweet_batch:
                 #do SA magics locally
-                delicious_payload = json.dumps(SA_Mapper.run_SA(tweet))
+                result_dict = SA_Mapper.run_SA(tweet)
+                neg_probs = []
+                pos_probs = []
+                for key in result_dict:
+                    if "_neg_" in key.lower():
+                        neg_probs.append(result_dict[key])
+                    elif "_pos_" in key.lower():
+                        pos_probs.append(result_dict[key])
+                agg_sent_result = agg_sent.get_agg_sent(neg_probs, pos_probs)
+                result_dict['agg_sent'] = agg_sent_result[0]
+                result_dict['agg_prob'] = agg_sent_result[1]
+                delicious_payload = json.dumps(result_dict)
                 sql_q.get_query_results(
                     'set_tweet_sent',
                     [delicious_payload.lower()],  # must be a iterable
