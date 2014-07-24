@@ -341,6 +341,7 @@ def get_query_results(chart_string, args=None, need_fetch=True, need_dump=True):
     if args is None:
         args = QUERY_STRINGS[chart_string][1]
     if chart_string == 'fetch_popular_users':
+        print "---->D O G R U    Y E R D E Y I M"
         return _query_popular_users()
     return _execute_query(
         QUERY_STRINGS[chart_string][0],
