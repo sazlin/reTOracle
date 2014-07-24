@@ -31,7 +31,7 @@ MAX_BATCH_SIZE = 100000
 
 # Allow this worker to spin up EMR (Amazon's Hadoop)
 # jobs for up to BATCH_SIZE batches of Tweets that need SA?
-ALLOW_EMR = True
+ALLOW_EMR = False
 
 # Number of total nodes to use for EMR jobs
 # 1 Node is always used for Master/Controller node, rest are Slave/Cores

@@ -25,12 +25,12 @@ def export_classifier():
     y_test = test_small.target
     print("Testing score: {0:.1f}%".format(
         classifier.score(X_test, y_test) * 100))
-    export_pickle('classifier.txt', classifier)
-    export_pickle('vectorizer.txt', vectorizer)
+    export_pickle('SentimentAnalysis/classifier.txt', classifier)
+    export_pickle('SentimentAnalysis/vectorizer.txt', vectorizer)
 
 
-classifier_global = load_pickle('classifier.txt')
-vectorizer_global = load_pickle('vectorizer.txt')
+classifier_global = load_pickle('SentimentAnalysis/classifier.txt')
+vectorizer_global = load_pickle('SentimentAnalysis/vectorizer.txt')
 
 
 def predict(tweet, classifier=classifier_global, vectorizer=vectorizer_global):
@@ -41,8 +41,8 @@ def predict(tweet, classifier=classifier_global, vectorizer=vectorizer_global):
 
     probability = classifier.predict_proba(matrix2)
     if abs(probability[0][0] - probability[0][1]) <= 0.1:
-        return 'neutral', (probability[0][0], probability[0][1])
+        return 0, (probability[0][0], probability[0][1])
     elif predicted == [0]:
-        return 'negative', (probability[0][0], probability[0][1])
+        return -1, (probability[0][0], probability[0][1])
     else:
-        return 'positive', (probability[0][0], probability[0][1])
+        return 1, (probability[0][0], probability[0][1])
