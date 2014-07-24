@@ -85,7 +85,7 @@ def q1_query():
     update_redis()
     try:
         print "*****Q1********: Getting vals from redis..."
-        json_result = re.get_redis_query('chart1')
+        json_result = re.get_redis_query('fetch_filter_tw_counts')
     except:
         print "...ERROR. Trying SQL instead..."
         #json_result = sql_q.get_query_results('fetch_chart1')
@@ -102,7 +102,7 @@ def q2_query():
     """Who is *the* person to follow for a given language?"""
     update_redis()
     try:
-        json_result = re.get_redis_query('chart2')
+        json_result = re.get_redis_query('fetch_popular_users')
     except:
         #json_result = sql_q.get_query_results('fetch_chart2')
         json_result = sql_q.get_query_results('fetch_popular_users')
@@ -190,6 +190,6 @@ if __name__ == '__main__':
 
     sql_q.init()
     re.init_pool()
-    #re.maint_redis()
+    re.maint_redis()
     app.config['LAST_REDIS_UPDATE'] = time()
     app.run()
