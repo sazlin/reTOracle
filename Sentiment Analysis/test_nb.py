@@ -7,4 +7,4 @@ vectorizer_global = load_pickle('vectorizer.txt')
 
 
 def testPredict():
-    assert predict('I love Python') == 'positive'
+    assert predict('I love Python')[0] == 'positive'
