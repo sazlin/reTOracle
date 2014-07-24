@@ -13,6 +13,22 @@ logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 QUERY_STRINGS = {}
 DB_CONFIG = {}
 
+NUM_TWEETS_NEED_SA = """
+SELECT COUNT(DISTINCT tweet_id)
+FROM
+(SELECT tweet_id FROM massive
+EXCEPT
+SELECT tweet_id FROM tweet_sent) as intrsct;
+"""
+
+GET_TWEET_BATCH_NEED_SA = """SELECT tweet_id, text
+FROM massive
+WHERE tweet_id
+IN
+(SELECT tweet_id FROM massive EXCEPT select tweet_id FROM tweet_sent)
+LIMIT %s;
+"""
+SET_TWEET_SENT = """INSERT INTO tweet_sent VALUES (%s, %s);"""
 
 def init():
     _init_db_config()
@@ -53,6 +69,9 @@ def _build_query_strings():
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
+    QUERY_STRINGS['num_tweets_need_sa'] = (NUM_TWEETS_NEED_SA, None)
+    QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 10000)
+    QUERY_STRINGS['set_tweet_sent'] = (SET_TWEET_SENT, None)
 
 
 def _connect_db():
