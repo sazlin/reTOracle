@@ -3,7 +3,6 @@ from filters_json import filter_list
 import json
 import sql_queries as sql_q
 import redis_conn as re
-#from SECRETS import SECRETS
 from time import time
 import os
 import sys
@@ -68,14 +67,14 @@ def map_q2_results_to_language(parsed_results):
             if lang.lower() == item[0]:
                 _found = True
         if not _found:
-            final_result.append([lang, 0, 'God knows you lonely souls'])
+            final_result.append([lang, 0, ' '])
     return json.dumps(final_result)
 
 
 def update_redis():
     new_time = time()
     if (new_time - app.config['LAST_REDIS_UPDATE']) > app.config['REDIS_UPDATE_INTERVAL']:
-        #re.maint_redis()
+        re.maint_redis()
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
@@ -88,7 +87,6 @@ def q1_query():
         json_result = re.get_redis_query('fetch_filter_tw_counts')
     except:
         print "...ERROR. Trying SQL instead..."
-        #json_result = sql_q.get_query_results('fetch_chart1')
         json_result = sql_q.get_query_results('fetch_filter_tw_counts')
     parsed_results = json.loads(json_result)
     print "Got results: ", parsed_results
@@ -104,14 +102,10 @@ def q2_query():
     try:
         json_result = re.get_redis_query('fetch_popular_users')
     except:
-        #json_result = sql_q.get_query_results('fetch_chart2')
         json_result = sql_q.get_query_results('fetch_popular_users')
-    #parsed_results = json.loads(json_result)
     parsed_results = json_result
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
-
-
 
 
 @app.route('/geotweet', methods=['GET'])
