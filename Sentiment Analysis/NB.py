@@ -41,9 +41,8 @@ def predict(tweet, classifier=classifier_global, vectorizer=vectorizer_global):
 
     probability = classifier.predict_proba(matrix2)
     if abs(probability[0][0] - probability[0][1]) <= 0.1:
-        print 'neutral'
+        return 'neutral', (probability[0][0], probability[0][1])
     elif predicted == [0]:
-        print 'negative'
+        return 'negative', (probability[0][0], probability[0][1])
     else:
-        print 'positive'
-    print classifier.predict_proba(matrix2)
+        return 'positive', (probability[0][0], probability[0][1])
