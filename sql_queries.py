@@ -173,8 +173,8 @@ def _find_filter():
 
 def _find_join():
     sql = []
-    sql.append ("""SELECT * FROM user_filter_join""")
-    sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
+    sql.append("""SELECT * FROM user_filter_join""")
+    sql.append("""WHERE screen_name = %s AND filter_name = %s""")
     return (" ".join(sql), None)
 
 
@@ -202,8 +202,8 @@ def _update_join_tweet_count():
 
 def _update_join_timestamp():
     sql = []
-    sql.append ("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
-    sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
+    sql.append("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
+    sql.append("""WHERE screen_name = %s AND filter_name = %s""")
     return (" ".join(sql), None)
 
 
