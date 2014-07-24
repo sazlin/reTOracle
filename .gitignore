@@ -58,6 +58,5 @@ docs/_build/
 supervisord-*.conf
 nginx_config_*
 
-# Ignore SA Directory
-Sentiment Analysis
+
 
