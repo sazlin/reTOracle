@@ -88,8 +88,6 @@ def q1_query():
     except:
         print "...ERROR. Trying SQL instead..."
         json_result = sql_q.get_query_results('fetch_filter_tw_counts')
-    print"----->JSON ", type(json_result), json_result
-    # <type 'str'> [["javascript", 102], ["php", 43], ["python", 28], ["java", 22], ["ruby", 11], ["visual_basic", 4], ["csharp", 3], ["swift", 2]]
     parsed_results = json.loads(json_result)
     print "Got results: ", parsed_results
     final_result = map_q1_results_to_language(parsed_results)
