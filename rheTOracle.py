@@ -100,11 +100,15 @@ def q2_query():
     """Who is *the* person to follow for a given language?"""
     update_redis()
     try:
+        print "*****Q2********: Getting vals from redis..."
         json_result = re.get_redis_query('fetch_popular_users')
     except:
-        json_result = sql_q.get_query_results('fetch_popular_users')
+        print "...ERROR. Trying SQL instead..."
+    json_result = sql_q.get_query_results('fetch_popular_users')
     parsed_results = json_result
+    print "Got results: ", parsed_results
     final_result = map_q2_results_to_language(parsed_results)
+    print "Formatted Results: ",final_result
     return final_result
 
 
