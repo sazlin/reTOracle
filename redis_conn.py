@@ -11,7 +11,7 @@ def init_pool():
     if r_config == 'Prod':
         print "REDIS: Using Prod Redis Service"
         POOL = redis.ConnectionPool(host=os.environ.get('R_REDIS_ENDPOINT'), port=6379, db=0)
-    elif r_config == 'Test':
+    elif r_config == 'Test' or r_config == 'Local':
         print "REDIS: Using Test Redis Service"
         POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379, db=0)
     else:
@@ -23,7 +23,7 @@ def get_redis_query(q_type):
         raise Exception('POOL not initiated. Call init_pool().')
     r_server = redis.Redis(connection_pool=POOL)
     if q_type in sql_q.QUERY_STRINGS:
-        json_list = r_server.get(q_type)
+        json_list = r_server.get(q_type, True, False)
         return json_list
     else:
         raise ValueError("q_type not in REDIS")
@@ -43,23 +43,24 @@ def maint_redis():
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        if key[:5] == 'fetch' :
-            print "Redis: Querying Sql and getting results..."
-            result = None
+        if key[:5] != 'fetch' :
+            continue
+        print "Redis: Querying Sql and getting results..."
+        result = None
+        try:
+            result = sql_q.get_query_results(key)
+        except Exception as x:
+            print "Redis: something went wrong getting results for ", key, ": ", x.args
+        if result is None:
+            raise Exception("REDIS: SQL Query result is None for ", key)
+        else:
+            print "Redis: Settings query results in redis for ", key
             try:
-                result = sql_q.get_query_results(key)
+                _set_to_redis(key, result)
             except Exception as x:
-                print "Redis: something went wrong getting results for ", key, ": ", x.args
-            if result is None:
-                raise Exception("REDIS: SQL Query result is None for ", key)
+                print "Redis: Something went wrong while setting k,v pair on redis: ", x.args
             else:
-                print "Redis: Settings query results in redis for ", key
-                try:
-                    _set_to_redis(key, result)
-                except Exception as x:
-                    print "Redis: Something went wrong while setting k,v pair on redis: ", x.args
-                else:
-                    print 'Redis: [SUCCESS] results set for ', key
+                print 'Redis: [SUCCESS] results set for ', key
 
 
 
