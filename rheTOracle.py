@@ -187,6 +187,7 @@ def s1_query():
         pos, neg, neutral = 0, 0, 0
         # tweet ids needs to be a list of tuples
         agg_vals = sql_q.get_query_results('fetch_agg_vals', language)
+        logger.info("These are agg vals, %s", agg_vals)
         for val in agg_vals:
             if val == 1:
                 pos += 1
