@@ -26,7 +26,6 @@ def init_pool():
     else:
         logger.error('R_CONFIG not set properly', exc_info=True)
         raise Exception('R_CONFIG not set.')
-        logger.error('R_CONFIG not set properly')
 
 
 def get_redis_query(q_type):
@@ -44,6 +43,7 @@ def get_redis_query(q_type):
 def _set_to_redis(key, value):
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
+
     logger.debug('getting r_server')
     r_server = redis.Redis(connection_pool=POOL)
     logger.debug("setting key value on redis: %s = %s", key, value)
@@ -57,11 +57,14 @@ def maint_redis():
     for key in sql_q.QUERY_STRINGS.iterkeys():
         # HACK - we don't want to redo 'save_tweet'
         if not key == 'save_tweet':
+
             logger.debug("Redis: Querying SQL and getting results...")
+
             result = None
             try:
                 result = sql_q.get_query_results(key)
             except Exception as x:
+
                 logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
             if result is None:
                 raise Exception("REDIS: SQL Query result is None for %s ", key, exc_info=True)
@@ -74,3 +77,4 @@ def maint_redis():
                     logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
                 else:
                     logger.debug('Redis: [SUCCESS] results set for %s ', key)
+
