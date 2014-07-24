@@ -22,9 +22,9 @@ CREATE TABLE filters(
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
   screen_name text,
-  tweet_url text UNIQUE,
-  tweet_text text,
-  hashtags text,
+  tweet_url text[] UNIQUE,
+  tweet_text char(280),
+  hashtags text[],
   location json,
   retweet_count smallint
 );

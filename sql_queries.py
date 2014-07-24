@@ -57,7 +57,7 @@ def _build_query_strings():
     QUERY_STRINGS['update_timestamp'] = _update_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
     QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
-    QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
+    # QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
     QUERY_STRINGS['tweet_ids'] = _query_tweet_ids()
 
 
@@ -238,11 +238,15 @@ def _query_filter_tweets_counts():
     return (sql, [])
 
 def _query_popular_users():
-    filter_id = 'filter_id = '
+    json_result = []
     for filter_ in FilterMap:
-        filter_id += '{} OR filter_id = '.format(filter_)
-    sql = ("""SELECT screen_name FROM user_filter_join WHERE %s ORDER BY tweet_count DESC;"""%filter_id[:-15])
-    return (sql, [])
+        tmp_sql = _execute_query("""SELECT 1 FROM user_filter_join WHERE filter_name = %s ORDER BY tweet_count DESC;"""%filter_, [])
+        if tmp_sql:
+            json_result.append(tmp_sql)
+    print "!!!!!------>", json_result
+    return json_result
+
+
 
 def _query_tweet_ids():
     sql = """SELECT screen_name, tweet_text FROM tweets;
@@ -251,20 +255,23 @@ def _query_tweet_ids():
     return (sql, None)
 
 def _save_tweets():
-    return("""INSERT INTO tweets (tweet_id, tweet_url, tweet_text,
-                                                hashtags, location, retweetcount)
-                VALUES (%s, %s, %s, %s, %s, %s); """, [])
+    return ("""
+            INSERT INTO tweets(
+                tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count)
+
+            VALUES(
+                %s, %s, %s, %s, %s, %s, %s); """, [])
 
 def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
                                 tweet_count, last_tweet_timestamp)
-                 VALUES (%s, %s, %s, %s, %s); """,[])
+                 VALUES (%s, %s, %s, %s); """,[])
 
 def _save_filters():
-    return ("""INSERT INTO filters( filter_id, filter_name,
+    return ("""INSERT INTO filters( filter_name,
                                                 last_tweet_timestamp,
                                                 tweet_count)
-                   VALUES (%s, %s, %s, %s); """,[])
+                   VALUES (%s, %s, %s); """,[])
 
 def save_user_filter_join():
     return ("""INSERT INTO user_filter_join(screen_name, filter_name, tweet_count,
@@ -277,6 +284,8 @@ def save_user_filter_join():
 def get_query_results(chart_string, args=None, need_fetch=True):
     if args is None:
         args = QUERY_STRINGS[chart_string][1]
+    if chart_string == 'fetch_popular_users':
+        return _query_popular_users()
     return _execute_query(
         QUERY_STRINGS[chart_string][0],
         args,
