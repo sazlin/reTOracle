@@ -59,22 +59,16 @@ def map_q2_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q2's query results
         into a new list of lists that will be returned to the client for rendering"""
     final_result = []
-    try:
-        for language in filter_list:
-            userCountForThisLanguage = {}
-            search_terms = filter_list[language]['search_terms']
-            for hashtag in search_terms['hashtags']:
-                for result in parsed_results:
-                    if hashtag[1:] == result[0]:
-                        if not userCountForThisLanguage.has_key(result[2]):
-                            userCountForThisLanguage[result[2]] = result[1]
-                        userCountForThisLanguage[result[2]] += result[1]
-            top_user_count, top_user = 0, ""
-            if len(userCountForThisLanguage.items()) is not 0:
-                top_user_count, top_user = max((v, k) for k, v in userCountForThisLanguage.items())
-            final_result.append([language, top_user_count, top_user])
-    except Exception as x:
-        print "**************Something went wrong:", x.args
+    for item in parsed_results:
+        final_result.append([item[0], item[1], item[2]])
+
+    for lang in filter_list:
+        _found = False
+        for item in parsed_results:
+            if lang.lower() == item[0]:
+                _found = True
+        if not _found:
+            final_result.append([lang, 0, 'God knows you lonely souls'])
     return json.dumps(final_result)
 
 
@@ -110,11 +104,16 @@ def q2_query():
     try:
         json_result = re.get_redis_query('chart2')
     except:
-        # json_result = sql_q.get_query_results('fetch_chart2')
+        #json_result = sql_q.get_query_results('fetch_chart2')
         json_result = sql_q.get_query_results('fetch_popular_users')
-    parsed_results = json.loads(json_result)
+    #parsed_results = json.loads(json_result)
+    parsed_results = json_result
+    print "--->PARSED", type(parsed_results), parsed_results
     final_result = map_q2_results_to_language(parsed_results)
+    print "--->FINALR", type(final_result), final_result
     return final_result
+
+
 
 
 @app.route('/geotweet', methods=['GET'])
