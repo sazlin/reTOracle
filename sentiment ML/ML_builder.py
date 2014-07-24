@@ -1,7 +1,5 @@
-
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression as LR
@@ -9,14 +7,13 @@ from string import maketrans
 import pandas as pd
 from pandas import DataFrame, read_csv, read_excel, concat
 
-
 class ML_builder(object):
     def __init__(self):
         self.vocab = []
         self.classifier = None
         self.train_df = None
     
-    def build_vocab(self, n, training_samples = 1000):
+    def build_vocab(self, n, training_samples):
         vocab = []
         with open('stopwords.txt') as stop_words:
             stop_words = {line.strip().lower() for line in stop_words if line!='\n'} 
@@ -24,7 +21,7 @@ class ML_builder(object):
         tweets = []
         for tweet in self.train_df['SentimentText'][0:training_samples]:
             clean_tweet = self.tweet_cleaner(tweet)
-            tweets.extend(clean_tweet)
+            tweets.extend(clean_tweet.split())
         for word in tweets:
             if word not in stop_words:
                 if word.isalnum() and len(word)>1:    
@@ -50,20 +47,20 @@ class ML_builder(object):
                 if sad in word:
                     words[index]='sadface'
                     break
-        return words
+        return " ".join(words)
             
     def vectorize(self, tweet):
         vector = np.zeros(len(self.vocab))
         clean_tweet = self.tweet_cleaner(tweet)
 
-        for word in clean_tweet:
+        for word in clean_tweet.split():
             try:
                 vector[self.vocab.index(word)] += 1
             except ValueError:
                 pass
         return vector
 
-    def make_classifier(self, training_samples = 1000):
+    def make_classifier(self, training_samples):
         tweet_array = np.zeros((training_samples, len(self.vocab)))
         for index, tweet in enumerate(self.train_df['SentimentText'][0:training_samples]):
             tweet_array[index] = self.vectorize(tweet)
@@ -72,7 +69,7 @@ class ML_builder(object):
         clf.fit(tweet_array, np.asarray(output))
         self.classifier = clf
 
-    def test_classifier(self, training_samples, test_samples = 400):
+    def test_classifier(self, training_samples, test_samples):
         test_array = np.zeros((test_samples, len(self.vocab)))
         for index, tweet in enumerate(self.train_df['SentimentText'][training_samples:test_samples]):
             test_array[index] = self.vectorize(tweet)
@@ -100,8 +97,13 @@ class ML_builder(object):
             happyface = [line.strip() for line in happyface if line!='\n']
             sadface = [line.strip()[::-1] for line in happyface if line!='\n']
 
-        self.train_df = read_csv('Small_sample.csv')
+        self.train_df = read_csv('Sentiment Analysis Dataset.csv')
         self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
+        positive = self.train_df[self.train_df['Sentiment']==0]
+        negative = self.train_df[self.train_df['Sentiment']==1]
+        positive = positive[:10000]
+        negative = negative[:10000]
+        self.train_df = positive+negative
 
         self.build_vocab(n = 5000, training_samples = 2500)
         self.make_classifier(training_samples = 2500)
@@ -112,8 +114,6 @@ class ML_builder(object):
             self.ML_build()
         return (self.classifier.predict(self.vectorize(tweet))[0],
                 self.classifier.predict_proba(self.vectorize(tweet))[0])
-
-
 
                 
                 
