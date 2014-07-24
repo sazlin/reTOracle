@@ -3,18 +3,19 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression as LR
 from string import maketrans
 import pandas as pd
-from pandas import DataFrame, read_csv, read_excel, concat
+from pandas import read_csv, read_excel, concat
 import nltk
 import re
 import requests
 import json
-from math import log
+from math import log, exp
 from scipy import sparse
+import os
+from os.path import isfile
 
-class ML_builder(object):
+class SVM_builder(object):
     def __init__(self):
         self.vocab = []
         self.happyface = []
@@ -72,7 +73,7 @@ class ML_builder(object):
             tweet_array[index] = self.vectorize(tweet)
         print 'Vectorization Complete'
         output = self.train_df['Sentiment'][0:training_samples]
-        clf = SVC(kernel='linear')
+        clf = SVC(kernel='linear', probability=True)
         X_csr = sparse.csr_matrix(tweet_array)
         clf.fit(X_csr, np.asarray(output))
         self.classifier = clf
@@ -101,35 +102,56 @@ class ML_builder(object):
         print(pca.explained_variance_ratio_)
         print(pca.components_)
         
-    def ML_build(self):
-        with open('happyface.txt') as happyface:
-            self.happyface = [line.strip() for line in happyface if line!='\n']
-            self.sadface = [line.strip()[::-1] for line in happyface if line!='\n']
+    def SVM_build(self):
+        curr_dir = os.getcwd()
+        if isfile('SVM_algo.txt'):
+            self.classifier = load_pickle('SVM_algo.txt')
+            self.vocab = load_pickle('vocab.txt')
+        else:
+            with open('happyface.txt') as happyface:
+                self.happyface = [line.strip() for line in happyface if line!='\n']
+                self.sadface = [line.strip()[::-1] for line in happyface if line!='\n']
 
-        self.train_df = read_csv('Sentiment Analysis Dataset.csv')
-        self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
-        positive = self.train_df[self.train_df['Sentiment']==0]
-        negative = self.train_df[self.train_df['Sentiment']==1]
-        sample_size = 10000
-        training_ratio = .9
-        positive_train = positive[:int(training_ratio*sample_size)]
-        negative_train = negative[:int(training_ratio*sample_size)]
-        positive_test = positive[int(training_ratio*sample_size):sample_size]
-        negative_test = negative[int(training_ratio*sample_size):sample_size]
-        self.train_df = concat([positive_train,negative_train, positive_test, negative_test])
-        self.train_df = self.train_df.reset_index()
+            self.train_df = read_csv('Sentiment Analysis Dataset.csv')
+            self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
+            positive = self.train_df[self.train_df['Sentiment']==0]
+            negative = self.train_df[self.train_df['Sentiment']==1]
+            sample_size = 10000
+            training_ratio = .9
+            positive_train = positive[:int(training_ratio*sample_size)]
+            negative_train = negative[:int(training_ratio*sample_size)]
+            positive_test = positive[int(training_ratio*sample_size):sample_size]
+            negative_test = negative[int(training_ratio*sample_size):sample_size]
+            self.train_df = concat([positive_train,negative_train, positive_test, negative_test])
+            self.train_df = self.train_df.reset_index()
 
-        self.build_vocab(n = 5000, training_samples = int(sample_size*training_ratio*2))
-        self.make_classifier(training_samples = int(sample_size*training_ratio*2))
-        self.test_classifier(training_samples = int(sample_size*training_ratio*2),
-                             test_samples = int((1-training_ratio)*sample_size*2))
+            self.build_vocab(n = 5000, training_samples = int(sample_size*training_ratio*2))
+            self.make_classifier(training_samples = int(sample_size*training_ratio*2))
+            self.test_classifier(training_samples = int(sample_size*training_ratio*2),
+                                 test_samples = int((1-training_ratio)*sample_size*2))
+            print 'Classifier Ready'
+            export_pickle('SVM_algo.txt', self.classifier)
+            export_pickle('vocab.txt', self.vocab)
 
     def Predict(self, tweet):
-        if self.vocab == []:
-            self.ML_build()
-        #export_pickle('SVM_algo', self.classifier)
-        return self.classifier.predict(self.vectorize(tweet))[0]
-        #return self.classifier.predict_proba(self.vectorize(tweet))[0]
+        Decider = self.classifier.predict_proba(self.vectorize(tweet))[0][0]
+        if Decider<.475:
+            return (1, self.classifier.predict_proba(self.vectorize(tweet))[0])
+        elif Decider>.525:
+            return (-1, self.classifier.predict_proba(self.vectorize(tweet))[0])
+        return (0, self.classifier.predict_proba(self.vectorize(tweet))[0])
+        
+
+import cPickle
+def load_pickle(filename):
+    pickled = open(filename, 'rb')
+    data = cPickle.load(pickled)
+    return data
+def export_pickle(filename, the_object):
+    pickle_file = open(filename, 'wb')
+    cPickle.dump(the_object, pickle_file)
+    pickle_file.close()
+
 
 def unsupervised_predict(tweet):
     
@@ -150,7 +172,7 @@ def unsupervised_predict(tweet):
     good_chunks = get_good_chunks(chunks)
     
     if not good_chunks:
-        backup_chunk_gram = r"Chunk: {(<NN\w?\w?><VB\w?>)|(<RB\w?><JJ>)|(<N\w?\w?\w?|PR\w?><VB\w?>)}"
+        backup_chunk_gram = r"Chunk: {(<NN\w?\w?><VB\w?>)|(<RB\w?><JJ>)|(<N\w?\w?\w?|PR\w?><VB\w?>)"         "|(<VB\w?><RB\w?>)|(<VB\w?><JJ>)}"
         chunk_parser = nltk.RegexpParser(backup_chunk_gram)
         chunks = chunk_parser.parse(tagged)
         good_chunks = get_good_chunks(chunks)
@@ -165,15 +187,17 @@ def unsupervised_predict(tweet):
         ratio1 = 1.0* close_good / close_bad
         ratio2 = 1.0* bad/good
         ratio = ratio1*ratio2
-        print ratio1
-        print ratio2
         SO += log(ratio)
     
-    if SO>=0:
-        return 'Positive'
-    return 'Negative'
+    if sigmoid(SO)>.025:
+        return (1, 1-sigmoid(SO), sigmoid(SO))
+    elif sigmoid(SO)<-.025:
+        return (-1, 1-sigmoid(SO), sigmoid(SO))
+    return (0, 1-sigmoid(SO), sigmoid(SO))
 
-    
+def sigmoid(x):
+  return 1 / (1 + exp(-x))
+
 def hits(word, phrase=None):
     query = "http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q={}"
     if not phrase:
@@ -183,3 +207,5 @@ def hits(word, phrase=None):
     json_res = results.json()
     google_hits=int(json_res['responseData']['cursor']['estimatedResultCount'])
     return google_hits
+                
+                

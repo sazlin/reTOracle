@@ -29,7 +29,8 @@ IN
 (SELECT tweet_id FROM massive EXCEPT select tweet_id FROM tweet_sent)
 LIMIT %s;
 """
-SET_TWEET_SENT = """INSERT INTO tweet_sent VALUES (%s, %s);"""
+SET_TWEET_SENT = """INSERT INTO tweet_sent SELECT * FROM json_populate_record(NULL::tweet_sent, %s);"""
+
 
 
 def init():

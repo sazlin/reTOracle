@@ -60,3 +60,6 @@ nginx_config_*
 
 
 
+#ignore sample EMR-friendly input used for testing
+sa_input
+
