@@ -64,7 +64,7 @@ def _build_query_strings():
     QUERY_STRINGS['update_join_timestamp'] = _update_join_timestamp()
     QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
     QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
-    # QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
+    QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
     QUERY_STRINGS['tweet_ids'] = _query_tweet_ids()
 
 
@@ -110,7 +110,7 @@ def _get_cursor():
         return _create_cursor()
 
 
-def _execute_query(sql, args=None, need_fetch=True):
+def _execute_query(sql, args=None, need_fetch=True, need_dump = True):
     """execute the passed in SQL using the current cursor.
     If the query string takes any args pass those to the cursor as well."""
     try:
@@ -123,7 +123,8 @@ def _execute_query(sql, args=None, need_fetch=True):
         if need_fetch:
             print "Getting results..."
             results = cur.fetchall()
-            if not need_fetch:
+            print results
+            if not need_dump:
                 return results
             print "Got results..."
             try:
@@ -284,14 +285,47 @@ def _query_filter_tweets_counts():
     return (sql, [])
 
 def _query_popular_users():
-    print "----> _query_popular_users"
-    json_result = []
-    for filter_ in FilterMap:
-        tmp_sql = _execute_query("""SELECT 1 FROM user_filter_join WHERE filter_name = %s ORDER BY tweet_count DESC;"""%filter_, [])
-        if tmp_sql:
-            json_result.append(tmp_sql)
-    print "!!!!!------>", json_result
-    return json_result
+    final_result = []
+    sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""", None, True, False)
+    for filter_ in sql1_result:
+        tmp_sql = []
+        tmp_sql.append("""SELECT filter_name, tweet_count, screen_name FROM  user_filter_join""")
+        tmp_sql.append("""WHERE filter_name = %s ORDER BY tweet_count DESC LIMIT 1""")
+        json_result = _execute_query(" ".join(tmp_sql), [filter_[0]])
+        json_result = json_result.split(', ')
+        tmp_json = []
+        tmp_json.append(json_result[0][3:-1])
+        tmp_json.append(int(json_result[1]))
+        tmp_json.append(json_result[2][1:-3])
+        if  json_result:
+            final_result.append(tmp_json)
+
+    print "---->FINAL RESULT", final_result
+    return final_result
+
+#      JSONNNN [["javascript", 18, "js_digest"]]
+# FUCK RESULT [['"javascript", 18, "js_digest"'], ['"php", 5, "js_digest"']]
+# PARSED RESULT [[u'BackboneJS', 10, u'js_digest'], [u'clanguage', 2, u'shafikyaghmour'], [u'cprogramming', 4, u'CouponIgnite'], [u'CSharp', 37, u'Ehickioya'], [u'Django', 8, u'_PinPoint_'], [u'Flask', 2, u'Psoriasis_Care'], [u'Java', 112, u'Java_Question'], [u'java8', 28, u'OmerJavedonline'], [u'javadeveloper', 1, u'JannaLKirkland'], [u'JavaEE', 5, u'c2b2consulting'], [u'javafx', 11, u'SoftMAS_CO'], [u'Javascript', 429, u'js_digest'], [u'JQuery', 26, u'js_digest'], [u'NodeJS', 91, u'js_digest'], [u'numpy', 2, u'KateiyaM'], [u'objectivec', 14, u'findmjob'], [u'PHP', 220, u'PHP_Quest'], [u'pyconau', 2, u'caleb_hattingh'], [u'Python', 120, u'Python_Quest'], [u'rails', 33, u'findmjob'], [u'Ruby', 88, u'MANA_fmanassero'], [u'RubyOnRails', 10, u'Sidejob_'], [u'swiftlang', 30, u'swiftLDN'], [u'VB', 32, u'VB_bingb'], [u'VBA', 18, u'Programing_Box']]
+# PARSED RESULT [[u'javascript', 1, u'daaon'], [u'javascript', 1, u'findmjob'], [u'javascript', 1, u'TheIndieSloth'], [u'javascript', 1, u'mark_skeet'], [u'javascript', 1, u'trikitrok'], [u'javascript', 1, u'we_Recruit'], [u'javascript', 1, u'narinta_407'], [u'javascript', 1, u'pouya'], [u'javascript', 1, u'gummatt'], [u'javascript', 2, u'JavaEmployer'], [u'javascript', 1, u'HTML5Digest1'], [u'javascript', 1, u'kremplo'], [u'javascript', 1, u'proghu'], [u'javascript', 1, u'AdWordsJobs'], [u'javascript', 1, u'Stud_Richmond'], [u'javascript', 1, u'Go_Freelancer'], [u'javascript', 1, u'bulkanevcimen'], [u'javascript', 1, u'tonytamps'], [u'javascript', 1, u'CounilLaurent'], [u'javascript', 2, u'LissaRabinowitz'], [u'javascript', 1, u'DesignLearnBot'], [u'javascript', 1, u'Best_Gadgets_4U'], [u'javascript', 1, u'rjaviervega'], [u'javascript', 1, u'emGhost_'], [u'javascript', 18, u'js_digest'], [u'javascript', 2, u'symfony_jobs'], [u'javascript', 1, u'MVP_Armagan'], [u'javascript', 1, u'imarshut'], [u'javascript', 4, u'ameanmbot'], [u'javascript', 1, u'wp_digest'], [u'javascript', 1, u'wp_portugal'], [u'javascript', 1, u'EmotiCodeDotNet'], [u'javascript', 1, u'cveksitron'], [u'javascript', 3, u'PHPHire'], [u'javascript', 4, u'html5_4_all'], [u'javascript', 1, u'Best_WordPress_']]
+# FINAL RESULT [["javascript", 1, "daaon"], ["javascript", 1, "findmjob"], ["javascript", 1, "TheIndieSloth"], ["javascript", 1, "mark_skeet"], ["javascript", 1, "trikitrok"], ["javascript", 1, "we_Recruit"], ["javascript", 1, "narinta_407"], ["javascript", 1, "pouya"], ["javascript", 1, "gummatt"], ["javascript", 2, "JavaEmployer"], ["javascript", 1, "HTML5Digest1"], ["javascript", 1, "kremplo"], ["javascript", 1, "proghu"], ["javascript", 1, "AdWordsJobs"], ["javascript", 1, "Stud_Richmond"], ["javascript", 1, "Go_Freelancer"], ["javascript", 1, "bulkanevcimen"], ["javascript", 1, "tonytamps"], ["javascript", 1, "CounilLaurent"], ["javascript", 2, "LissaRabinowitz"], ["javascript", 1, "DesignLearnBot"], ["javascript", 1, "Best_Gadgets_4U"], ["javascript", 1, "rjaviervega"], ["javascript", 1, "emGhost_"], ["javascript", 18, "js_digest"], ["javascript", 2, "symfony_jobs"], ["javascript", 1, "MVP_Armagan"], ["javascript", 1, "imarshut"], ["javascript", 4, "ameanmbot"], ["javascript", 1, "wp_digest"], ["javascript", 1, "wp_portugal"], ["javascript", 1, "EmotiCodeDotNet"], ["javascript", 1, "cveksitron"], ["javascript", 3, "PHPHire"], ["javascript", 4, "html5_4_all"], ["javascript", 1, "Best_WordPress_"]]
+
+# FINAL RESULT ['[["javascript", 1, "daaon"], ["javascript", 1, "findmjob"], ["javascript", 1, "TheIndieSloth"], ["javascript", 1, "mark_skeet"], ["javascript", 1, "trikitrok"], ["javascript", 1, "we_Recruit"], ["javascript", 1, "narinta_407"], ["javascript", 1, "pouya"], ["javascript", 1, "gummatt"], ["javascript", 2, "JavaEmployer"], ["javascript", 1, "HTML5Digest1"], ["javascript", 1, "kremplo"], ["javascript", 1, "proghu"], ["javascript", 1, "AdWordsJobs"], ["javascript", 1, "Stud_Richmond"], ["javascript", 1, "Go_Freelancer"], ["javascript", 1, "bulkanevcimen"], ["javascript", 1, "tonytamps"], ["javascript", 1, "CounilLaurent"], ["javascript", 2, "LissaRabinowitz"], ["javascript", 1, "DesignLearnBot"], ["javascript", 1, "Best_Gadgets_4U"], ["javascript", 1, "rjaviervega"], ["javascript", 1, "emGhost_"], ["javascript", 18, "js_digest"], ["javascript", 2, "symfony_jobs"], ["javascript", 1, "MVP_Armagan"], ["javascript", 1, "imarshut"], ["javascript", 4, "ameanmbot"], ["javascript", 1, "wp_digest"], ["javascript", 1, "wp_portugal"], ["javascript", 1, "EmotiCodeDotNet"], ["javascript", 1, "cveksitron"], ["javascript", 3, "PHPHire"], ["javascript", 4, "html5_4_all"], ["javascript", 1, "Best_WordPress_"]]', '[["php", 1, "webdevgigs"], ["php", 1, "BriansWebWorks"], ["php", 1, "suyatitech"], ["php", 1, "ali7amdi"], ["php", 1, "MikeMoraRocks"], ["php", 1, "nicklevett"], ["php", 1, "NewEraDesign"], ["php", 1, "BoylemeLEon"], ["php", 1, "ChePelletier"], ["php", 1, "PermataHousePro"], ["php", 1, "StackCareers"], ["php", 1, "manuelvilella"], ["php", 1, "UKPHPJobs"], ["php", 1, "LissaRabinowitz"], ["php", 3, "symfony_jobs"], ["php", 1, "WebDesignBetter"], ["php", 1, "AgenteNotFound"], ["php", 1, "goetas_asmir"], ["php", 1, "MVP_Armagan"], ["php", 5, "js_digest"], ["php", 1, "FranziskaElle"], ["php", 1, "mrvijayakumar"], ["php", 3, "MaickeyArlin"], ["php", 1, "willcantrell123"], ["php", 2, "PHPHire"]]', '[["python", 1, "marthiaflo"], ["python", 1, "tanyaqiin"], ["python", 1, "biicode"], ["python", 1, "js_digest"], ["python", 9, "artwisanggeni"], ["python", 1, "theuni"], ["python", 1, "SeyerleRose15"], ["python", 1, "CyrilClaire2"], ["python", 1, "PHPHire"], ["python", 1, "giovannibajo"]]', '[["java", 1, "softwaremill"], ["java", 1, "vacatures_java"], ["java", 1, "danielbartl"], ["java", 1, "ameanmbot"], ["java", 1, "nl_zoekjijwerk"], ["java", 1, "FranziskaElle"], ["java", 1, "mzkred"]]', '[["ruby", 1, "jeffreydemun"], ["ruby", 2, "RailsJobsCom"], ["ruby", 1, "prcaen"], ["ruby", 1, "lulalala_it"], ["ruby", 1, "js_digest"], ["ruby", 1, "moises_macia"], ["ruby", 1, "IleniaGiagnoni"], ["ruby", 1, "rates_exchange"], ["ruby", 1, "PHPHire"], ["ruby", 1, "stevewalkr"]]', '[["visual_basic", 1, "VB_bingb"]]', '[["csharp", 1, "js_digest"], ["csharp", 1, "StackCareers"], ["csharp", 1, "PHPHire"]]', '[["swift", 1, "blueupbeacons"], ["swift", 1, "zmarkan"]]']
+# SQL STRING: SELECT hashtag, HashTagCount, screen_name
+# FROM (SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos
+# FROM (SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount
+# FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as unwrap
+# WHERE
+# hashtag = %s
+# OR
+# hashtag = %s
+# GROUP BY screen_name, hashtag
+# ORDER BY hashtag, HashTagCount DESC
+# ) as countedhashtags
+# ) as ss
+# WHERE pos = 1
+# ORDER BY hashtag, HashTagCount DESC
+
+
 
 
 
