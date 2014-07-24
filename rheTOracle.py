@@ -113,7 +113,6 @@ def q2_query():
         # json_result = sql_q.get_query_results('fetch_chart2')
         json_result = sql_q.get_query_results('fetch_popular_users')
     parsed_results = json.loads(json_result)
-    print "--------> PARSED RESULT", parsed_results
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
 
