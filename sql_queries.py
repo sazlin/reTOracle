@@ -29,7 +29,8 @@ def _init_db_config():
         DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif r_config == 'Test':
+    elif r_config == 'Test' or r_config == 'Local':
+        r_config = 'Test'
         DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
@@ -41,8 +42,8 @@ def _init_db_config():
 
 
 def _build_query_strings():
-    QUERY_STRINGS['fetch_chart1'] = _build_q1_query()
-    QUERY_STRINGS['fetch_chart2'] = _build_q2_query()
+    #QUERY_STRINGS['fetch_chart1'] = _build_q1_query()
+    #QUERY_STRINGS['fetch_chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
 
