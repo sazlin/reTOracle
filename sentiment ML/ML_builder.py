@@ -1,11 +1,11 @@
 import numpy as np
-import pandas as pd
+#import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression as LR
+#from sklearn.linear_model import LogisticRegression as LR
 from string import maketrans
-import pandas as pd
-from pandas import DataFrame, read_csv, read_excel, concat
+from pandas import read_csv
+
 
 class ML_builder(object):
     def __init__(self):
@@ -15,7 +15,7 @@ class ML_builder(object):
     
     def build_vocab(self, n, training_samples):
         vocab = []
-        with open('stopwords.txt') as stop_words:
+        with open('sentimentML/stopwords.txt') as stop_words:
             stop_words = {line.strip().lower() for line in stop_words if line!='\n'} 
         words = {}    
         tweets = []
@@ -39,11 +39,11 @@ class ML_builder(object):
         tweet = tweet.translate(maketrans('?!,.', '    '))
         words.extend(tweet.strip().lower().split())
         for index, word in enumerate(words):
-            for happy in happyface:
+            for happy in self.happyfaces:
                 if happy in word:
                     words[index]='happyface'
                     break
-            for sad in sadface:
+            for sad in self.sadfaces:
                 if sad in word:
                     words[index]='sadface'
                     break
@@ -93,11 +93,11 @@ class ML_builder(object):
         print(pca.components_)
         
     def ML_build(self):
-        with open('happyface.txt') as happyface:
-            happyface = [line.strip() for line in happyface if line!='\n']
-            sadface = [line.strip()[::-1] for line in happyface if line!='\n']
+        with open('sentimentML/happyface.txt') as happyface:
+            self.happyfaces = [line.strip() for line in happyface if line!='\n']
+            self.sadfaces = [line.strip()[::-1] for line in happyface if line!='\n']
 
-        self.train_df = read_csv('Sentiment Analysis Dataset.csv')
+        self.train_df = read_csv('sentimentML/Sentiment Analysis Dataset.csv')
         self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
         positive = self.train_df[self.train_df['Sentiment']==0]
         negative = self.train_df[self.train_df['Sentiment']==1]
