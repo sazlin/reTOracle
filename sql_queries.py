@@ -71,6 +71,7 @@ def _build_query_strings():
     QUERY_STRINGS['chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
+    QUERY_STRINGS['fetch_agg_vals'] = _build_agg_vals()
     QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
     QUERY_STRINGS['num_tweets_need_sa'] = (NUM_TWEETS_NEED_SA, None)
     QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 10000)
@@ -223,6 +224,21 @@ def _build_save_tweet_sql():
             VALUES(
                 %s, %s, %s, %s, %s, %s, %s,
                 %s, %s, %s); """, [])
+
+
+def _build_agg_vals():
+    return("""
+    SELECT agg_sent FROM tweet_sent WHERE tweet_id in (
+        SELECT tweet_id FROM tweets WHERE filter_name = %s);
+    """)
+
+
+# def _build_recent_sent():
+#     return("""
+#     SELECT tweet_id, agg_sent FROM tweet_sent
+#     ORDER BY tweet_id DESC
+#     LIMIT 10;
+#     """)
 
 
 def get_query_results(chart_string, args=None, need_fetch=True):

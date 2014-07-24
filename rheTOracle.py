@@ -180,6 +180,27 @@ def ticker_fetch():
     return resp
 
 
+@app.route('/s1', methods=['GET'])
+def s1_query():
+    final_output = []
+    for language in filter_list:
+        pos, neg, neutral = 0, 0, 0
+        # tweet ids needs to be a list of tuples
+        agg_vals = sql_q.get_query_results('fetch_agg_vals', language)
+        for val in agg_vals:
+            if val == 1:
+                pos += 1
+            elif val == 0:
+                neg += 1
+            else:
+                neutral += 1
+        final_output.append([language, pos, neg, neutral])
+    resp = Response(response=final_output,
+                    status=200,
+                    mimetype="application/json")
+    return resp
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('setting')
 parser.add_argument('-v', '--verbosity', type=int)
