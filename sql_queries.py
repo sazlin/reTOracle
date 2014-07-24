@@ -30,7 +30,6 @@ def _init_db_config():
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
     elif r_config == 'Test' or r_config == 'Local':
-        r_config = 'Test'
         DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
@@ -42,18 +41,13 @@ def _init_db_config():
 
 
 def _build_query_strings():
-    #QUERY_STRINGS['fetch_chart1'] = _build_q1_query()
-    #QUERY_STRINGS['fetch_chart2'] = _build_q2_query()
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
-
-    QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
 
     QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
     QUERY_STRINGS['save_users'] = _save_users()
     QUERY_STRINGS['save_user_filter_join'] = save_user_filter_join()
-    QUERY_STRINGS['find_row'] = _find_row()
     QUERY_STRINGS['find_user'] = _find_user()
     QUERY_STRINGS['find_filter'] = _find_filter()
     QUERY_STRINGS['find_join'] = _find_join()
@@ -63,10 +57,8 @@ def _build_query_strings():
     QUERY_STRINGS['update_user_timestamp'] = _update_user_timestamp()
     QUERY_STRINGS['update_filter_timestamp'] = _update_filter_timestamp()
     QUERY_STRINGS['update_join_timestamp'] = _update_join_timestamp()
-    QUERY_STRINGS['get_tw_count'] = _get_tweet_count()
     QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
     QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
-    QUERY_STRINGS['tweet_ids'] = _query_tweet_ids()
 
 
 def _connect_db():
@@ -152,50 +144,6 @@ def _execute_query(sql, args=None, need_fetch=True, need_dump = True):
     return None
 
 
-def _build_q1_query():
-    """build a query string for Q1 using FilterMap"""
-    sql = []
-    args = []
-    sql.append("""SELECT hashtag, COUNT(hashtag) as HashTagCount""")
-    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as subquery""")
-    sql.append("""WHERE""")
-    for language in FilterMap:
-        search_terms = FilterMap[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = %s """)
-            args.append(hashtag[1:])
-            sql.append("""OR""")
-    sql.pop()  # discard last OR statement
-    sql.append("""GROUP BY hashtag""")
-    sql.append("""ORDER BY HashTagCount DESC""")
-    return (" \r\n".join(sql), args)
-
-
-def _build_q2_query():
-    """build a query string for Q2 using FilterMap"""
-    sql = []
-    args = []
-    sql.append("""SELECT hashtag, HashTagCount, screen_name""")
-    sql.append("""FROM (SELECT hashtag, screen_name, HashTagCount, rank() OVER (PARTITION BY hashtag ORDER BY HashTagCount DESC, screen_name) AS pos""")
-    sql.append("""FROM (SELECT hashtag, screen_name, COUNT(hashtag) as HashTagCount""")
-    sql.append("""FROM (SELECT screen_name, unnest(hashtags) as hashtag FROM massive) as unwrap""")
-    sql.append("""WHERE""")
-    for language in FilterMap:
-        search_terms = FilterMap[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            sql.append("""hashtag = %s """)
-            args.append(hashtag[1:])
-            sql.append("""OR""")
-    sql.pop()  # discard last OR statement
-    sql.append("""GROUP BY screen_name, hashtag""")
-    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
-    sql.append(""") as countedhashtags""")
-    sql.append(""") as ss""")
-    sql.append("""WHERE pos = 1""")
-    sql.append("""ORDER BY hashtag, HashTagCount DESC""")
-    return (" \r\n".join(sql), args)
-
-
 def _build_q3_query():
     sql = """
     SELECT screen_name, text FROM massive
@@ -203,18 +151,6 @@ def _build_q3_query():
     LIMIT 1;
     """
     return (sql, None)
-
-
-def _build_save_tweet_sql():
-    return ("""
-            INSERT INTO massive(
-                tweet_id, text, hashtags, user_mentions,
-                created_at, screen_name, urls, location,
-                inreplytostatusif, retweetcount)
-
-            VALUES(
-                %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s); """, [])
 
 
 def _build_q4_query():
@@ -227,12 +163,6 @@ def _build_q4_query():
 
 
 # New db structure queries
-
-def _find_row():
-    sql = []
-    sql.append("""SELECT 1 FROM %s WHERE %s""")
-    return (sql, [])
-
 def _find_user():
     sql = ("""SELECT * FROM users WHERE screen_name = %s """)
     return (sql, [])
@@ -247,10 +177,6 @@ def _find_join():
     sql.append ("""WHERE screen_name = %s AND filter_name = %s""")
     return (" ".join(sql), None)
 
-
-def _get_tweet_count():
-    sql=("""SELECT 1 from %s WHERE %s;""")
-    return (sql, [])
 
 def _update_user_tweet_count():
     sql = ("""UPDATE users SET tweet_count = %s WHERE screen_name = %s;""")
@@ -303,11 +229,6 @@ def _query_popular_users():
     return final_result
 
 
-def _query_tweet_ids():
-    sql = """SELECT screen_name, tweet_text FROM tweets;
-    ORDER BY tweet_id DESC
-    LIMIT 1;"""
-    return (sql, None)
 
 def _save_tweets():
     return ("""
