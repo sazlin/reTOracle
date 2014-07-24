@@ -112,11 +112,11 @@ class StdOutListener(StreamListener):
 
         # if screen_name user exists, update its tweet_count number
         # else create a new user
-        user_row = sql_q.get_query_results('find_user', [screen_name], True)
+        user_row = sql_q.get_query_results('find_user', [screen_name], True, False)
         if user_row:
             tw_count = user_row[0][2]+1
-            sql_q.get_query_results( 'update_user_tw_count', [tw_count, screen_name], False)
-            sql_q.get_query_results( 'update_user_timestamp', [datetime.datetime.now(), screen_name], False)
+            sql_q.get_query_results( 'update_user_tw_count', [tw_count, screen_name], False, False)
+            sql_q.get_query_results( 'update_user_timestamp', [datetime.datetime.now(), screen_name], False, False)
         else :
             sql_q.get_query_results(
             'save_users',
@@ -131,11 +131,11 @@ class StdOutListener(StreamListener):
 
 
         def _update_create_join_table(screen_name, keyword):
-            join_row = sql_q.get_query_results('find_join', [screen_name, keyword], True)
+            join_row = sql_q.get_query_results('find_join', [screen_name, keyword], True, False)
             if join_row:
                 tw_count = join_row[0][2] + 1
-                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
-                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False)
+                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False, False)
+                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False, False)
             else:
                 sql_q.get_query_results('save_user_filter_join',
                     [screen_name, keyword, 1, datetime.datetime.now(),
@@ -147,15 +147,15 @@ class StdOutListener(StreamListener):
             for keyword in filter_list:
                 tmp_list = [x.lower() for x in filter_list[keyword]['search_terms']['hashtags']]
                 if hashtag.lower() in tmp_list:
-                    filter_row = sql_q.get_query_results('find_filter', [keyword], True)
+                    filter_row = sql_q.get_query_results('find_filter', [keyword], True, False)
                     if filter_row :
                         tw_count = filter_row[0][2] + 1
-                        sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False)
-                        sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False)
+                        sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False, False)
+                        sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False, False)
                         _update_create_join_table(screen_name, keyword)
                     else:
                         sql_q.get_query_results( 'save_filters',
-                                                [keyword, datetime.datetime.now(), 1], False)
+                                                [keyword, datetime.datetime.now(), 1], False, False)
                         _update_create_join_table(screen_name, keyword)
 
 
