@@ -133,7 +133,7 @@ class StdOutListener(StreamListener):
         def _update_create_join_table(screen_name, keyword):
             join_row = sql_q.get_query_results('find_join', [screen_name, keyword], True)
             if join_row:
-                tw_count = join_row[0][3] + 1
+                tw_count = join_row[0][2] + 1
                 sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
                 sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False)
             else:
