@@ -6,15 +6,19 @@ POOL = None
 
 
 def init_pool():
-    global POOL  # HACK, fix later
+    global POOL # HACK, fix later
     r_config = os.environ.get('R_CONFIG')
     if r_config == 'Prod':
-        print "REDIS: Using Prod Redis Service"
+        logger.info("REDIS: Using Prod Redis Service")
         POOL = redis.ConnectionPool(host=os.environ.get('R_REDIS_ENDPOINT'), port=6379, db=0)
-    elif r_config == 'Test' or r_config == 'Local':
-        print "REDIS: Using Test Redis Service"
+    elif r_config == 'Test':
+        logger.info("REDIS: Using Test Redis Service")
         POOL = redis.ConnectionPool(host=os.environ.get('R_TEST_REDIS_ENDPOINT'), port=6379, db=0)
+    elif r_config == 'Local':
+        print "REDIS: Using Local Redis Service"
+        POOL = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0)
     else:
+        logger.error('R_CONFIG not set properly', exc_info=True)
         raise Exception('R_CONFIG not set.')
 
 
@@ -23,7 +27,7 @@ def get_redis_query(q_type):
         raise Exception('POOL not initiated. Call init_pool().')
     r_server = redis.Redis(connection_pool=POOL)
     if q_type in sql_q.QUERY_STRINGS:
-        json_list = r_server.get(q_type, True, False)
+        json_list = r_server.get(q_type)
         return json_list
     else:
         raise ValueError("q_type not in REDIS")
