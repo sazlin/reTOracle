@@ -61,3 +61,6 @@ nginx_config_*
 # Ignore SA Directory
 Sentiment Analysis
 
+#ignore sample EMR-friendly input used for testing
+sa_input
+
