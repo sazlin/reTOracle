@@ -103,6 +103,7 @@ class StdOutListener(StreamListener):
         retweets = json_data.get('retweet_count', None)
 
         # First save the new tweet in tweets table
+        print "-----> saving tweets"
         sql_q.get_query_results(
             'save_tweets',
             [tweet_id, screen_name, urls, text, hashtags,
@@ -115,10 +116,12 @@ class StdOutListener(StreamListener):
         sql_txt = u'user_id = %s'%screen_name
         user_row = sql_q.get_query_results('find_row', [screen_name, sql_txt], True)
         if user_row:
+            print "-----> user exists, updating user tweet count"
             tw_count = user_row.tweet_count +1
             sql_q.get_query_results( 'update_tw_count', [u'users', tw_count, sql_txt], False)
             sql_q.get_query_results( 'update_timestamp', [u'users', datetime.datetime.now(), sql_txt]. False)
         else :
+            print "-----> creating new user"
             sql_g.get_query_results(
             'save_users',
             [screen_name, account_url, 1, datetime.datetime.now()],
@@ -128,10 +131,12 @@ class StdOutListener(StreamListener):
             sql_join_text = 'screen_name = %s AND filter_name = %s' %screen_name, %keyword
             join_row = sql_q.get_query_results('find_row', ['user_filter_join', sql_join_txt], True)
             if join_row:
+                print "-----> join table exists, updating the row"
                 tw_count = join_row.tweet_count + 1
                 sql_q.get_query_results('find_row', ['user_filter_join', tw_count, sql_join_txt], False)
                 sql_q.get_query_results( 'update_timestamp', [u'user_filter_join', datetime.datetime.now(), sql_join_txt], False)
             else:
+                print "-----> cerating join table row"
                 sql_q.get_query_results('save_user_filter_join',
                     [screen_name, keyword, 1, datetime.datetime.now(),
                     datetime.datetime.now()], False)
@@ -141,12 +146,15 @@ class StdOutListener(StreamListener):
                 if hashtag in keyword['search_terms']['hashtags']:
                     sql_txt = u'filter_name = %s' %keyword
                     filter_row = sql_q.get_query_results('find_row', [keyword, sql_txt], True)
+                    print "-----> filter keyword is", keyword
                     if filter_row :
+                        print "-----> updating tweet count at filter table"
                         tw_count = filter_row.tweet_count + 1
                         sql_q.get_query_results('update_tw_count', ['filters', tw_count, sql_txt], False)
                         sql_q.get_query_results( 'update_timestamp', [u'filters', datetime.datetime.now(), sql_txt], False)
                         _update_create_join_table(screen_name, keyword)
                     else:
+                        print "-----> creating new filter table row"
                         sql_q.get_query_results( 'save_filters',
                                                 [keyword, datetime.datetime.now(), 1], False)
                         _update_create_join_table(screen_name, keyword)

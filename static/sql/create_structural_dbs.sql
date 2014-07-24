@@ -14,31 +14,30 @@ CREATE TABLE users
 );
 
 CREATE TABLE filters(
-  filter_name PRIMARY KEY,
+  filter_name text PRIMARY KEY,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   tweet_count smallint CHECK (tweet_count > 0)
 );
 
 CREATE TABLE tweets(
   tweet_id text PRIMARY KEY,
-  screen_name REFERENCES users ON DELETE CASCADE,
+  screen_name text,
   tweet_url text UNIQUE,
-  tweet_text text(280),
-  hashtags text[],
+  tweet_text text,
+  hashtags text,
   location json,
-  retweet_count smallint CHECK (retweet_count > 0)
-  FOREIGN KEY (screen_name)
+  retweet_count smallint
 );
+ALTER TABLE tweets ADD FOREIGN KEY (screen_name) REFERENCES users ON DELETE CASCADE;
+
 
 CREATE TABLE user_filter_join(
-  screen_name REFERENCES users ON DELETE CASCADE,
-  filter_name REFERENCES filters ON DELETE CASCADE,
+  screen_name text REFERENCES users ON DELETE CASCADE,
+  filter_name text REFERENCES filters ON DELETE CASCADE,
   tweet_count smallint CHECK (tweet_count > 0),
   first_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (screen_name, filter_name),
-  FOREIGN KEY (filter_name),
-  FOREIGN KEY (screen_name)
+  PRIMARY KEY (screen_name, filter_name)
 );
 
 
