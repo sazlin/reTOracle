@@ -15,6 +15,7 @@ import sql_queries as sql_q
 from boto.s3.key import Key
 import boto.emr
 from boto.emr.step import StreamingStep
+import SA_Mapper
 
 # At most the worker will check for more Tweets to
 # analyze every MIN_EXECUTION_PERIOD seconds
@@ -37,7 +38,7 @@ ALLOW_EMR = True
 # EMR_NUM_TOTAL_NODES - 1 = # of slave nodes
 # Ex: EMR_NUM_TOTAL_NODES = 1 --> 1 master node, 1 core node
 # Ex. EMR_NUM_TOTAL_NODES = 4 --> 1 master node, 3 core nodes
-EMR_NUM_TOTAL_NODES = 4
+EMR_NUM_TOTAL_NODES = 3
 
 # Instance type of slave nodes
 EMR_TYPE_SLAVE_NODES = 'm1.small'
@@ -197,9 +198,9 @@ def push_sa_results_to_sql_from_s3(bucket):
         else:
             sql_q.get_query_results(
                 'set_tweet_sent',
-                (tweet_sent[0], int(tweet_sent[1])),
+                [result],  # must be a iterable, and result is a string
                 False)
-            print tweet_sent[0], int(tweet_sent[1]),
+            print tweet_sent[0], tweet_sent[1],
             print "[", count, "of", total, "]"
             count += 1
     print "Done."
@@ -207,6 +208,7 @@ def push_sa_results_to_sql_from_s3(bucket):
 
 def main():
     sql_q.init()
+    SA_Mapper.setup_SA()
     while True:
         num_todo = _get_num_tweets_need_sa()
         last_check = time.time()
@@ -253,11 +255,13 @@ def main():
             count = 1
             total = len(tweet_batch)
             for tweet in tweet_batch:
+                #do SA magics locally
+                delicious_payload = json.dumps(SA_Mapper.run_SA(tweet))
                 sql_q.get_query_results(
                     'set_tweet_sent',
-                    (tweet[0], 1),
+                    [delicious_payload.lower()],  # must be a iterable
                     False)
-                print tweet[0], 1, "[", count, "of", total, "]"
+                print delicious_payload.lower(), "[", count, "of", total, "]"
                 count += 1
 
         #Wait a short while (if needed) before checking for more Tweets
