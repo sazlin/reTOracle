@@ -185,27 +185,44 @@ def ticker_fetch():
 
 @app.route('/q1', methods=['GET'])
 def q1_query():
-    final_output = []
+    build_count_table = {}
     logger.info("Q1: Assembling response...")
+    filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
+
     for language in filter_list:
         logger.debug("Q1: Current language %s", language)
-        pos, neg, neutral = 0, 0, 0
+        build_count_table[language] = [0,0,0]
+        #pos, neg, neutral = 0, 0, 0
         # tweet ids needs to be a list of tuples
-        agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
-        logger.debug("These are agg vals, %s", agg_vals)
-        for val in agg_vals:
-            if val == 1:
-                pos += 1
-            elif val == 0:
-                neg += 1
-            else:
-                neutral += 1
-        final_output.append([language, pos, neg, neutral])
+        # agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
+        # logger.debug("These are agg vals, %s", agg_vals)
+        # for val in agg_vals:
+        #     if val == 1:
+        #         pos += 1
+        #     elif val == 0:
+        #         neg += 1
+        #     else:
+        #         neutral += 1
+
+        #final_output.append([language, pos, neg, neutral])
+
+    for record in filter_sent_counts:
+        if record[1] == 1:
+            build_count_table[record[0]][0] = record[2]
+        elif record[1] == 0:
+            build_count_table[record[0]][2] = record[2]
+        elif record[1] == -1:
+            build_count_table[record[0]][1] = record[2]
+        else:
+            raise Exception("Unexpected agg_sent in sql response.")
+    output_list = []
+    for key in build_count_table:
+        output_list.append([key] + build_count_table[key])
     try:
-        logger.debug("Q1: Dumping final output to JSON...")
-        output_json = json.dumps(final_output)
+        logger.debug("Q1: Dumping output_list into JSON...")
+        output_json = json.dumps(output_list)
     except Exception as x:
-        logger.error("Q1: Error converting final_output to a json string:", x.args)
+        logger.error("Q1: Error converting output_json to a json string:", x.args)
         raise x
     else:
         logger.debug("Q1: This is final output %s", output_json)

@@ -73,7 +73,7 @@ def maint_redis():
             else:
                 _set_to_redis(key, result[0])
         except Exception as x:
-            logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
+            logger.error("Redis: Something went wrong while setting k,v pair on redis: %s ", x.args, exc_info=True)
         else:
             logger.info('Redis: [SUCCESS] results set for %s ', key)
             logger.debug('-->Results are: %s', result)

@@ -89,8 +89,8 @@ def _build_query_strings():
     QUERY_STRINGS['num_tweets_need_sa'] = (NUM_TWEETS_NEED_SA, None)
     QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 10000)
     QUERY_STRINGS['set_tweet_sent'] = (SET_TWEET_SENT, None)
-
-
+    QUERY_STRINGS['set_tweet_filter'] = _build_set_tweet_filter_query()
+    QUERY_STRINGS['fetch_filter_sent_counts'] = _query_filter_sent_count()
 
 def _connect_db():
     try:
@@ -167,6 +167,11 @@ def _execute_query(sql, args=None, need_fetch=True):
     return None
 
 
+def _build_set_tweet_filter_query():
+    sql = """INSERT INTO tweet_filter_join VALUES(%s, %s)"""
+    return (sql, ['-1', 'TeSt'])
+
+
 def _build_q3_query():
     sql = """
     SELECT screen_name, text FROM massive
@@ -198,7 +203,7 @@ def _find_join():
     sql = []
     sql.append("""SELECT tweet_count FROM user_filter_join""")
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return " ".join(sql)
+    return (" ".join(sql), [None, None])
 
 
 def _update_user_tweet_count():
@@ -230,6 +235,17 @@ def _update_join_timestamp():
     return (" ".join(sql), [])
 
 
+def _query_filter_sent_count():
+    sql = []
+    sql.append("""SELECT tweet_filter_join.filter_name, tweet_sent.agg_sent,""")
+    sql.append("""COUNT(distinct tweet_sent.tweet_id)""")
+    sql.append("""FROM tweet_filter_join, tweet_sent""")
+    sql.append("""WHERE tweet_filter_join.tweet_id = tweet_sent.tweet_id""")
+    sql.append("""GROUP BY filter_name, tweet_sent.agg_sent""")
+    sql.append("""ORDER BY filter_name;""")
+    return (" ".join(sql), [])
+
+
 def _query_filter_tweets_counts():
     sql = ("""SELECT filter_name, tweet_count FROM filters ORDER BY tweet_count DESC;""")
     return (sql, [])
@@ -247,7 +263,11 @@ def _query_popular_users():
         json_result = _execute_query(" ".join(tmp_sql), [filter_[0]])
         logger.debug("-->inner query result: %s", json_result)
         json_result = json.loads(json_result)
-        final_result.append(json_result[0])
+        if len(json_result) == 0:
+            # final_result.append([filter_, 0, ''])
+            pass
+        else:
+            final_result.append(json_result[0])
         result = json.dumps(final_result)
         logger.debug("-->final result: %s", result)
     return (result, [])
