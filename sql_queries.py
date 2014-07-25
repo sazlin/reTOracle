@@ -162,47 +162,47 @@ def _build_q4_query():
 
 # New db structure queries
 def _find_user():
-    sql = ("""SELECT * FROM users WHERE screen_name = %s """)
-    return (sql, [])
+    sql = ("""SELECT screen_name, tweet_count FROM users WHERE screen_name = %s """)
+    return sql
 
 def _find_filter():
-    sql = ("""SELECT * FROM filters WHERE filter_name = %s """)
-    return (sql, [])
+    sql = ("""SELECT filter_name, tweet_count FROM filters WHERE filter_name = %s """)
+    return sql
 
 def _find_join():
     sql = []
-    sql.append("""SELECT * FROM user_filter_join""")
+    sql.append("""SELECT tweet_count FROM user_filter_join""")
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return (" ".join(sql), None)
+    return " ".join(sql)
 
 
 def _update_user_tweet_count():
     sql = ("""UPDATE users SET tweet_count = %s WHERE screen_name = %s;""")
-    return (sql, [])
+    return sql
 
 def _update_user_timestamp():
     sql = ("""UPDATE users SET last_tweet_timestamp = %s WHERE screen_name = %s;""")
-    return (sql, [])
+    return sql
 
 def _update_filter_tweet_count():
     sql = ("""UPDATE filters SET tweet_count = %s WHERE filter_name = %s;""")
-    return (sql, [])
+    return sql
 
 def _update_filter_timestamp():
     sql = ("""UPDATE filters SET last_tweet_timestamp = %s WHERE filter_name = %s;""")
-    return (sql, [])
+    return sql
 
 def _update_join_tweet_count():
     sql = []
     sql .append("""UPDATE user_filter_join SET tweet_count = %s """)
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return (" ".join(sql), None)
+    return " ".join(sql)
 
 def _update_join_timestamp():
     sql = []
     sql.append("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return (" ".join(sql), None)
+    return " ".join(sql)
 
 
 def _query_filter_tweets_counts():
@@ -229,18 +229,18 @@ def _save_tweets():
                 tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count)
 
             VALUES(
-                %s, %s, %s, %s, %s, %s, %s); """, [])
+                %s, %s, %s, %s, %s, %s, %s); """)
 
 def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
                                 tweet_count, last_tweet_timestamp)
-                 VALUES (%s, %s, %s, %s); """,[])
+                 VALUES (%s, %s, %s, %s); """)
 
 def _save_filters():
     return ("""INSERT INTO filters( filter_name,
                                                 last_tweet_timestamp,
                                                 tweet_count)
-                   VALUES (%s, %s, %s); """,[])
+                   VALUES (%s, %s, %s); """)
 
 def save_user_filter_join():
     return ("""INSERT INTO user_filter_join( screen_name,
@@ -248,7 +248,7 @@ def save_user_filter_join():
                                                 tweet_count,
                                                 first_tweet_timestamp,
                                                 last_tweet_timestamp)
-                   VALUES (%s, %s, %s, %s, %s); """,[])
+                   VALUES (%s, %s, %s, %s, %s); """)
 
 
 
