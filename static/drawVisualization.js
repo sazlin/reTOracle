@@ -12,9 +12,9 @@ $(document).ready(function(){
         url: frm1.attr('action'),
         data: frm1.serialize(),
         success: function (d) {
-          d.unshift(chart1DataHeader);
-          console.log(d);
-          chart1Data = google.visualization.arrayToDataTable(d);
+          var resultArray = $.parseJSON(d);
+          resultArray.unshift(chart1DataHeader);
+          chart1Data = google.visualization.arrayToDataTable(resultArray);
           drawChart1();
         }
     });
