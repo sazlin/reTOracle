@@ -3,17 +3,14 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from string import maketrans
-import pandas as pd
-from pandas import read_csv, read_excel, concat
+from string import replace
+from pandas import read_csv, concat
 import nltk
-import re
 import requests
-import json
 from math import log, exp
 from scipy import sparse
-import os
 from os.path import isfile
+
 
 class SVM_builder(object):
     def __init__(self):
@@ -22,9 +19,9 @@ class SVM_builder(object):
         self.sadface = []
         self.classifier = None
         self.train_df = None
-    
+
     def build_vocab(self, n, training_samples):
-        with open('stopwords.txt') as stop_words:
+        with open('sentimentML/stopwords.txt') as stop_words:
             stop_words = {line.strip().lower() for line in stop_words if line!='\n'} 
    
         tweets = []
@@ -42,7 +39,13 @@ class SVM_builder(object):
         
     def tweet_cleaner(self, tweet):
         words = []
-        tweet = tweet.translate(maketrans('"@#?!,.0123456789-&*', '                    '))
+        #tweet = str(tweet)
+        #tweet = tweet.translate(maketrans('"@#?!,.0123456789-&*', '                    '))
+        tweet = replace(
+        tweet,
+        '"@#?!,.0123456789-&*',
+        ' '
+        )
         words.extend(tweet.strip().lower().split())
         for index, word in enumerate(words):
             for happy in self.happyface:
@@ -54,7 +57,7 @@ class SVM_builder(object):
                     words[index]='sadface'
                     break
         cleaner = " ".join([word for word in words if len(word)>1])
-        return cleaner.translate(maketrans(':)(;][\/=', '         '))
+        return replace(cleaner,':)(;][\/=', ' ')
             
     def vectorize(self, tweet):
         vector = np.zeros(len(self.vocab))
@@ -62,6 +65,7 @@ class SVM_builder(object):
 
         for word in clean_tweet.split():
             try:
+                #We get a unicode warning here... not sure why or if it's a big deal
                 vector[self.vocab.index(word)] += 1
             except ValueError:
                 pass
@@ -103,16 +107,16 @@ class SVM_builder(object):
         print(pca.components_)
         
     def SVM_build(self):
-        curr_dir = os.getcwd()
-        if isfile('SVM_algo.txt'):
-            self.classifier = load_pickle('SVM_algo.txt')
-            self.vocab = load_pickle('vocab.txt')
+        #curr_dir = os.getcwd()
+        if isfile('sentimentML/SVM_algo.txt'):
+            self.classifier = load_pickle('sentimentML/SVM_algo.txt')
+            self.vocab = load_pickle('sentimentML/vocab.txt')
         else:
-            with open('happyface.txt') as happyface:
+            with open('sentimentML/happyface.txt') as happyface:
                 self.happyface = [line.strip() for line in happyface if line!='\n']
                 self.sadface = [line.strip()[::-1] for line in happyface if line!='\n']
 
-            self.train_df = read_csv('Sentiment Analysis Dataset.csv')
+            self.train_df = read_csv('sentimentML/Sentiment Analysis Dataset.csv')
             self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
             positive = self.train_df[self.train_df['Sentiment']==0]
             negative = self.train_df[self.train_df['Sentiment']==1]
@@ -130,8 +134,8 @@ class SVM_builder(object):
             self.test_classifier(training_samples = int(sample_size*training_ratio*2),
                                  test_samples = int((1-training_ratio)*sample_size*2))
             print 'Classifier Ready'
-            export_pickle('SVM_algo.txt', self.classifier)
-            export_pickle('vocab.txt', self.vocab)
+            export_pickle('sentimentML/SVM_algo.txt', self.classifier)
+            export_pickle('sentimentML/vocab.txt', self.vocab)
 
     def Predict(self, tweet):
         Decider = self.classifier.predict_proba(self.vectorize(tweet))[0][0]

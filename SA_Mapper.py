@@ -13,6 +13,7 @@ import sys
 #from sentimentML.ML_builder import ML_builder
 #from datum_box import box_tweet
 from SentimentAnalysis import NB, LR
+from sentimentML import ML_builder
 
 # DBox = None
 # Datum_Integers = {'positive': 1, 'neutral': 0, 'negative': -1}
@@ -20,10 +21,9 @@ SVM = None
 
 
 def _setup_SVM():
-    # global SVM
-    # SVM = ML_builder()
-    # SVM.ML_build()
-    pass
+    global SVM
+    SVM = ML_builder.SVM_builder()
+    SVM.SVM_build()
 
 
 def _setup_DatumBox():
@@ -74,25 +74,18 @@ def _run_NB_SA(tweet, ret_dict):
     return ret_dict
 
 def _run_SVM_SA(tweet, ret_dict):
-    # t1 = time.time()
-    # result = SVM.Predict(tweet)
-    # t2 = time.time()
-    # ret_dict['SVM_SENT'] = result[0]
-    # if result == 1:
-    #     ret_dict['SVM_NEG_PROB'] = -1
-    #     ret_dict['SVM_POS_PROB'] = result[1]
-    # elif result == -1:
-    #     ret_dict['SVM_NEG_PROB'] = result[1]
-    #     ret_dict['SVM_POS_PROB'] = -1
-    # else:
-    #     ret_dict['SVM_NEG_PROB'] = -1
-    #     ret_dict['SVM_POS_PROB'] = -1
-    # ret_dict['SVM_EXEC_TIME'] = t2 - t1
+    t1 = time.time()
+    result = SVM.Predict(tweet[1])
+    t2 = time.time()
+    ret_dict['SVM_SENT'] = result[0]
+    ret_dict['SVM_NEG_PROB'] = result[1][0]
+    ret_dict['SVM_POS_PROB'] = result[1][1]
+    ret_dict['SVM_EXEC_TIME'] = t2 - t1
 
-    ret_dict['SVM_SENT'] = 1
-    ret_dict['SVM_NEG_PROB'] = 0.3
-    ret_dict['SVM_POS_PROB'] = 0.89
-    ret_dict['SVM_EXEC_TIME'] = 0.424
+    # ret_dict['SVM_SENT'] = 1
+    # ret_dict['SVM_NEG_PROB'] = 0.3
+    # ret_dict['SVM_POS_PROB'] = 0.89
+    # ret_dict['SVM_EXEC_TIME'] = 0.424
 
     #do magic
     return ret_dict

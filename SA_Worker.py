@@ -18,6 +18,7 @@ from boto.emr.step import StreamingStep
 import SA_Mapper
 from SentimentAnalysis import agg_sent
 
+
 # At most the worker will check for more Tweets to
 # analyze every MIN_EXECUTION_PERIOD seconds
 MIN_EXECUTION_PERIOD = 5.0
@@ -25,10 +26,10 @@ MIN_EXECUTION_PERIOD = 5.0
 # If the number of Tweets to analyze is > EMR_THRESHOLD
 # Then this worker will use Hadoop to do SA
 # But only is ALLOW_EMR is also True
-EMR_THRESHOLD = 100
+EMR_THRESHOLD = 1000
 
 # When creating a Hadoop job, whats the max batch size to aim for?
-MAX_BATCH_SIZE = 1000
+MAX_BATCH_SIZE = 5000
 
 # Allow this worker to spin up EMR (Amazon's Hadoop)
 # jobs for up to BATCH_SIZE batches of Tweets that need SA?
@@ -39,7 +40,7 @@ ALLOW_EMR = False
 # EMR_NUM_TOTAL_NODES - 1 = # of slave nodes
 # Ex: EMR_NUM_TOTAL_NODES = 1 --> 1 master node, 1 core node
 # Ex. EMR_NUM_TOTAL_NODES = 4 --> 1 master node, 3 core nodes
-EMR_NUM_TOTAL_NODES = 3
+EMR_NUM_TOTAL_NODES = 2
 
 # Instance type of slave nodes
 EMR_TYPE_SLAVE_NODES = 'm1.small'
@@ -191,6 +192,7 @@ def push_sa_results_to_sql_from_s3(bucket):
     results = json_results.splitlines()
     count = 1
     total = len(results)
+    print "Num results: ", total
     for result in iter(results):
         try:
             #make sure the result is valid json, else skip
