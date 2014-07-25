@@ -18,6 +18,8 @@ from boto.emr.step import StreamingStep
 import SA_Mapper
 from SentimentAnalysis import agg_sent
 
+from sentimentML import ML_builder
+
 
 # At most the worker will check for more Tweets to
 # analyze every MIN_EXECUTION_PERIOD seconds
@@ -258,6 +260,9 @@ def main():
             #Run SA on each Tweet and then upload its results to SQL
             count = 1
             total = len(tweet_batch)
+
+            #Limit this so that the API doesn't fail
+            unsupervised_count = 0
             for tweet in tweet_batch:
                 #do SA magics locally
                 result_dict = SA_Mapper.run_SA(tweet)
@@ -269,8 +274,19 @@ def main():
                     elif "_pos_" in key.lower():
                         pos_probs.append(result_dict[key])
                 agg_sent_result = agg_sent.get_agg_sent(neg_probs, pos_probs)
-                result_dict['agg_sent'] = agg_sent_result[0]
-                result_dict['agg_prob'] = agg_sent_result[1]
+                
+                #I added code here, please delete in case shit blows up :D
+                #--Jack--
+                if agg_sent_result[1]<.525 and agg_sent_result[1]>.475 and unsupervised_count<100:
+                        tiebreaker, prob1, prob2 = ML_builder.unsupervised_predict(tweet)
+                        result_dict['agg_sent'] = tiebreaker
+                        result_dict['agg_prob'] = max(prob1, prob2)
+                        unsupervised_count += 1
+                else:
+                    result_dict['agg_sent'] = agg_sent_result[0]
+                    result_dict['agg_prob'] = agg_sent_result[1]
+                #End of code I added that will blow shit up
+
                 delicious_payload = json.dumps(result_dict)
                 sql_q.get_query_results(
                     'set_tweet_sent',
