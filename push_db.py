@@ -116,10 +116,20 @@ class StdOutListener(StreamListener):
             [screen_name, urls, 1, datetime.datetime.now()],
             need_fetch=False)
 
+
+        # for john
+        my_filter_list = []
+        for hashtag in hashtags1:
+            hashtag = '#'+hashtag
+            for keyword in filter_list:
+                tmp_list = [x.lower() for x in filter_list[keyword]['search_terms']['hashtags']]
+                if hashtag.lower() in tmp_list:
+                    my_filter_list.append(keyword)
+
         # Creating Tweet row
         sql_q.get_query_results(
         'save_tweets',
-        [tweet_id, screen_name, urls, text, hashtags, location, retweets],
+        [tweet_id, screen_name, urls, text, hashtags, location, retweets, my_filter_list],
          need_fetch=False)
 
 

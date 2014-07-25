@@ -26,7 +26,8 @@ CREATE TABLE tweets(
   tweet_text char(280),
   hashtags text[],
   location json,
-  retweet_count smallint
+  retweet_count smallint,
+  filters_list text ARRAY
 );
 ALTER TABLE tweets ADD FOREIGN KEY (screen_name) REFERENCES users ON DELETE CASCADE;
 

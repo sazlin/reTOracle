@@ -226,10 +226,10 @@ def _query_popular_users():
 def _save_tweets():
     return ("""
             INSERT INTO tweets(
-                tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count)
+                tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count, filters_list)
 
             VALUES(
-                %s, %s, %s, %s, %s, %s, %s); """)
+                %s, %s, %s, %s, %s, %s, %s, %s); """)
 
 def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
