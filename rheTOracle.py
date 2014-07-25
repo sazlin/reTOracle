@@ -99,30 +99,30 @@ def update_redis():
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
-@app.route('/q1', methods=['GET'])
-def q1_query():
-    """Which programming language is being talked about the most?"""
-    update_redis()
-    try:
-        logger.debug("Q1: Getting values from redis")
+# @app.route('/q1', methods=['GET'])
+# def q1_query():
+#     """Which programming language is being talked about the most?"""
+#     update_redis()
+#     try:
+#         logger.debug("Q1: Getting values from redis")
 
-        json_result = re.get_redis_query('chart1')
-    except:
-        logger.error("Q1: redis failed. Trying SQL instead")
-        json_result = sql_q.get_query_results('chart1')
-    parsed_results = json.loads(json_result)
-    final_result = map_q1_results_to_language(parsed_results)
-    return final_result
+#         json_result = re.get_redis_query('chart1')
+#     except:
+#         logger.error("Q1: redis failed. Trying SQL instead")
+#         json_result = sql_q.get_query_results('chart1')
+#     parsed_results = json.loads(json_result)
+#     final_result = map_q1_results_to_language(parsed_results)
+#     return final_result
 
 
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
-    update_redis()
-    try:
-        json_result = re.get_redis_query('chart2')
-    except:
-        json_result = sql_q.get_query_results('chart2')
+    # update_redis()
+    # try:
+    #     json_result = re.get_redis_query('chart2')
+    # except:
+    json_result = sql_q.get_query_results('chart2')
     parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
@@ -130,7 +130,7 @@ def q2_query():
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
-    update_redis()
+    # update_redis()
 
     try:
         json_result = sql_q.get_query_results('geomap1')
@@ -175,6 +175,32 @@ def ticker_fetch():
     json_result = sql_q.get_query_results('ticker1')
 
     resp = Response(response=json_result,
+                    status=200,
+                    mimetype="application/json")
+    return resp
+
+
+@app.route('/q1', methods=['GET'])
+def q1_query():
+    final_output = []
+    logger.info("Making q1 query")
+    for language in filter_list:
+        logger.info("Current language %s", language)
+        pos, neg, neutral = 0, 0, 0
+        # tweet ids needs to be a list of tuples
+        agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
+        logger.info("These are agg vals, %s", agg_vals)
+        for val in agg_vals:
+            if val == 1:
+                pos += 1
+            elif val == 0:
+                neg += 1
+            else:
+                neutral += 1
+        final_output.append([language, pos, neg, neutral])
+    final_output = json.dumps(final_output)
+    logger.info("This is final output %s", final_output)
+    resp = Response(response=final_output,
                     status=200,
                     mimetype="application/json")
     return resp
