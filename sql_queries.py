@@ -17,16 +17,16 @@ DB_CONFIG = {}
 NUM_TWEETS_NEED_SA = """\
 SELECT COUNT(DISTINCT tweet_id)
 FROM
-(SELECT tweet_id FROM massive
+(SELECT tweet_id FROM tweets
 EXCEPT
 SELECT tweet_id FROM tweet_sent) as intrsct;
 """
 
-GET_TWEET_BATCH_NEED_SA = """SELECT tweet_id, text
-FROM massive
+GET_TWEET_BATCH_NEED_SA = """SELECT tweet_id, tweet_text
+FROM tweets
 WHERE tweet_id
 IN
-(SELECT tweet_id FROM massive EXCEPT select tweet_id FROM tweet_sent)
+(SELECT tweet_id FROM tweets EXCEPT select tweet_id FROM tweet_sent)
 LIMIT %s;
 """
 SET_TWEET_SENT = """INSERT INTO tweet_sent SELECT * FROM json_populate_record(NULL::tweet_sent, %s);"""
@@ -174,7 +174,7 @@ def _build_set_tweet_filter_query():
 
 def _build_q3_query():
     sql = """
-    SELECT screen_name, text FROM massive
+    SELECT screen_name, tweet_text FROM tweets
     ORDER BY tweet_id DESC
     LIMIT 1;
     """
@@ -183,7 +183,7 @@ def _build_q3_query():
 
 def _build_q4_query():
     sql = []
-    sql.append("""SELECT tweet_id, text, screen_name, location FROM massive""")
+    sql.append("""SELECT tweet_id, tweet_text, screen_name, location FROM tweets""")
     sql.append("""WHERE json_array_length(location) <> 0""")
     sql.append("""ORDER BY tweet_id DESC LIMIT 1""")
     return (" ".join(sql), None)
