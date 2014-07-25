@@ -1,9 +1,10 @@
 from filters_json import filter_list as filters
-import time
+import time, datetime
 import json
-import psycopg2
-import pprint
-from SECRETS import SECRETS
+import sys
+import os
+import sql_queries as sql_q
+from filters_json import filter_list
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -37,52 +38,8 @@ class StdOutListener(StreamListener):
     This is a basic listener that just prints received tweets to stdout.
 
     """
-    def __init__(self):
-        self.conn = self.connect_db()
-        self.cursor = self.create_cursor()
-        # self.commit_count = 0
-
-    def connect_db(self):
-        """Try to connect to db, return connection if successful"""
-        try:
-            connection_string = []
-            connection_string.append("host=rhetoracle-db-instance.c2vrlkt9v1tp.us-west-2.rds.amazonaws.com")
-            connection_string.append("dbname=rhetorical-db")
-            connection_string.append("user=" + SECRETS['DB_USERNAME'])
-            connection_string.append("password=" + SECRETS['DB_PASSWORD'])
-            conn = psycopg2.connect(" ".join(connection_string))
-        except Exception as x:
-            print "Error connecting to DB: ", x.args
-        else:
-            print "Connection made!"
-            return conn
-
-    def get_connection(self):
-        """get the current connection if it exists, else connect."""
-        if self.conn is not None:
-            print "connection exists, so reusing it..."
-            return self.conn
-        else:
-            print "no connection found..."
-            return self.connect_db()
-
-    def create_cursor(self):
-        """create a new cursor and store it"""
-        conn = self.get_connection()
-        return conn.cursor()
-
-    def get_cursor(self):
-        """get the current cursor if it exist, else create a new cursor"""
-        if self.cursor is not None:
-            print "cursor exists, using that..."
-            return self.cursor
-        else:
-            print "Created cursor!"
-            return self.create_cursor()
 
     def fix_unicode(self, text):
-        # text = ''.join([i if ord(i) < 128 else ' ' for i in text])
-        # return text
         return text.encode(encoding='UTF-8')
 
     def fix_tweet_id(self, tweet_id):
@@ -90,7 +47,6 @@ class StdOutListener(StreamListener):
         return self.fix_unicode(text)
 
     def fix_140(self, text):
-
         xml_dict = {';': '', '&lt': '<', '&amp': '&', '&gt': '>', '&quot': '"', '&apos': '\''}
         for key, value in xml_dict.iteritems():
             text = text.replace(key, value)
@@ -114,11 +70,8 @@ class StdOutListener(StreamListener):
 
     def on_data(self, data):
 
-        # load json_data
         json_data = json.loads(data)
-        # pprint.pprint(json_data)
 
-        # pprint.pprint(json_data)
         # need to convert for SQL
         tweet_id = json_data.get('id', None)
         tweet_id = self.fix_tweet_id(tweet_id)
@@ -126,8 +79,8 @@ class StdOutListener(StreamListener):
         text = json_data.get('text', None)
         text = self.fix_text(text)
 
-        hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
-        hashtags = self.fix_lists(hashtags)
+        hashtags1 = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
+        hashtags = self.fix_lists(hashtags1)
 
         user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
         user_mentions = self.fix_lists(user_mentions)
@@ -149,41 +102,55 @@ class StdOutListener(StreamListener):
 
         retweets = json_data.get('retweet_count', None)
 
-        PUSH_SQL = """
-            INSERT INTO massive(
-                tweet_id, text, hashtags, user_mentions,
-                created_at, screen_name, urls, location,
-                inreplytostatusif, retweetcount)
+        # if screen_name user exists, update its tweet_count number
+        # else create a new user
+        user_row = sql_q.get_query_results('find_user', [screen_name])
+        user_row = json.loads(user_row)
+        if user_row:
+            tw_count = user_row[0][1]+1
+            sql_q.get_query_results( 'update_user_tw_count', [tw_count, screen_name], False)
+            sql_q.get_query_results( 'update_user_timestamp', [datetime.datetime.now(), screen_name], False)
+        else :
+            sql_q.get_query_results(
+            'save_users',
+            [screen_name, urls, 1, datetime.datetime.now()],
+            need_fetch=False)
 
-            VALUES(
-                '{}', '{}', '{}', '{}', '{}', '{}', '{}',
-                '{}', '{}', {}); """
+        # Creating Tweet row
+        sql_q.get_query_results(
+        'save_tweets',
+        [tweet_id, screen_name, urls, text, hashtags, location, retweets],
+         need_fetch=False)
 
-        PUSH_SQL = PUSH_SQL.format(tweet_id, text, hashtags, user_mentions,
-                                   created_at, screen_name, urls, location,
-                                   in_reply_to_screen_name, retweets)
 
-        try:
-            self.cursor.execute(PUSH_SQL)
-        except psycopg2.Error as x:
-            # this will catch any errors generated by the database
-            print "*" * 40
-            print "Oops there was a DB error!", x.args
-            self.conn.close()
-            self.conn = None
-            time.sleep(10)
-            while self.conn is None:
-                self.conn = self.get_connection()
-                self.cursor = self.create_cursor()
-                time.sleep(5)
+        def _update_create_join_table(screen_name, keyword):
+            join_row = json.loads(sql_q.get_query_results('find_join', [screen_name, keyword]))
+            if join_row:
+                tw_count = join_row[0][0] + 1
+                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
+                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False)
+            else:
+                sql_q.get_query_results('save_user_filter_join',
+                    [screen_name, keyword, 1, datetime.datetime.now(),
+                    datetime.datetime.now()], False)
 
-        else:
-            self.conn.commit()
-            # self.commit_count += 1
-            # print "Hashtags: ", hashtags
-            # print "User mentions: ", user_mentions
-            # print "Committed: ", self.commit_count
-            # print "*" * 45
+        for hashtag in hashtags1:
+            hashtag = '#'+hashtag
+            for keyword in filter_list:
+                tmp_list = [x.lower() for x in filter_list[keyword]['search_terms']['hashtags']]
+                if hashtag.lower() in tmp_list:
+                    filter_row =  json.loads(sql_q.get_query_results('find_filter', [keyword]))
+                    if filter_row :
+                        tw_count = filter_row[0][1] + 1
+                        sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False)
+                        sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False)
+                        _update_create_join_table(screen_name, keyword)
+                    else:
+                        sql_q.get_query_results( 'save_filters',
+                                                [keyword, datetime.datetime.now(), 1], False)
+                        _update_create_join_table(screen_name, keyword)
+
+
 
     def on_error(self, status):
         error_counter = 0
@@ -195,9 +162,20 @@ class StdOutListener(StreamListener):
             print "Errors: ", error_counter
 
 if __name__ == '__main__':
+    sql_q.init()
+    auth = None
+    if sys.argv[1] == 'Prod':
+        auth = OAuthHandler(os.environ.get('R_TWITTER_CONSUMER_KEY'),
+                                        os.environ.get('R_TWITTER_CONSUMER_SECRET'))
+        auth.set_access_token(os.environ.get('R_TWITTER_ACCESS_TOKEN'),
+                                         os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
+    elif sys.argv[1] == 'Test':
+        auth = OAuthHandler(os.environ.get('R_TEST_TWITTER_CONSUMER_KEY'),
+                                        os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
+        auth.set_access_token(os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN'),
+                                         os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
+
     l = StdOutListener()
-    auth = OAuthHandler(SECRETS['consumer_key'], SECRETS['consumer_secret'])
-    auth.set_access_token(SECRETS['access_token'], SECRETS['access_token_secret'])
     stream_filters = return_filters()
     stream = Stream(auth, l)
     stream.filter(track=stream_filters)

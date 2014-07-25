@@ -55,4 +55,6 @@ secrets.py
 
 # Sphinx documentation
 docs/_build/
+supervisord-*.conf
+nginx_config_*
 
