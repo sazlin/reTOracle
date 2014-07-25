@@ -121,10 +121,11 @@ class StdOutListener(StreamListener):
             [screen_name, urls, 1, datetime.datetime.now()],
             need_fetch=False)
 
+
         # Creating Tweet row
         sql_q.get_query_results(
         'save_tweets',
-        [tweet_id, screen_name, urls, text, hashtags, location, retweets],
+        [tweet_id, screen_name, urls, text, hashtags, location, retweets, my_filter_list],
          need_fetch=False)
 
 
