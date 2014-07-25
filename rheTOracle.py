@@ -187,7 +187,13 @@ def ticker_fetch():
 def q1_query():
     build_count_table = {}
     logger.info("Q1: Assembling response...")
-    filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
+    try:
+        logger.debug("Q1: Getting values from redis")
+        filter_sent_counts = re.get_redis_query('fetch_filter_sent_counts')
+        filter_sent_counts = json.loads(filter_sent_counts)
+    except:
+        logger.debug("Q1: redis failed. Trying SQL instead")
+        filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
 
     for language in filter_list:
         logger.debug("Q1: Current language %s", language)
@@ -222,7 +228,7 @@ def q1_query():
         logger.debug("Q1: Dumping output_list into JSON...")
         output_json = json.dumps(output_list)
     except Exception as x:
-        logger.error("Q1: Error converting output_json to a json string:", x.args)
+        logger.debug("Q1: Error converting output_json to a json string:", x.args)
         raise x
     else:
         logger.debug("Q1: This is final output %s", output_json)
