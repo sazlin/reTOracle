@@ -41,11 +41,31 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0, 0, 0]]);
   var chart1View;
-  var chart1Options = {title:"Which programming language is most popular?",
-            width:600, height:400,
-            vAxis: {title: "Language"},
-            hAxis: {title: "Tweets"},
-            isStacked: true}
+  var chart1Options = {width:550, height:300,
+                 vAxis: {
+                  textStyle:{
+                    bold: true,
+                    auraColor: '#FFF',
+                    }},
+                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+                 legend: { position: "none" },
+                 chartArea:{width:"67%",height:"80%"},
+                 backgroundColor: { fill:'transparent' },
+                 title: "Which programming language is being talked about the most?",
+                 titleTextStyle: {
+                  auraColor: '#FFF',
+                 },
+                 animation:{
+                    duration: 900,
+                    easing: 'out',
+                  },
+                  annotations:{
+                    textStyle:{
+                    auraColor: '#FFF',
+                    },
+                  },
+                  isStacked: true
+  };
 
   //Create the function that will redraw and animate Chart1
   function drawChart1(){
@@ -66,7 +86,7 @@ $(document).ready(function(){
   var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
   var chart2View;
-  var chart2Options = {width:500, height:300,
+  var chart2Options = {width:550, height:300,
                vAxis: {
                   textStyle:{
                     bold: true,
