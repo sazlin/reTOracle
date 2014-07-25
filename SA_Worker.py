@@ -276,7 +276,7 @@ def main():
                     'set_tweet_sent',
                     [delicious_payload.lower()],  # must be a iterable
                     False)
-                print delicious_payload.lower(), "[", count, "of", total, "]"
+                #print delicious_payload.lower(), "[", count, "of", total, "]"
                 count += 1
 
         #Wait a short while (if needed) before checking for more Tweets
