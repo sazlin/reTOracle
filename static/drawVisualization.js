@@ -12,9 +12,9 @@ $(document).ready(function(){
         url: frm1.attr('action'),
         data: frm1.serialize(),
         success: function (d) {
-          var resultArray = $.parseJSON(d);
-          resultArray.unshift(chart1DataHeader);
-          chart1Data = google.visualization.arrayToDataTable(resultArray);
+          d.unshift(chart1DataHeader);
+          console.log(d);
+          chart1Data = google.visualization.arrayToDataTable(d);
           drawChart1();
         }
     });
@@ -38,43 +38,23 @@ $(document).ready(function(){
 
   //Setup for Chart1
   var chart1;
-  var chart1DataHeader = ["Hashtag", "HashtagCount"];
-  var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0]]);
+  var chart1DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
+  var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0, 0, 0]]);
   var chart1View;
-  var chart1Options = {width:500, height:300,
-                 vAxis: {
-                  textStyle:{
-                    bold: true,
-                    auraColor: '#FFF',
-                    }},
-                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
-                 legend: { position: "none" },
-                 chartArea:{width:"67%",height:"80%"},
-                 backgroundColor: { fill:'transparent' },
-                 title: "Which programming language is being talked about the most?",
-                 titleTextStyle: {
-                  auraColor: '#FFF',
-                 },
-                 animation:{
-                    duration: 900,
-                    easing: 'out',
-                  },
-                  annotations:{
-                    textStyle:{
-                    auraColor: '#FFF',
-                    },
-                    isStacked: true,
-                  }
-  };
+  var chart1Options = {title:"Which programming language is most popular?",
+            width:600, height:400,
+            vAxis: {title: "Language"},
+            hAxis: {title: "Tweets"},
+            isStacked: true}
 
   //Create the function that will redraw and animate Chart1
   function drawChart1(){
     chart1View = new google.visualization.DataView(chart1Data);
-    chart1View.setColumns([0, 1,
-                   { calc: "stringify",
-                     sourceColumn: 1,
-                     type: "string",
-                     role: "annotation" }]);
+    // chart1View.setColumns([0, 1,
+    //                { calc: "stringify",
+    //                  sourceColumn: 1,
+    //                  type: "string",
+    //                  role: "annotation" }]);
     if(!chart1){
       chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));
     }

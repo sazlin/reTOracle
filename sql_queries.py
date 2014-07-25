@@ -230,7 +230,7 @@ def _build_agg_vals():
     return("""
     SELECT agg_sent FROM tweet_sent WHERE tweet_id in (
         SELECT tweet_id FROM tweets WHERE filter_name = %s);
-    """)
+    """, [])
 
 
 # def _build_recent_sent():
