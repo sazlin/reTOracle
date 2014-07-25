@@ -7,11 +7,8 @@ from filters_json import filter_list
 import json
 import sql_queries as sql_q
 import redis_conn as re
-#from SECRETS import SECRETS
 from time import time
 import os
-import sys
-# from passlib.hash import pbkdf2_sha256
 from logger import make_logger
 import argparse
 import inspect
@@ -21,10 +18,6 @@ logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 
 
 app = Flask(__name__)
-
-# app.config['LAST_GEO_TWEET_ID'] = -1
-# app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
-# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 
 
 @app.route('/', methods=['GET'])
@@ -57,38 +50,34 @@ def map_q1_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q1's query results
         into a new list of lists that will be returned to the client for rendering"""
     final_result = []
-    for language in filter_list:
-        language_count = 0
-        search_terms = filter_list[language]['search_terms']
-        for hashtag in search_terms['hashtags']:
-            for result in parsed_results:
-                logger.debug("map_q1_results: Comparing %s and %s ", hashtag[1:], result[0])
-                if hashtag[1:] == result[0]:
-                    language_count += result[1]
-        final_result.append([language, language_count])
+    for item in parsed_results:
+        final_result.append([item[0], item[1]])
+    for lang in filter_list:
+        _found = False
+        for item in parsed_results:
+            if lang.lower() == item[0]:
+                _found = True
+        if not _found:
+            final_result.append([lang, 0])
     return json.dumps(final_result)
+
+
 
 
 def map_q2_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q2's query results
         into a new list of lists that will be returned to the client for rendering"""
     final_result = []
-    try:
-        for language in filter_list:
-            userCountForThisLanguage = {}
-            search_terms = filter_list[language]['search_terms']
-            for hashtag in search_terms['hashtags']:
-                for result in parsed_results:
-                    if hashtag[1:] == result[0]:
-                        if not userCountForThisLanguage.has_key(result[2]):
-                            userCountForThisLanguage[result[2]] = result[1]
-                        userCountForThisLanguage[result[2]] += result[1]
-            top_user_count, top_user = 0, ""
-            if len(userCountForThisLanguage.items()) is not 0:
-                top_user_count, top_user = max((v, k) for k, v in userCountForThisLanguage.items())
-            final_result.append([language, top_user_count, top_user])
-    except Exception as x:
-        logger.error("Something went wrong: ", x.args)
+    for item in parsed_results:
+        final_result.append([item[0], item[1], item[2]])
+
+    for lang in filter_list:
+        _found = False
+        for item in parsed_results:
+            if lang.lower() == item[0]:
+                _found = True
+        if not _found:
+            final_result.append([lang, 0, ' '])
     return json.dumps(final_result)
 
 
@@ -97,6 +86,7 @@ def update_redis():
     if (new_time - app.config['LAST_REDIS_UPDATE']) > app.config['REDIS_UPDATE_INTERVAL']:
         re.maint_redis()
         app.config['LAST_REDIS_UPDATE'] = new_time
+
 
 
 # @app.route('/q1', methods=['GET'])
@@ -115,14 +105,18 @@ def update_redis():
 #     return final_result
 
 
+
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
-    # update_redis()
-    # try:
-    #     json_result = re.get_redis_query('chart2')
-    # except:
-    json_result = sql_q.get_query_results('chart2')
+    update_redis()
+    try:
+        logger.debug("Q2: Getting values from redis")
+        json_result = re.get_redis_query('fetch_popular_users')
+    except:
+        logger.error("Q2: redis failed. Trying SQL instead")
+        json_result = sql_q.get_query_results('fetch_popular_users')
+
     parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result

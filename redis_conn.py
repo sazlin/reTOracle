@@ -11,7 +11,7 @@ logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 POOL = None
 
 def init_pool():
-    global POOL  # HACK, fix later
+    global POOL # HACK, fix later
     r_config = os.environ.get('R_CONFIG')
     if r_config == 'Prod':
         logger.info("REDIS: Using Prod Redis Service")
@@ -54,22 +54,23 @@ def maint_redis():
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        # HACK - we don't want to redo 'save_tweet'
-        if not key == 'save_tweet':
-            logger.info("Redis: Querying SQL and getting results...")
-            result = None
-            try:
-                result = sql_q.get_query_results(key)
-            except Exception as x:
-                logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
-            if result is None:
-                # raise Exception("REDIS: SQL Query result is None for %s ", key, exc_info=True)
-                logger.error("SQL query result is none for %s", key, exc_info=True)
-            else:
-                logger.info("Redis: Settings query results in redis for %s", key)
-                try:
-                    _set_to_redis(key, result)
-                except Exception as x:
-                    logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
-                else:
-                    logger.info('Redis: [SUCCESS] results set for %s ', key)
+        if key[:5] != 'fetch' :
+            continue
+        logger.info("Redis: Querying SQL and getting results...")
+        result = None
+        try:
+            result = sql_q.get_query_results(key)
+        except Exception as x:
+            logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
+        if result is None:
+            # raise Exception("REDIS: SQL Query result is None for ", key)
+            logger.error("SQL query result is none for %s", key, exc_info=True)
+        else:
+            logger.info("Redis: Settings query results in redis for %s", key)
+        try:
+            _set_to_redis(key, result)
+        except Exception as x:
+            logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
+        else:
+            logger.info('Redis: [SUCCESS] results set for %s ', key)
+

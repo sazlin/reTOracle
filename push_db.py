@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 from filters_json import filter_list as filters
-import time
+import time, datetime
 import json
 import sys
 import os
 import sql_queries as sql_q
+from filters_json import filter_list
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -83,8 +84,8 @@ class StdOutListener(StreamListener):
         text = json_data.get('text', None)
         text = self.fix_text(text)
 
-        hashtags = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
-        hashtags = self.fix_lists(hashtags)
+        hashtags1 = [i['text'] for i in json_data.get('entities', None).get('hashtags', None)]
+        hashtags = self.fix_lists(hashtags1)
 
         user_mentions = [i['screen_name'] for i in json_data.get('entities', None).get('user_mentions', None)]
         user_mentions = self.fix_lists(user_mentions)
@@ -106,12 +107,54 @@ class StdOutListener(StreamListener):
 
         retweets = json_data.get('retweet_count', None)
 
-        sql_q.get_query_results(
-            'save_tweet',
-            [tweet_id, text, hashtags, user_mentions,
-             created_at, screen_name, urls, location,
-             in_reply_to_screen_name, retweets],
+        # if screen_name user exists, update its tweet_count number
+        # else create a new user
+        user_row = sql_q.get_query_results('find_user', [screen_name])
+        user_row = json.loads(user_row)
+        if user_row:
+            tw_count = user_row[0][1]+1
+            sql_q.get_query_results( 'update_user_tw_count', [tw_count, screen_name], False)
+            sql_q.get_query_results( 'update_user_timestamp', [datetime.datetime.now(), screen_name], False)
+        else :
+            sql_q.get_query_results(
+            'save_users',
+            [screen_name, urls, 1, datetime.datetime.now()],
             need_fetch=False)
+
+        # Creating Tweet row
+        sql_q.get_query_results(
+        'save_tweets',
+        [tweet_id, screen_name, urls, text, hashtags, location, retweets],
+         need_fetch=False)
+
+
+        def _update_create_join_table(screen_name, keyword):
+            join_row = json.loads(sql_q.get_query_results('find_join', [screen_name, keyword]))
+            if join_row:
+                tw_count = join_row[0][0] + 1
+                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
+                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False)
+            else:
+                sql_q.get_query_results('save_user_filter_join',
+                    [screen_name, keyword, 1, datetime.datetime.now(),
+                    datetime.datetime.now()], False)
+
+        for hashtag in hashtags1:
+            hashtag = '#'+hashtag
+            for keyword in filter_list:
+                tmp_list = [x.lower() for x in filter_list[keyword]['search_terms']['hashtags']]
+                if hashtag.lower() in tmp_list:
+                    filter_row =  json.loads(sql_q.get_query_results('find_filter', [keyword]))
+                    if filter_row :
+                        tw_count = filter_row[0][1] + 1
+                        sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False)
+                        sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False)
+                        _update_create_join_table(screen_name, keyword)
+                    else:
+                        sql_q.get_query_results( 'save_filters',
+                                                [keyword, datetime.datetime.now(), 1], False)
+                        _update_create_join_table(screen_name, keyword)
+
 
     def on_error(self, status):
         error_counter = 0
