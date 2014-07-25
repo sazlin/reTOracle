@@ -27,8 +27,7 @@ CREATE TABLE tweets(
   tweet_text char(280),
   hashtags text[],
   location json,
-  retweet_count smallint,
-  filters_list text ARRAY
+  retweet_count smallint
 );
 ALTER TABLE tweets ADD FOREIGN KEY (screen_name) REFERENCES users ON DELETE CASCADE;
 
@@ -45,18 +44,46 @@ CREATE TABLE user_filter_join(
 
 CREATE TABLE tweet_filter_join
 (
-  tweet_id text NOT NULL,
-  filter_name text NOT NULL,
-  CONSTRAINT t_f PRIMARY KEY (tweet_id, filter_name),
-  CONSTRAINT filter_name FOREIGN KEY (filter_name)
-      REFERENCES filters (filter_name) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION,
-  CONSTRAINT tweet_id FOREIGN KEY (tweet_id)
-      REFERENCES tweets (tweet_id) MATCH SIMPLE
-      ON UPDATE NO ACTION ON DELETE NO ACTION
-)
+  tweet_id text REFERENCES tweets,
+  filter_name text REFERENCES filters,
+  PRIMARY KEY (tweet_id, filter_name)
+);
+ALTER TABLE tweet_filter_join ADD FOREIGN KEY (tweet_id) REFERENCES tweets;
+
+
+CREATE TABLE tweet_sent(
+  tweet_id text PRIMARY KEY,
+  lr_sent integer,
+  lr_neg_prob real,
+  lr_pos_prob real,
+  lr_exec_time real,
+  svm_sent integer,
+  svm_neg_prob real,
+  svm_pos_prob real,
+  svm_exec_time real,
+  datumbox_sent integer,
+  datumbox_neg_prob real,
+  datumbox_pos_prob real,
+  datumbox_exec_time real,
+  nb_sent integer,
+  nb_neg_prob real,
+  nb_pos_prob real,
+  nb_exec_time real,
+  agg_sent integer,
+  agg_prob real
+);
+
+
+CREATE TABLE tweet_sentiment(
+  tweet_id text PRIMARY KEY,
+  "TestScore" real
+);
+ALTER TABLE tweet_sentiment ADD FOREIGN KEY (tweet_id) REFERENCES tweets;
+
+
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE tweet_filter_join
+ALTER TABLE tweet_sentiment
   OWNER TO reto_tester;
+
