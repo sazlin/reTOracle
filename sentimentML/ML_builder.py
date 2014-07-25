@@ -1,15 +1,14 @@
 
 import numpy as np
-import pandas as pd
-from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from string import replace
-from pandas import read_csv, concat
+import pandas as pd
+from pandas import read_csv, read_excel, concat
 import nltk
 import requests
 from math import log, exp
 from scipy import sparse
 from os.path import isfile
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 class SVM_builder(object):
@@ -19,9 +18,10 @@ class SVM_builder(object):
         self.sadface = []
         self.classifier = None
         self.train_df = None
-
+        self.vectorizer = None
+    
     def build_vocab(self, n, training_samples):
-        with open('sentimentML/stopwords.txt') as stop_words:
+        with open('stopwords.txt') as stop_words:
             stop_words = {line.strip().lower() for line in stop_words if line!='\n'} 
    
         tweets = []
@@ -39,13 +39,7 @@ class SVM_builder(object):
         
     def tweet_cleaner(self, tweet):
         words = []
-        #tweet = str(tweet)
-        #tweet = tweet.translate(maketrans('"@#?!,.0123456789-&*', '                    '))
-        tweet = replace(
-        tweet,
-        '"@#?!,.0123456789-&*',
-        ' '
-        )
+        tweet = tweet.replace('"@#?!,.0123456789-&*', '')
         words.extend(tweet.strip().lower().split())
         for index, word in enumerate(words):
             for happy in self.happyface:
@@ -57,26 +51,21 @@ class SVM_builder(object):
                     words[index]='sadface'
                     break
         cleaner = " ".join([word for word in words if len(word)>1])
-        return replace(cleaner,':)(;][\/=', ' ')
-            
-    def vectorize(self, tweet):
-        vector = np.zeros(len(self.vocab))
-        clean_tweet = self.tweet_cleaner(tweet)
-
-        for word in clean_tweet.split():
-            try:
-                #We get a unicode warning here... not sure why or if it's a big deal
-                vector[self.vocab.index(word)] += 1
-            except ValueError:
-                pass
-        return vector
+        return cleaner.replace(':)(;][\/=', '')
 
     def make_classifier(self, training_samples):
+        error_list = []
         tweet_array = np.zeros((training_samples, len(self.vocab)))
         for index, tweet in enumerate(self.train_df['SentimentText'][0:training_samples]):
-            tweet_array[index] = self.vectorize(tweet)
+            try:
+                tweet_array[index] = self.vectorizer.transform([tweet]).todense()
+            except:
+                print 'Error@ '+str(index)
+                error_list.append(index)
         print 'Vectorization Complete'
+        tweet_array = np.delete(tweet_array, error_list, axis=0)
         output = self.train_df['Sentiment'][0:training_samples]
+        output = output.drop(output.index[error_list])
         clf = SVC(kernel='linear', probability=True)
         X_csr = sparse.csr_matrix(tweet_array)
         clf.fit(X_csr, np.asarray(output))
@@ -84,9 +73,15 @@ class SVM_builder(object):
         print 'Classifier Created'
 
     def test_classifier(self, training_samples, test_samples):
+        error_list = []
         test_array = np.zeros((test_samples, len(self.vocab)))
         for index, tweet in enumerate(self.train_df['SentimentText'][training_samples:training_samples+test_samples]):
-            test_array[index] = self.vectorize(tweet)
+            try:
+                test_array[index] = self.vectorizer.transform([tweet]).todense()
+            except:
+                print 'Error@ '+str(index)
+                error_list.append(index)
+        test_array = np.delete(test_array, error_list, axis=0)
         predictions = self.classifier.predict(test_array)
         correct, wrong = 0,0
         for index, predict in enumerate(predictions):
@@ -96,31 +91,22 @@ class SVM_builder(object):
                 wrong += 1
         print (correct, wrong)
         print 'Percentage {}'.format(1.0*correct/(correct+wrong))
-
-    def PCA_analysis(self, training_samples = 1000):
-        tweet_array = np.zeros((training_samples, len(self.vocab)))
-        for index, tweet in enumerate(self.train_df['SentimentText'][0:training_samples]):
-            tweet_array[index] = self.vectorize(tweet)
-        pca = PCA(n_components=2)
-        pca.fit(tweet_array)
-        print(pca.explained_variance_ratio_)
-        print(pca.components_)
         
     def SVM_build(self):
-        #curr_dir = os.getcwd()
-        if isfile('sentimentML/SVM_algo.txt'):
-            self.classifier = load_pickle('sentimentML/SVM_algo.txt')
-            self.vocab = load_pickle('sentimentML/vocab.txt')
+        if isfile('SVM_algo.txt'):
+            self.classifier = load_pickle('SVM_algo.txt')
+            self.vocab = load_pickle('vocab.txt')
+            self.vectorizer = load_pickle('vectorizer.txt')
         else:
-            with open('sentimentML/happyface.txt') as happyface:
+            with open('happyface.txt') as happyface:
                 self.happyface = [line.strip() for line in happyface if line!='\n']
                 self.sadface = [line.strip()[::-1] for line in happyface if line!='\n']
 
-            self.train_df = read_csv('sentimentML/Sentiment Analysis Dataset.csv')
+            self.train_df = read_csv('Sentiment Analysis Dataset.csv')
             self.train_df = self.train_df.ix[:,['Sentiment','SentimentText']]
             positive = self.train_df[self.train_df['Sentiment']==0]
             negative = self.train_df[self.train_df['Sentiment']==1]
-            sample_size = 10000
+            sample_size = 30000
             training_ratio = .9
             positive_train = positive[:int(training_ratio*sample_size)]
             negative_train = negative[:int(training_ratio*sample_size)]
@@ -129,33 +115,39 @@ class SVM_builder(object):
             self.train_df = concat([positive_train,negative_train, positive_test, negative_test])
             self.train_df = self.train_df.reset_index()
 
-            self.build_vocab(n = 5000, training_samples = int(sample_size*training_ratio*2))
+            self.build_vocab(n = 20000, training_samples = int(sample_size*training_ratio*2))
+            self.vectorizer = CountVectorizer(ngram_range=(1, 2),
+                                              vocabulary = self.vocab,
+                                              strip_accents='ascii')
+            
             self.make_classifier(training_samples = int(sample_size*training_ratio*2))
             self.test_classifier(training_samples = int(sample_size*training_ratio*2),
                                  test_samples = int((1-training_ratio)*sample_size*2))
             print 'Classifier Ready'
-            export_pickle('sentimentML/SVM_algo.txt', self.classifier)
-            export_pickle('sentimentML/vocab.txt', self.vocab)
+            export_pickle('SVM_algo.txt', self.classifier)
+            export_pickle('vocab.txt', self.vocab)
+            export_pickle('vectorizer.txt', self.vectorizer)
 
     def Predict(self, tweet):
-        Decider = self.classifier.predict_proba(self.vectorize(tweet))[0][0]
+        Decider = self.classifier.predict_proba(self.vectorizer.transform([tweet]))[0][0]
+        probability = self.classifier.predict_proba(self.vectorizer.transform([tweet]))
         if Decider<.475:
-            return (1, self.classifier.predict_proba(self.vectorize(tweet))[0])
+            return (1, probability[0])
         elif Decider>.525:
-            return (-1, self.classifier.predict_proba(self.vectorize(tweet))[0])
-        return (0, self.classifier.predict_proba(self.vectorize(tweet))[0])
-        
+            return (-1, probability[0])
+        return (0, probability[0])
 
 import cPickle
+
 def load_pickle(filename):
     pickled = open(filename, 'rb')
     data = cPickle.load(pickled)
     return data
+        
 def export_pickle(filename, the_object):
     pickle_file = open(filename, 'wb')
     cPickle.dump(the_object, pickle_file)
     pickle_file.close()
-
 
 def unsupervised_predict(tweet):
     
@@ -211,5 +203,7 @@ def hits(word, phrase=None):
     json_res = results.json()
     google_hits=int(json_res['responseData']['cursor']['estimatedResultCount'])
     return google_hits
+
+
                 
                 
