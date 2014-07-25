@@ -193,9 +193,9 @@ def q1_query():
         for val in agg_vals:
             if val == 1:
                 pos += 1
-            elif val == 0:
+            elif val == -1:
                 neg += 1
-            else:
+            elif val == 0:
                 neutral += 1
         final_output.append([language, pos, neg, neutral])
     final_output = json.dumps(final_output)
