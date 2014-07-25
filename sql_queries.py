@@ -86,7 +86,6 @@ def _build_query_strings():
     QUERY_STRINGS['update_join_timestamp'] = _update_join_timestamp()
     QUERY_STRINGS['fetch_filter_tw_counts'] = _query_filter_tweets_counts()
     QUERY_STRINGS['fetch_popular_users'] = _query_popular_users()
-    QUERY_STRINGS['save_tweet'] = _build_save_tweet_sql()
     QUERY_STRINGS['num_tweets_need_sa'] = (NUM_TWEETS_NEED_SA, None)
     QUERY_STRINGS['tweet_batch'] = (GET_TWEET_BATCH_NEED_SA, 10000)
     QUERY_STRINGS['set_tweet_sent'] = (SET_TWEET_SENT, None)
