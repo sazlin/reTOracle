@@ -2,6 +2,7 @@ DROP TABLE users;
 DROP TABLE filters;
 DROP TABLE user_filter_join;
 DROP TABLE tweets;
+DROP TABLE tweet_filter_join;
 
 --create a the table
 CREATE TABLE users
@@ -42,3 +43,20 @@ CREATE TABLE user_filter_join(
 );
 
 
+CREATE TABLE tweet_filter_join
+(
+  tweet_id text NOT NULL,
+  filter_name text NOT NULL,
+  CONSTRAINT t_f PRIMARY KEY (tweet_id, filter_name),
+  CONSTRAINT filter_name FOREIGN KEY (filter_name)
+      REFERENCES filters (filter_name) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION,
+  CONSTRAINT tweet_id FOREIGN KEY (tweet_id)
+      REFERENCES tweets (tweet_id) MATCH SIMPLE
+      ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+WITH (
+  OIDS=FALSE
+);
+ALTER TABLE tweet_filter_join
+  OWNER TO reto_tester;

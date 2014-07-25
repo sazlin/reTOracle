@@ -1,9 +1,14 @@
+#!/usr/bin/python
+
 import redis
 import os
 import sql_queries as sql_q
+from logger import make_logger
+import inspect
 
+
+logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 POOL = None
-
 
 def init_pool():
     global POOL # HACK, fix later
@@ -22,6 +27,7 @@ def init_pool():
         raise Exception('R_CONFIG not set.')
 
 
+
 def get_redis_query(q_type):
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
@@ -31,40 +37,44 @@ def get_redis_query(q_type):
         return json_list
     else:
         raise ValueError("q_type not in REDIS")
+        logger.error('Requested query not in REDIS', exc_info=True)
 
 
 def _set_to_redis(key, value):
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
-    print "getting r_server..."
+    logger.info('getting r_server')
     r_server = redis.Redis(connection_pool=POOL)
-    print "setting key value on redis:", key, "=", value
+    logger.info("setting key value on redis: %s = %s", key, value)
     r_server.set(key, value)
-    print "done"
+    logger.info('done')
 
 
 def maint_redis():
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        if key[:5] != 'fetch' :
+        if not 'fetch' in key:
             continue
-        print "Redis: Querying Sql and getting results..."
+        logger.info("Redis: Querying SQL and getting results...")
         result = None
         try:
             result = sql_q.get_query_results(key)
         except Exception as x:
-            print "Redis: something went wrong getting results for ", key, ": ", x.args
+            logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
         if result is None:
-            raise Exception("REDIS: SQL Query result is None for ", key)
+            # raise Exception("REDIS: SQL Query result is None for ", key)
+            logger.error("SQL query result is none for %s", key, exc_info=True)
         else:
-            print "Redis: Settings query results in redis for ", key
-            try:
+            logger.info("Redis: Settings query results in redis for %s", key)
+        try:
+            if(isinstance(result, basestring)):
                 _set_to_redis(key, result)
-            except Exception as x:
-                print "Redis: Something went wrong while setting k,v pair on redis: ", x.args
             else:
-                print 'Redis: [SUCCESS] results set for ', key
-
-
+                _set_to_redis(key, result[0])
+        except Exception as x:
+            logger.error("Redis: Something went wrong while setting k,v pair on redis: %s ", x.args, exc_info=True)
+        else:
+            logger.info('Redis: [SUCCESS] results set for %s ', key)
+            logger.debug('-->Results are: %s', result)
 

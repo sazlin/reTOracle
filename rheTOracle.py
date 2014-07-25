@@ -1,18 +1,23 @@
+#!/usr/bin/python
+
 from flask import Flask, Response, render_template
+from flask import Markup
+import markdown
 from filters_json import filter_list
 import json
 import sql_queries as sql_q
 import redis_conn as re
 from time import time
 import os
-import sys
-# from passlib.hash import pbkdf2_sha256
+from logger import make_logger
+import argparse
+import inspect
+
+
+logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
+
 
 app = Flask(__name__)
-
-# app.config['LAST_GEO_TWEET_ID'] = -1
-# app.config['DB_PASSWORD'] = pbkdf2_sha256.encrypt(SECRETS['DB_PASSWORD'])
-# app.config['SECRET_KEY'] = SECRETS['FLASK_SECRET_KEY']
 
 
 @app.route('/', methods=['GET'])
@@ -22,7 +27,13 @@ def home_page():
 
 @app.route('/about', methods=['GET'])
 def about_page():
-    return render_template('about.html')
+    try:
+        with open('./static/markdown/about.md', 'rb') as f:
+            content = Markup(markdown.markdown(f.read()))
+    except Exception as e:
+        print "Markdown fail: ", e.args
+        print os.getcwd()
+    return render_template('about.html', **locals())
 
 
 @app.route('/contact', methods=['GET'])
@@ -48,10 +59,7 @@ def map_q1_results_to_language(parsed_results):
                 _found = True
         if not _found:
             final_result.append([lang, 0])
-
     return json.dumps(final_result)
-
-
 
 
 def map_q2_results_to_language(parsed_results):
@@ -78,21 +86,21 @@ def update_redis():
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
-@app.route('/q1', methods=['GET'])
-def q1_query():
-    """Which programming language is being talked about the most?"""
-    update_redis()
-    try:
-        print "*****Q1********: Getting vals from redis..."
-        json_result = re.get_redis_query('fetch_filter_tw_counts')
-    except:
-        print "...ERROR. Trying SQL instead..."
-        json_result = sql_q.get_query_results('fetch_filter_tw_counts')
-    parsed_results = json.loads(json_result)
-    print "Got results: ", parsed_results
-    final_result = map_q1_results_to_language(parsed_results)
-    print "Formatted Results: ",final_result
-    return final_result
+# @app.route('/q1', methods=['GET'])
+# def q1_query():
+#     """Which programming language is being talked about the most?"""
+#     update_redis()
+#     try:
+#         logger.debug("Q1: Getting values from redis")
+
+#         json_result = re.get_redis_query('chart1')
+#     except:
+#         logger.error("Q1: redis failed. Trying SQL instead")
+#         json_result = sql_q.get_query_results('chart1')
+#     parsed_results = json.loads(json_result)
+#     final_result = map_q1_results_to_language(parsed_results)
+#     return final_result
+
 
 
 @app.route('/q2', methods=['GET'])
@@ -100,36 +108,43 @@ def q2_query():
     """Who is *the* person to follow for a given language?"""
     update_redis()
     try:
-        print "*****Q2********: Getting vals from redis..."
+        logger.debug("Q2: Getting values from redis...")
         json_result = re.get_redis_query('fetch_popular_users')
-    except:
-        print "...ERROR. Trying SQL instead..."
-        json_result = sql_q.get_query_results('fetch_popular_users')
-    parsed_results = json.loads(json_result)
-    print "Got results: PARSED RESULTS", parsed_results
-    final_result = map_q2_results_to_language(parsed_results)
-    print "Formatted Results: ",final_result
-    return final_result
+        logger.debug("Q2: Succes! From Redis: %s", json_result)
+    except Exception as x:
+        logger.error("Q2: Redis Query Failed! %s", x.args)
+        try:
+            logger.debug("Q2: Trying SQL instead...")
+            json_result = sql_q.get_query_results('fetch_popular_users')
+            logger.debug("Q2: Success! From SQL: %s", json_result)
+        except Exception as x:
+            logger.critical("Q2: SQL Query also Failed! %s", x.args)
+            raise x
+    logger.debug("Q2: loading json_result...")
+    try:
+        parsed_results = json.loads(json_result)
+    except Exception as x:
+        logger.critical("Q2: Failed to load parsed results: %s", x.args)
+        logger.debug("-->parsed_results: %s", parsed_results)
+        raise x
+    else:
+        final_result = map_q2_results_to_language(parsed_results)
+        return final_result
 
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
-    update_redis()
+    # update_redis()
 
     try:
-        print "Geo: getting query results..."
         json_result = sql_q.get_query_results('geomap1')
-        print "Geo: parsing json..."
         parsed_results = json.loads(json_result)
-        print "Geo: breaking out needed vals..."
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
-        print "Geo: success"
     except Exception as x:
-        print "SOMETHING WENT WRONG: ", x.args
-    print "Latest Geo Tweet: ", screen_name, latitude, longitude
+        logger.error("Geotweet: Error loading and parsing json: %s", x.args, exc_info=True)
     try:
         response = {}
         response['map'] = 'worldLow'
@@ -149,11 +164,11 @@ def get_latest_geo_tweet():
         response['images'][0]['description'] = text
         response_json = json.dumps(response)
     except Exception as x:
-        print x.args
-    print "geomap response: ",response_json
+        logger.error("Geotweet response error: %s", x.args, exc_info=True)
+
     resp = Response(response=response_json,
-                            status=200,
-                            mimetype="application/json")
+                    status=200,
+                    mimetype="application/json")
     return resp
 
 
@@ -168,14 +183,69 @@ def ticker_fetch():
     return resp
 
 
+@app.route('/q1', methods=['GET'])
+def q1_query():
+    build_count_table = {}
+    logger.info("Q1: Assembling response...")
+    filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
+
+    for language in filter_list:
+        logger.debug("Q1: Current language %s", language)
+        build_count_table[language] = [0,0,0]
+        #pos, neg, neutral = 0, 0, 0
+        # tweet ids needs to be a list of tuples
+        # agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
+        # logger.debug("These are agg vals, %s", agg_vals)
+        # for val in agg_vals:
+        #     if val == 1:
+        #         pos += 1
+        #     elif val == 0:
+        #         neg += 1
+        #     else:
+        #         neutral += 1
+
+        #final_output.append([language, pos, neg, neutral])
+
+    for record in filter_sent_counts:
+        if record[1] == 1:
+            build_count_table[record[0]][0] = record[2]
+        elif record[1] == 0:
+            build_count_table[record[0]][2] = record[2]
+        elif record[1] == -1:
+            build_count_table[record[0]][1] = record[2]
+        else:
+            raise Exception("Unexpected agg_sent in sql response.")
+    output_list = []
+    for key in build_count_table:
+        output_list.append([key] + build_count_table[key])
+    try:
+        logger.debug("Q1: Dumping output_list into JSON...")
+        output_json = json.dumps(output_list)
+    except Exception as x:
+        logger.error("Q1: Error converting output_json to a json string:", x.args)
+        raise x
+    else:
+        logger.debug("Q1: This is final output %s", output_json)
+        resp = Response(response=output_json,
+                        status=200,
+                        mimetype="text/plain")
+        return resp
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('setting')
+parser.add_argument('-v', '--verbosity', type=int)
+ARGS = parser.parse_args()
+
+
 if __name__ == '__main__':
 
-    if sys.argv[1] == 'Prod':
+    if ARGS.setting == 'Prod':
         app.config['DB_HOST'] = os.environ.get('R_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
         app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif sys.argv[1] == 'Test':
+    elif ARGS.setting == 'Test':
         app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
         app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
         app.config['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
@@ -184,7 +254,6 @@ if __name__ == '__main__':
     app.config['DB_CONNECTION'] = None
     app.config['DB_CURSOR'] = None
     app.config['REDIS_UPDATE_INTERVAL'] = 3
-
 
     sql_q.init()
     re.init_pool()

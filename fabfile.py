@@ -3,8 +3,12 @@ from fabric.api import run
 from fabric.api import env
 from fabric.api import execute
 from fabric.api import prompt
+from fabric.api import put
 from fabric.api import sudo
-from fabric.contrib.project import upload_project
+from fabric.utils import abort
+from fabric.contrib.console import confirm
+from fabric.contrib.project import upload_project, rsync_project
+from fabric.contrib.files import exists
 
 import boto.ec2
 import time
@@ -13,52 +17,66 @@ import os
 env.aws_region = 'us-west-2'
 
 
-def deploy_to_production_full():
-    # TBD: implement deploy to production
-    #_deploy(os.environ.get('R_HOST_INSTANCE_ID'), 'Prod', True)
-    raise NotImplementedError()
-
-
-def stage_for_testing():
-    _deploy(os.environ.get('R_TEST_HOST_INSTANCE_ID'), 'Test', True)
-
-
-def _deploy(instance_id, r_config, full_deploy):
+def deploy(r_dest=None, r_option='Full'):
+    if not r_dest:
+        r_dest = raw_input("Enter deploy target (Test or Prod): ")
+    instance = None
+    if r_dest == 'Prod':
+        if not confirm("Are you sure you want to deploy to production?", default=False):
+            abort("Deployment to production aborted.")
+        instance_id = os.environ.get('R_HOST_INSTANCE_ID')
+    elif r_dest == 'Test':
+        instance_id = os.environ.get('R_TEST_HOST_INSTANCE_ID')
+        print ("Got instance id: ", instance_id)
+    else:
+        raise Exception('invalid r_dest')
     conn = _get_ec2_connection()
+    print("Instance id: ", instance_id)
     instance = conn.get_only_instances(instance_ids=[instance_id])[0]
-    if instance:
-        print("Deployment Started for Instance {}:".format(instance.id))
+    if not instance:
+        raise Exception('Could not get instance')
 
-        #Update apt-get
+    print("Deployment Started for Instance {}:".format(instance.id))
+
+    # initial setup related stuff
+    if r_option == 'project':
+        pass
+    elif r_option == 'config':
+        pass
+    else:
+        # Update apt-get
         run_command_on_server(_update_apt_get, instance)
 
-        #Install pip
+        # Install pip
         run_command_on_server(_setup_pip, instance)
 
-        #Install requirements
+        # Install requirements
         run_command_on_server(_auto_install_req, instance)
+        # deploy everything
 
-        #Remove existing project files
+    if r_option == 'config':
+        # Remove config files only
+        run_command_on_server(_remove_existing_config_files, instance)
+
+        # Upload config files only
+        run_command_on_server(_upload_config_files, instance)
+    else:
+        # Remove all existing project files
         run_command_on_server(_remove_existing_project_files, instance)
 
-        #Upload new project files
-        run_command_on_server(_upload_project_files, instance)
+        # Upload all new project files
+        # run_command_on_server(_upload_project_files, instance)
+        run_command_on_server(_rsync_project_files, instance)
 
-        #Install, configure, and start nginx
-        # run_command_on_server(_install_nginx, instance)
-        setup_nginx(r_config, instance)
+    # Install, configure, and start nginx
+    # run_command_on_server(_install_nginx, instance)
+    setup_nginx(r_dest, instance)
 
-        #Install, configure, and start supervisor
-        if r_config == 'Test':
-            run_command_on_server(_setup_supervisor_test, instance)
-        elif r_config == 'Prod':
-            run_command_on_server(_setup_supervisor_prod, instance)
-        else:
-            raise Exception('Invalid r_config.')
+    setup_supervisor(r_dest, instance)
 
-        #Restart nginx
-        run_command_on_server(_restart_nginx, instance)
-        print("Deployment Complete for Instance {}.".format(instance.id))
+    # Restart nginx
+    run_command_on_server(_restart_nginx, instance)
+    print("Deployment Complete for Instance {}.".format(instance.id))
 
 
 def _update_apt_get():
@@ -69,6 +87,7 @@ def _update_apt_get():
 
 def _auto_install_req():
     f = open("requirements.txt", 'r')
+    # sudo("apt-get install libreadline6 libreadline6-dev")
     sudo("apt-get build-dep python-psycopg2")
     print("DEPENDENCIES BUILT")
     for line in f:
@@ -90,9 +109,44 @@ def _setup_flask():
     print("Done.")
 
 
+def _rm_if_exists(path):
+    if exists(path):
+        sudo("rm " + path)
+    else:
+        print("Path does not exist:" + path)
+
+
+def _remove_existing_config_files():
+    print("Removing config files...")
+    _rm_if_exists("./rheTOracle/supervisord-test.conf")
+    _rm_if_exists("./rheTOracle/supervisord-prod.conf")
+    _rm_if_exists("./rheTOracle/nginx_config_test")
+    _rm_if_exists("./rheTOracle/nginx_config_prod")
+    print("Config files removed")
+
+
+def _upload_config_files():
+    print("Uploading new config files...")
+    put("./supervisord-test.conf", "./rheTOracle/supervisord-test.conf", use_sudo=True)
+    put("./supervisord-prod.conf", "./rheTOracle/supervisord-prod.conf", use_sudo=True)
+    put("./nginx_config_test", "./rheTOracle/nginx_config_test", use_sudo=True)
+    put("./nginx_config_prod", "./rheTOracle/nginx_config_prod", use_sudo=True)
+    print("New config files uploaded")
+
+
 def _upload_project_files():
     print("Uploading Project files from {}".format(os.getcwd()))
     upload_project(remote_dir='./', use_sudo=True)
+    if exists('~/rheTOracle/retoracle.log'):
+        sudo('chown ubuntu ~/rheTOracle/retoracle.log')
+    print("Upload complete")
+
+
+def _rsync_project_files():
+    print("Uploading Project files from {}".format(os.getcwd()))
+    rsync_project(remote_dir='./', exclude='.git')
+    if exists('~/rheTOracle/retoracle.log'):
+        sudo('chown ubuntu ~/rheTOracle/retoracle.log')
     print("Upload complete")
 
 
@@ -102,17 +156,26 @@ def _remove_existing_project_files():
     print("Old files removed.")
 
 
+def setup_supervisor(r_dest, instance):
+    if r_dest == 'Prod':
+        run_command_on_server(_setup_supervisor_prod, instance)
+    elif r_dest == 'Test':
+        run_command_on_server(_setup_supervisor_test, instance)
+    else:
+        raise Exception('invalid r_dest')
+
+
 def _setup_supervisor_test():
     print("Setup and run supervisor [TEST]...")
     # ret code 1 comes back if no process to kill, which is fine
     # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
     env.ok_ret_codes = [0, 1, 127]
-    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('supervisorctl stop all')
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
     sudo('mv ./rheTOracle/supervisord-test.conf /etc/supervisor/conf.d/supervisord.conf')
-    sudo('/etc/init.d/supervisor start')
+    sudo('supervisord')
     print("Supervisor running")
 
 
@@ -121,20 +184,20 @@ def _setup_supervisor_prod():
     # ret code 1 comes back if no process to kill, which is fine
     # ret code 127 comes back if supervisor hasn't been installed yet (ex. on first deployment of fresh instance)
     env.ok_ret_codes = [0, 1, 127]
-    sudo('supervisorctl -c /etc/supervisor/supervisord.conf stop all')
+    sudo('supervisorctl stop all')
     sudo('killall -w supervisord')
     env.ok_ret_codes = [0]
     sudo('apt-get install supervisor')
-    sudo('mv ./rheTOracle/supervisord-prod.conf /etc/supervisord.conf')
-    sudo('/etc/init.d/supervisor start')
+    sudo('mv ./rheTOracle/supervisord-prod.conf /etc/supervisor/conf.d/supervisord.conf')
+    sudo('supervisord')
     print("Supervisor running")
 
 
-def setup_nginx(r_config, instance):
-    if r_config == 'Prod':
+def setup_nginx(r_dest, instance):
+    if r_dest == 'Prod':
         print("Setting up nginx [PROD]...")
         run_command_on_server(_install_nginx_prod, instance)
-    elif r_config == 'Test':
+    elif r_dest == 'Test':
         print("Setting up nginx [TEST]...")
         run_command_on_server(_install_nginx_test, instance)
     print("nginx installed and started.")
@@ -143,7 +206,8 @@ def setup_nginx(r_config, instance):
 def _install_nginx_prod():
     print("Setting up nginx...")
     sudo('apt-get install nginx')
-    sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
+    if exists("/etc/nginx/sites-available/default"):
+        sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
     sudo('mv ./rheTOracle/nginx_config_prod /etc/nginx/sites-available/default')
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")
@@ -152,7 +216,8 @@ def _install_nginx_prod():
 def _install_nginx_test():
     print("Setting up nginx...")
     sudo('apt-get install nginx')
-    sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
+    if exists("/etc/nginx/sites-available/default"):
+        sudo('mv /etc/nginx/sites-available/default /etc/nginx/sites-available/default.orig')
     sudo('mv ./rheTOracle/nginx_config_test /etc/nginx/sites-available/default')
     sudo('/etc/init.d/nginx start')
     print("nginx installed and started.")

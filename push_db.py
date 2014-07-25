@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from filters_json import filter_list as filters
 import time, datetime
 import json
@@ -8,11 +10,14 @@ from filters_json import filter_list
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+from logger import make_logger
 
 
 req_tok_url = 'https://api.twitter.com/oauth/request_token'
 oauth_url = 'https://api.twitter.com/oauth/authorize'
 acc_tok_url = 'https://api.twitter.com/oauth/access_token'
+
+logger = make_logger('push_db', 'retoracle.log')
 
 
 def return_filters():
@@ -134,7 +139,15 @@ class StdOutListener(StreamListener):
 
 
         def _update_create_join_table(screen_name, keyword):
-            join_row = json.loads(sql_q.get_query_results('find_join', [screen_name, keyword]))
+            json_result = sql_q.get_query_results('find_join', [screen_name, keyword])
+            logger.debug("_u_c_j_t: json_result is: %s", json_result)
+            try:
+                join_row = json.loads()
+            except Exception as x:
+                logger.error("-->Error while doing json.loads() on %s", json_result)
+                return
+            else:
+                logger.debug("-->Success. Results: %s", join_row)
             if join_row:
                 tw_count = join_row[0][0] + 1
                 sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
@@ -154,36 +167,42 @@ class StdOutListener(StreamListener):
                         tw_count = filter_row[0][1] + 1
                         sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False)
                         sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False)
+                        sql_q.get_query_results('set_tweet_filter', [tweet_id, keyword], False)
                         _update_create_join_table(screen_name, keyword)
                     else:
                         sql_q.get_query_results( 'save_filters',
                                                 [keyword, datetime.datetime.now(), 1], False)
+                        sql_q.get_query_results('set_tweet_filter', [tweet_id, keyword], False)
                         _update_create_join_table(screen_name, keyword)
 
 
 
     def on_error(self, status):
         error_counter = 0
+        try:
+            logger.error('Twitter stream error, status: ', status)
+        except TypeError as x:
+            logger.error("-->Error logging status of... error...?")
         if status == 420:
             time.sleep(15)
-            print "Made too many requests!"
-            print '*' * 45
             error_counter += 1
-            print "Errors: ", error_counter
+            logger.info('There have been %d 420 errors', error_counter)
+
 
 if __name__ == '__main__':
     sql_q.init()
+    logger.info('Connected to DB')
     auth = None
     if sys.argv[1] == 'Prod':
         auth = OAuthHandler(os.environ.get('R_TWITTER_CONSUMER_KEY'),
-                                        os.environ.get('R_TWITTER_CONSUMER_SECRET'))
+                            os.environ.get('R_TWITTER_CONSUMER_SECRET'))
         auth.set_access_token(os.environ.get('R_TWITTER_ACCESS_TOKEN'),
-                                         os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
+                              os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
     elif sys.argv[1] == 'Test':
         auth = OAuthHandler(os.environ.get('R_TEST_TWITTER_CONSUMER_KEY'),
-                                        os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
+                            os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
         auth.set_access_token(os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN'),
-                                         os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
+                              os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
 
     l = StdOutListener()
     stream_filters = return_filters()
