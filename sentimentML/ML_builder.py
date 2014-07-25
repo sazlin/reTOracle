@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.svm import SVC
-from string import maketrans
 import pandas as pd
 from pandas import read_csv, read_excel, concat
 import nltk
@@ -11,7 +10,6 @@ import re
 import requests
 import json
 from math import log, exp
-from scipy import sparse
 import os
 from os.path import isfile
 
@@ -42,7 +40,7 @@ class SVM_builder(object):
         
     def tweet_cleaner(self, tweet):
         words = []
-        tweet = tweet.translate(maketrans('"@#?!,.0123456789-&*', '                    '))
+        tweet = tweet.replace('"@#?!,.0123456789-&*', '                    ')
         words.extend(tweet.strip().lower().split())
         for index, word in enumerate(words):
             for happy in self.happyface:
@@ -54,7 +52,7 @@ class SVM_builder(object):
                     words[index]='sadface'
                     break
         cleaner = " ".join([word for word in words if len(word)>1])
-        return cleaner.translate(maketrans(':)(;][\/=', '         '))
+        return cleaner.replace(':)(;][\/=', '         ')
             
     def vectorize(self, tweet):
         vector = np.zeros(len(self.vocab))
@@ -74,7 +72,8 @@ class SVM_builder(object):
         print 'Vectorization Complete'
         output = self.train_df['Sentiment'][0:training_samples]
         clf = SVC(kernel='linear', probability=True)
-        X_csr = sparse.csr_matrix(tweet_array)
+        #X_csr = sparse.csr_matrix(tweet_array)
+        X_csr = tweet_array
         clf.fit(X_csr, np.asarray(output))
         self.classifier = clf
         print 'Classifier Created'
