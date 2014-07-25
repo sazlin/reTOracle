@@ -118,11 +118,11 @@ def update_redis():
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
-    update_redis()
-    try:
-        json_result = re.get_redis_query('chart2')
-    except:
-        json_result = sql_q.get_query_results('chart2')
+    # update_redis()
+    # try:
+    #     json_result = re.get_redis_query('chart2')
+    # except:
+    json_result = sql_q.get_query_results('chart2')
     parsed_results = json.loads(json_result)
     final_result = map_q2_results_to_language(parsed_results)
     return final_result
@@ -130,7 +130,7 @@ def q2_query():
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
-    update_redis()
+    # update_redis()
 
     try:
         json_result = sql_q.get_query_results('geomap1')
@@ -188,7 +188,7 @@ def q1_query():
         logger.info("Current language %s", language)
         pos, neg, neutral = 0, 0, 0
         # tweet ids needs to be a list of tuples
-        agg_vals = sql_q.get_query_results('fetch_agg_vals', language)
+        agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
         logger.info("These are agg vals, %s", agg_vals)
         for val in agg_vals:
             if val == 1:
@@ -198,6 +198,8 @@ def q1_query():
             else:
                 neutral += 1
         final_output.append([language, pos, neg, neutral])
+    final_output = json.dumps(final_output)
+    logger.info("This is final output %s", final_output)
     resp = Response(response=final_output,
                     status=200,
                     mimetype="application/json")
