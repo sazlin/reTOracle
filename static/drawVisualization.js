@@ -62,7 +62,8 @@ $(document).ready(function(){
                   annotations:{
                     textStyle:{
                     auraColor: '#FFF',
-                    }
+                    },
+                    isStacked: true,
                   }
   };
 

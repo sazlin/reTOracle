@@ -99,20 +99,20 @@ def update_redis():
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
-@app.route('/q1', methods=['GET'])
-def q1_query():
-    """Which programming language is being talked about the most?"""
-    update_redis()
-    try:
-        logger.debug("Q1: Getting values from redis")
+# @app.route('/q1', methods=['GET'])
+# def q1_query():
+#     """Which programming language is being talked about the most?"""
+#     update_redis()
+#     try:
+#         logger.debug("Q1: Getting values from redis")
 
-        json_result = re.get_redis_query('chart1')
-    except:
-        logger.error("Q1: redis failed. Trying SQL instead")
-        json_result = sql_q.get_query_results('chart1')
-    parsed_results = json.loads(json_result)
-    final_result = map_q1_results_to_language(parsed_results)
-    return final_result
+#         json_result = re.get_redis_query('chart1')
+#     except:
+#         logger.error("Q1: redis failed. Trying SQL instead")
+#         json_result = sql_q.get_query_results('chart1')
+#     parsed_results = json.loads(json_result)
+#     final_result = map_q1_results_to_language(parsed_results)
+#     return final_result
 
 
 @app.route('/q2', methods=['GET'])
@@ -180,10 +180,12 @@ def ticker_fetch():
     return resp
 
 
-@app.route('/s1', methods=['GET'])
-def s1_query():
+@app.route('/q1', methods=['GET'])
+def q1_query():
     final_output = []
+    logger.info("Making q1 query")
     for language in filter_list:
+        logger.info("Current language %s", language)
         pos, neg, neutral = 0, 0, 0
         # tweet ids needs to be a list of tuples
         agg_vals = sql_q.get_query_results('fetch_agg_vals', language)
