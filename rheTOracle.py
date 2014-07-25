@@ -62,8 +62,6 @@ def map_q1_results_to_language(parsed_results):
     return json.dumps(final_result)
 
 
-
-
 def map_q2_results_to_language(parsed_results):
     """use the filter_list to group and sum the results parsed from Q2's query results
         into a new list of lists that will be returned to the client for rendering"""
@@ -88,7 +86,6 @@ def update_redis():
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
-
 # @app.route('/q1', methods=['GET'])
 # def q1_query():
 #     """Which programming language is being talked about the most?"""
@@ -111,15 +108,28 @@ def q2_query():
     """Who is *the* person to follow for a given language?"""
     update_redis()
     try:
-        logger.debug("Q2: Getting values from redis")
+        logger.debug("Q2: Getting values from redis...")
         json_result = re.get_redis_query('fetch_popular_users')
-    except:
-        logger.error("Q2: redis failed. Trying SQL instead")
-        json_result = sql_q.get_query_results('fetch_popular_users')
-
-    parsed_results = json.loads(json_result)
-    final_result = map_q2_results_to_language(parsed_results)
-    return final_result
+        logger.debug("Q2: Succes! From Redis: %s", json_result)
+    except Exception as x:
+        logger.error("Q2: Redis Query Failed! %s", x.args)
+        try:
+            logger.debug("Q2: Trying SQL instead...")
+            json_result = sql_q.get_query_results('fetch_popular_users')
+            logger.debug("Q2: Success! From SQL: %s", json_result)
+        except Exception as x:
+            logger.critical("Q2: SQL Query also Failed! %s", x.args)
+            raise x
+    logger.debug("Q2: loading json_result...")
+    try:
+        parsed_results = json.loads(json_result)
+    except Exception as x:
+        logger.critical("Q2: Failed to load parsed results: %s", x.args)
+        logger.debug("-->parsed_results: %s", parsed_results)
+        raise x
+    else:
+        final_result = map_q2_results_to_language(parsed_results)
+        return final_result
 
 
 @app.route('/geotweet', methods=['GET'])
@@ -134,8 +144,7 @@ def get_latest_geo_tweet():
         screen_name = parsed_results[0][2]
         text = parsed_results[0][1]
     except Exception as x:
-
-        logger.error("Geotweet json error: %S", x.args, exc_info=True)
+        logger.error("Geotweet: Error loading and parsing json: %s", x.args, exc_info=True)
     try:
         response = {}
         response['map'] = 'worldLow'
@@ -177,13 +186,13 @@ def ticker_fetch():
 @app.route('/q1', methods=['GET'])
 def q1_query():
     final_output = []
-    logger.info("Making q1 query")
+    logger.info("Q1: Assembling response...")
     for language in filter_list:
-        logger.info("Current language %s", language)
+        logger.debug("Q1: Current language %s", language)
         pos, neg, neutral = 0, 0, 0
         # tweet ids needs to be a list of tuples
         agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
-        logger.info("These are agg vals, %s", agg_vals)
+        logger.debug("These are agg vals, %s", agg_vals)
         for val in agg_vals:
             if val == 1:
                 pos += 1
@@ -192,12 +201,18 @@ def q1_query():
             else:
                 neutral += 1
         final_output.append([language, pos, neg, neutral])
-    final_output = json.dumps(final_output)
-    logger.info("This is final output %s", final_output)
-    resp = Response(response=final_output,
-                    status=200,
-                    mimetype="application/json")
-    return resp
+    try:
+        logger.debug("Q1: Dumping final output to JSON...")
+        output_json = json.dumps(final_output)
+    except Exception as x:
+        logger.error("Q1: Error converting final_output to a json string:", x.args)
+        raise x
+    else:
+        logger.debug("Q1: This is final output %s", output_json)
+        resp = Response(response=output_json,
+                        status=200,
+                        mimetype="text/plain")
+        return resp
 
 
 parser = argparse.ArgumentParser()

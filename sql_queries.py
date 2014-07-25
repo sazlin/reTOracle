@@ -14,7 +14,7 @@ logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 QUERY_STRINGS = {}
 DB_CONFIG = {}
 
-NUM_TWEETS_NEED_SA = """
+NUM_TWEETS_NEED_SA = """\
 SELECT COUNT(DISTINCT tweet_id)
 FROM
 (SELECT tweet_id FROM massive
@@ -188,11 +188,11 @@ def _build_q4_query():
 # New db structure queries
 def _find_user():
     sql = ("""SELECT screen_name, tweet_count FROM users WHERE screen_name = %s """)
-    return sql
+    return (sql, [])
 
 def _find_filter():
     sql = ("""SELECT filter_name, tweet_count FROM filters WHERE filter_name = %s """)
-    return sql
+    return (sql, [])
 
 def _find_join():
     sql = []
@@ -203,49 +203,54 @@ def _find_join():
 
 def _update_user_tweet_count():
     sql = ("""UPDATE users SET tweet_count = %s WHERE screen_name = %s;""")
-    return sql
+    return (sql, [])
 
 def _update_user_timestamp():
     sql = ("""UPDATE users SET last_tweet_timestamp = %s WHERE screen_name = %s;""")
-    return sql
+    return (sql, [])
 
 def _update_filter_tweet_count():
     sql = ("""UPDATE filters SET tweet_count = %s WHERE filter_name = %s;""")
-    return sql
+    return (sql, [])
 
 def _update_filter_timestamp():
     sql = ("""UPDATE filters SET last_tweet_timestamp = %s WHERE filter_name = %s;""")
-    return sql
+    return (sql, [])
 
 def _update_join_tweet_count():
     sql = []
     sql .append("""UPDATE user_filter_join SET tweet_count = %s """)
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return " ".join(sql)
+    return (" ".join(sql), [])
 
 def _update_join_timestamp():
     sql = []
     sql.append("""UPDATE user_filter_join SET last_tweet_timestamp = %s""")
     sql.append("""WHERE screen_name = %s AND filter_name = %s""")
-    return " ".join(sql)
+    return (" ".join(sql), [])
 
 
 def _query_filter_tweets_counts():
     sql = ("""SELECT filter_name, tweet_count FROM filters ORDER BY tweet_count DESC;""")
-    return sql
+    return (sql, [])
 
 def _query_popular_users():
     final_result = []
     sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""")
+    logger.debug("_q_p_u: sql1 result: %s", sql1_result)
     sql1_result = json.loads(sql1_result)
     for filter_ in sql1_result:
+        logger.debug("-->filter: %s", filter_[0])
         tmp_sql = []
-        tmp_sql.append("""SELECT filter_name, tweet_count, screen_name FROM  user_filter_join""")
+        tmp_sql.append("""SELECT filter_name, tweet_count, screen_name FROM user_filter_join""")
         tmp_sql.append("""WHERE filter_name = %s ORDER BY tweet_count DESC LIMIT 1""")
         json_result = _execute_query(" ".join(tmp_sql), [filter_[0]])
+        logger.debug("-->inner query result: %s", json_result)
         json_result = json.loads(json_result)
         final_result.append(json_result[0])
-    return json.dumps(final_result)
+        result = json.dumps(final_result)
+        logger.debug("-->final result: %s", result)
+    return (result, [])
 
 
 def _save_tweets():
@@ -254,18 +259,18 @@ def _save_tweets():
                 tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count)
 
             VALUES(
-                %s, %s, %s, %s, %s, %s, %s); """)
+                %s, %s, %s, %s, %s, %s, %s); """, [])
 
 def _save_users():
     return("""INSERT INTO users (screen_name, account_url,
                                 tweet_count, last_tweet_timestamp)
-                 VALUES (%s, %s, %s, %s); """)
+                 VALUES (%s, %s, %s, %s); """, [])
 
 def _save_filters():
     return ("""INSERT INTO filters( filter_name,
                                                 last_tweet_timestamp,
                                                 tweet_count)
-                   VALUES (%s, %s, %s); """)
+                   VALUES (%s, %s, %s); """, [])
 
 def save_user_filter_join():
     return ("""INSERT INTO user_filter_join( screen_name,
@@ -273,7 +278,7 @@ def save_user_filter_join():
                                                 tweet_count,
                                                 first_tweet_timestamp,
                                                 last_tweet_timestamp)
-                   VALUES (%s, %s, %s, %s, %s); """)
+                   VALUES (%s, %s, %s, %s, %s); """, [])
 
 
 
@@ -281,7 +286,7 @@ def _build_agg_vals():
     return("""
     SELECT agg_sent FROM tweet_sent WHERE tweet_id in (
         SELECT tweet_id FROM tweets WHERE filter_name = %s);
-    """, [])
+    """, ['Python'])
 
 
 # def _build_recent_sent():
@@ -293,11 +298,12 @@ def _build_agg_vals():
 
 
 def get_query_results(chart_string, args=None, need_fetch=True):
+    logger.info("get_query_results: %s", chart_string)
     if args is None:
         args = QUERY_STRINGS[chart_string][1]
     if chart_string == 'fetch_popular_users':
-        return _query_popular_users()
+        return _query_popular_users()[0]
     return _execute_query(
-        QUERY_STRINGS[chart_string],
+        QUERY_STRINGS[chart_string][0],
         args,
         need_fetch)

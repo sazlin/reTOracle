@@ -54,7 +54,7 @@ def maint_redis():
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     for key in sql_q.QUERY_STRINGS.iterkeys():
-        if key[:5] != 'fetch' :
+        if not 'fetch' in key:
             continue
         logger.info("Redis: Querying SQL and getting results...")
         result = None
@@ -68,9 +68,13 @@ def maint_redis():
         else:
             logger.info("Redis: Settings query results in redis for %s", key)
         try:
-            _set_to_redis(key, result)
+            if(isinstance(result, basestring)):
+                _set_to_redis(key, result)
+            else:
+                _set_to_redis(key, result[0])
         except Exception as x:
             logger.error("Redis: Something went wrong while setting k,v pair on redis: %S ", x.args, exc_info=True)
         else:
             logger.info('Redis: [SUCCESS] results set for %s ', key)
+            logger.debug('-->Results are: %s', result)
 
