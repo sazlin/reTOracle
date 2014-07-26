@@ -41,7 +41,7 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0, 0, 0]]);
   var chart1View;
-  var chart1Options = {width:550, height:300,
+  var chart1Options = {width:550, height:400,
                  vAxis: {
                   textStyle:{
                     bold: true,
@@ -61,7 +61,8 @@ $(document).ready(function(){
                   },
                   annotations:{
                     textStyle:{
-                    auraColor: '#FFF',
+                    auraColor: '#F00',
+                    opacity: 0.7
                     },
                   },
                   isStacked: true
@@ -70,11 +71,24 @@ $(document).ready(function(){
   //Create the function that will redraw and animate Chart1
   function drawChart1(){
     chart1View = new google.visualization.DataView(chart1Data);
-    // chart1View.setColumns([0, 1,
-    //                { calc: "stringify",
-    //                  sourceColumn: 1,
-    //                  type: "string",
-    //                  role: "annotation" }]);
+    chart1View.setColumns([
+      0,
+      1,
+       { calc: "stringify",
+         sourceColumn: 1,
+         type: "string",
+         role: "annotation" },
+      2,
+       { calc: "stringify",
+         sourceColumn: 2,
+         type: "string",
+         role: "annotation" },
+      3,
+       { calc: "stringify",
+         sourceColumn: 3,
+         type: "string",
+         role: "annotation" }
+         ]);
     if(!chart1){
       chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));
     }
@@ -86,7 +100,7 @@ $(document).ready(function(){
   var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
   var chart2View;
-  var chart2Options = {width:550, height:300,
+  var chart2Options = {width:550, height:400,
                vAxis: {
                   textStyle:{
                     bold: true,
