@@ -198,19 +198,6 @@ def q1_query():
     for language in filter_list:
         logger.debug("Q1: Current language %s", language)
         build_count_table[language] = [0,0,0]
-        #pos, neg, neutral = 0, 0, 0
-        # tweet ids needs to be a list of tuples
-        # agg_vals = sql_q.get_query_results('fetch_agg_vals', [language])
-        # logger.debug("These are agg vals, %s", agg_vals)
-        # for val in agg_vals:
-        #     if val == 1:
-        #         pos += 1
-        #     elif val == 0:
-        #         neg += 1
-        #     else:
-        #         neutral += 1
-
-        #final_output.append([language, pos, neg, neutral])
 
     for record in filter_sent_counts:
         if record[1] == 1:

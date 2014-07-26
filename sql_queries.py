@@ -70,7 +70,6 @@ def _init_db_config():
 def _build_query_strings():
     QUERY_STRINGS['ticker1'] = _build_q3_query()
     QUERY_STRINGS['geomap1'] = _build_q4_query()
-    QUERY_STRINGS['fetch_agg_vals'] = _build_agg_vals()
     QUERY_STRINGS['save_tweets']= _save_tweets()
     QUERY_STRINGS['save_filters'] = _save_filters()
     QUERY_STRINGS['save_users'] = _save_users()
@@ -253,7 +252,7 @@ def _query_filter_tweets_counts():
 def _query_popular_users():
     final_result = []
     sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""")
-    logger.debug("_q_p_u: sql1 result: %s", sql1_result)
+    logger.debug("_Q_P_U: sql1 result: %s", sql1_result)
     sql1_result = json.loads(sql1_result)
     for filter_ in sql1_result:
         logger.debug("-->filter: %s", filter_[0])
@@ -268,44 +267,30 @@ def _query_popular_users():
             pass
         else:
             final_result.append(json_result[0])
-        result = json.dumps(final_result)
-        logger.debug("-->final result: %s", result)
+    result = json.dumps(final_result)
+    logger.debug("-->final result: %s", result)
     return (result, [])
 
 
 def _save_tweets():
-    return ("""
-            INSERT INTO tweets(
-                tweet_id, screen_name, tweet_url, tweet_text, hashtags, location, retweet_count, filters_list)
-            VALUES(
-                %s, %s, %s, %s, %s, %s, %s, %s); """)
+    return ("""INSERT INTO tweets VALUES(%s, %s, %s, %s, %s, %s, %s); """, [])
 
 def _save_users():
-    return("""INSERT INTO users (screen_name, account_url,
-                                tweet_count, last_tweet_timestamp)
-                 VALUES (%s, %s, %s, %s); """, [])
+    return("""INSERT INTO users VALUES (%s, %s, %s, %s); """, [])
 
 def _save_filters():
-    return ("""INSERT INTO filters( filter_name,
-                                                last_tweet_timestamp,
-                                                tweet_count)
-                   VALUES (%s, %s, %s); """, [])
+    return ("""INSERT INTO filters VALUES (%s, %s, %s); """, [])
 
 def save_user_filter_join():
-    return ("""INSERT INTO user_filter_join( screen_name,
-                                                filter_name,
-                                                tweet_count,
-                                                first_tweet_timestamp,
-                                                last_tweet_timestamp)
-                   VALUES (%s, %s, %s, %s, %s); """, [])
+    return ("""INSERT INTO user_filter_join VALUES (%s, %s, %s, %s, %s); """, [])
 
 
 
-def _build_agg_vals():
-    return("""
-    SELECT agg_sent FROM tweet_sent WHERE tweet_id in (
-        SELECT tweet_id FROM tweets WHERE filter_name = %s);
-    """, ['Python'])
+# def _build_agg_vals():
+#     return("""
+#     SELECT agg_sent FROM tweet_sent WHERE tweet_id in (
+#         SELECT tweet_id FROM tweets WHERE filter_name = %s);
+#     """, ['Python'])
 
 
 # def _build_recent_sent():

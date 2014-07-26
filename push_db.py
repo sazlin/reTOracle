@@ -21,12 +21,12 @@ logger = make_logger('push_db', 'retoracle.log')
 
 
 def return_filters():
-    filter_list = []
+    filter_l = []
     for i in filters:
         for y in filters[i]['search_terms']:
             for x in filters[i]['search_terms'][y]:
-                filter_list.append(x)
-    return filter_list
+                filter_l.append(x)
+    return filter_l
 
 
 def return_blacklist():
@@ -125,37 +125,47 @@ class StdOutListener(StreamListener):
         # Creating Tweet row
         sql_q.get_query_results(
         'save_tweets',
-        [tweet_id, screen_name, urls, text, hashtags, location, retweets, my_filter_list],
+        [tweet_id, screen_name, urls, text, hashtags, location, retweets],
          need_fetch=False)
 
 
-        def _update_create_join_table(screen_name, keyword):
-            json_result = sql_q.get_query_results('find_join', [screen_name, keyword])
+        def _update_create_join_table(screen_name, filter_):
+            json_result = sql_q.get_query_results('find_join', [screen_name, filter_])
             logger.debug("_u_c_j_t: json_result is: %s", json_result)
             try:
-                join_row = json.loads()
+                join_row = json.loads(json_result)
             except Exception as x:
-                logger.error("-->Error while doing json.loads() on %s", json_result)
+                logger.error("-->Error while doing json.loads() on %s: %s", json_result, x.args)
                 return
             else:
                 logger.debug("-->Success. Results: %s", join_row)
-            if join_row:
+            if len(join_row) > 0:
+                #this user has tweeted about this filter before, so let's increment the existing record
                 tw_count = join_row[0][0] + 1
-                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, keyword], False)
-                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, keyword], False)
+                sql_q.get_query_results('update_join_tw_count', [tw_count, screen_name, filter_], False)
+                sql_q.get_query_results( 'update_join_timestamp', [datetime.datetime.now(), screen_name, filter_], False)
             else:
+                #this user hasn't tweeted about this filter before, so let's create a new one
+                now = datetime.datetime.now()
+                logger.debug("-->creating user_filter_join record: %s, %s, %s, %s, %s",
+                    screen_name, filter_, 1, now, now )
                 sql_q.get_query_results('save_user_filter_join',
-                    [screen_name, keyword, 1, datetime.datetime.now(),
-                    datetime.datetime.now()], False)
+                    [screen_name, filter_, 1, now, now], False)
 
+        logger.debug("-->checking hashtags and updating tables")
         for hashtag in hashtags1:
+            logger.debug("-->hashtag: %s", hashtag)
             hashtag = '#'+hashtag
             for keyword in filter_list:
                 tmp_list = [x.lower() for x in filter_list[keyword]['search_terms']['hashtags']]
                 if hashtag.lower() in tmp_list:
+                    logger.debug("-->finding filter for %s", keyword)
                     filter_row =  json.loads(sql_q.get_query_results('find_filter', [keyword]))
+                    logger.debug("-->filter_row: %s", filter_row)
                     if filter_row :
+                        logger.debug("-->old tw_count: %s", filter_row[0][1] )
                         tw_count = filter_row[0][1] + 1
+                        logger.debug("-->new tw_count: %s", tw_count)
                         sql_q.get_query_results('update_filter_tw_count', [tw_count, keyword], False)
                         sql_q.get_query_results( 'update_filter_timestamp', [datetime.datetime.now(), keyword], False)
                         sql_q.get_query_results('set_tweet_filter', [tweet_id, keyword], False)
@@ -173,7 +183,7 @@ class StdOutListener(StreamListener):
         try:
             logger.error('Twitter stream error, status: ', status)
         except TypeError as x:
-            logger.error("-->Error logging status of... error...?")
+            logger.error("-->Error logging status of... error...?: %s", x.args)
         if status == 420:
             time.sleep(15)
             error_counter += 1
