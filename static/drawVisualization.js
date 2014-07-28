@@ -29,7 +29,9 @@ $(document).ready(function(){
         success: function (d) {
           var resultArray = $.parseJSON(d);
           resultArray.unshift(chart2DataHeader);
+          console.log(resultArray);
           chart2Data = google.visualization.arrayToDataTable(resultArray);
+          console.log(chart2Data);
           drawChart2();
         }
     });
