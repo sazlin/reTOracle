@@ -74,20 +74,20 @@ $(document).ready(function(){
     chart1View.setColumns([
       0,
       1,
-       { calc: "stringify",
-         sourceColumn: 1,
-         type: "string",
-         role: "annotation" },
+       // { calc: "stringify",
+       //   sourceColumn: 1,
+       //   type: "string",
+       //   role: "annotation" },
       2,
-       { calc: "stringify",
-         sourceColumn: 2,
-         type: "string",
-         role: "annotation" },
-      3,
-       { calc: "stringify",
-         sourceColumn: 3,
-         type: "string",
-         role: "annotation" }
+       // { calc: "stringify",
+       //   sourceColumn: 2,
+       //   type: "string",
+       //   role: "annotation" },
+      3//,
+       // { calc: "stringify",
+       //   sourceColumn: 3,
+       //   type: "string",
+       //   role: "annotation" }
          ]);
     if(!chart1){
       chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));

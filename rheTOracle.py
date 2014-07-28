@@ -86,23 +86,6 @@ def update_redis():
         app.config['LAST_REDIS_UPDATE'] = new_time
 
 
-# @app.route('/q1', methods=['GET'])
-# def q1_query():
-#     """Which programming language is being talked about the most?"""
-#     update_redis()
-#     try:
-#         logger.debug("Q1: Getting values from redis")
-
-#         json_result = re.get_redis_query('chart1')
-#     except:
-#         logger.error("Q1: redis failed. Trying SQL instead")
-#         json_result = sql_q.get_query_results('chart1')
-#     parsed_results = json.loads(json_result)
-#     final_result = map_q1_results_to_language(parsed_results)
-#     return final_result
-
-
-
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
@@ -192,7 +175,7 @@ def q1_query():
         filter_sent_counts = re.get_redis_query('fetch_filter_sent_counts')
         filter_sent_counts = json.loads(filter_sent_counts)
     except:
-        logger.debug("Q1: redis failed. Trying SQL instead")
+        logger.warning("Q1: Getting value from redis failed. Trying SQL instead")
         filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
 
     for language in filter_list:
