@@ -14,6 +14,7 @@ $(document).ready(function(){
         success: function (d) {
           var resultArray = $.parseJSON(d);
           resultArray.unshift(chart1DataHeader);
+          console.log("Chart 1 array" + resultArray);
           chart1Data = google.visualization.arrayToDataTable(resultArray);
           drawChart1();
         }
@@ -29,9 +30,8 @@ $(document).ready(function(){
         success: function (d) {
           var resultArray = $.parseJSON(d);
           resultArray.unshift(chart2DataHeader);
-          console.log(resultArray);
+          console.log("Chart 2 array" + resultArray);
           chart2Data = google.visualization.arrayToDataTable(resultArray);
-          console.log(chart2Data);
           drawChart2();
         }
     });
@@ -85,34 +85,34 @@ $(document).ready(function(){
   drawChart1(); //first draw
 
   var chart2;
-  var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
-  var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, "Loading..."]]);
+  // var chart2DataHeader = ["HashTag", "NumHashtagsByUser", "{ role: 'annotation' }"];
+  var chart2DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
+  var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, 0, 0]]);
   var chart2View;
   var chart2Options = {width:550, height:300,
-               vAxis: {
+                 vAxis: {
                   textStyle:{
                     bold: true,
                     auraColor: '#FFF',
-                    }
+                    }},
+                 hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
+                 legend: { position: "none" },
+                 chartArea:{width:"67%",height:"80%"},
+                 backgroundColor: { fill:'transparent' },
+                 title: "Which programming language is being talked about the most?",
+                 titleTextStyle: {
+                  auraColor: '#FFF',
+                 },
+                 animation:{
+                    duration: 900,
+                    easing: 'out',
                   },
-               hAxis: {gridlines: {count: 0}, baselineColor: 'none'},
-               legend: { position: "none" },
-               chartArea:{width:"67%",height:"80%"},
-               title: "Who is *the* @user to follow for a given language?",
-               titleTextStyle: {
-                auraColor: '#FFF',
-              },
-               animation:{
-                  duration: 900,
-                  easing: 'out',
-                },
-                backgroundColor: { fill:'transparent' },
-                annotations:{
+                  annotations:{
                     textStyle:{
                     auraColor: '#FFF',
-                    }
-                }
-
+                    },
+                  },
+                  isStacked: true
   };
 
   //Create the function that will redraw and animate Chart1
