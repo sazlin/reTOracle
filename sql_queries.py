@@ -91,6 +91,8 @@ def _build_query_strings():
     QUERY_STRINGS['set_tweet_filter'] = _build_set_tweet_filter_query()
     QUERY_STRINGS['fetch_filter_sent_counts'] = _query_filter_sent_count()
     QUERY_STRINGS['popular_tweet_sent'] = _fetch_pop_sent()
+    # QUERY_STRINGS['fetch_tweets_from_user'] = _fetch_tweets_from_user()
+    # QUERY_STRINGS['fetch_tweets_from_filter'] = _fetch_tweets_from_filter()
 
 def _connect_db():
     try:
@@ -306,11 +308,30 @@ def _fetch_pop_sent():
     return("""
         SELECT agg_sent
         FROM tweet_sent
-        WHERE tweet_id
-        IN (SELECT tweet_id
+        WHERE
+            tweet_sent.tweet_id IN (SELECT tweet_id
             FROM tweets
-        WHERE screen_name=%s);""", [])
+            WHERE screen_name=%s)
+        AND
+            tweet_sent.tweet_id IN (SELECT tweet_id
+            FROM tweet_filter_join
+            WHERE filter_name=%s);""", [])
 
+
+# def _fetch_tweets_from_user():
+#     return("""
+#         SELECT tweet_id
+#             FROM tweets
+#             WHERE screen_name=%s;
+#         """, [])
+
+
+# def _fetch_tweets_from_filter():
+#     return("""
+#         SELECT tweet_id
+#             FROM tweet_filter_join
+#             WHERE filter_name=%s;
+#             """, [])
 
 def get_query_results(chart_string, args=None, need_fetch=True):
     logger.info("get_query_results: %s", chart_string)

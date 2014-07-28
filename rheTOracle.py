@@ -12,6 +12,7 @@ import os
 from logger import make_logger
 import argparse
 import inspect
+import itertools
 
 
 logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
@@ -123,17 +124,16 @@ def q2_query():
 
     ###GET SENTIMENT VALUES#####
     user_count = []
-    logger.info("These are jsonresults Q2 %s", json_result)
+    logger.error("These are jsonresults Q2 %s", json_result)
     json_result = json.loads(json_result)
     index = 0
     for result in json_result:
-        logger.info("This is the result %s", result)
+        logger.info("This is result, %s", result)
         logger.info("This is the hashtag %s", result[0])
         logger.info("This is the user %s", result[2])
-        # user_count.append([result[0]] + [0, 0, 0] + [result[2]])
         user_count.append([result[0]] + [0, 0, 0])
-        logger.info("This is appended list %s", user_count)
-        counts = sql_q.get_query_results('popular_tweet_sent', [result[2]])
+        counts = sql_q.get_query_results('popular_tweet_sent', [result[2], result[0]])
+        # logger.info("Here is final list of tweets: %s", tweet_ids)
         counts = json.loads(counts)
         logger.info("These are the counts %s", counts)
         for count in counts:
