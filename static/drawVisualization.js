@@ -118,12 +118,12 @@ $(document).ready(function(){
   //Create the function that will redraw and animate Chart1
   function drawChart2(){
     chart2View = new google.visualization.DataView(chart2Data);
-    chart2View.setColumns([0, 1,
-                 { calc: "stringify",
-                   sourceColumn: 2,
-                   type: "string",
-                   role: "annotation" }
-                 ]);
+    // chart2View.setColumns([0, 1,
+    //              { calc: "stringify",
+    //                sourceColumn: 2,
+    //                type: "string",
+    //                role: "annotation" }
+    //              ]);
     if(!chart2){
       chart2 = new google.visualization.BarChart(document.getElementById('visualization2'));
     }
