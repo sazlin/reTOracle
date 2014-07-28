@@ -90,6 +90,7 @@ def _build_query_strings():
     QUERY_STRINGS['set_tweet_sent'] = (SET_TWEET_SENT, None)
     QUERY_STRINGS['set_tweet_filter'] = _build_set_tweet_filter_query()
     QUERY_STRINGS['fetch_filter_sent_counts'] = _query_filter_sent_count()
+    QUERY_STRINGS['popular_tweet_sent'] = _fetch_pop_sent()
 
 def _connect_db():
     try:
@@ -299,6 +300,16 @@ def save_user_filter_join():
 #     ORDER BY tweet_id DESC
 #     LIMIT 10;
 #     """)
+
+
+def _fetch_pop_sent():
+    return("""
+        SELECT agg_sent
+        FROM tweet_sent
+        WHERE tweet_id
+        IN (SELECT tweet_id
+            FROM tweets
+        WHERE screen_name=%s);""", [])
 
 
 def get_query_results(chart_string, args=None, need_fetch=True):

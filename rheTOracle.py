@@ -102,7 +102,6 @@ def update_redis():
 #     return final_result
 
 
-
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
@@ -121,16 +120,36 @@ def q2_query():
             logger.critical("Q2: SQL Query also Failed! %s", x.args)
             raise x
     logger.debug("Q2: loading json_result...")
-    try:
-        parsed_results = json.loads(json_result)
-    except Exception as x:
-        logger.critical("Q2: Failed to load parsed results: %s", x.args)
-        logger.debug("-->parsed_results: %s", parsed_results)
-        raise x
-    else:
-        final_result = map_q2_results_to_language(parsed_results)
-        return final_result
 
+    ###GET SENTIMENT VALUES#####
+    user_count = []
+    logger.info("These are jsonresults Q2 %s", json_result)
+    json_result = json.loads(json_result)
+    index = 0
+    for result in json_result:
+        logger.info("This is the result %s", result)
+        logger.info("This is the hashtag %s", result[0])
+        logger.info("This is the user %s", result[2])
+        user_count.append([result[0]] + [0, 0, 0] + [result[2]])
+        logger.info("This is appended list %s", user_count)
+        counts = sql_q.get_query_results('popular_tweet_sent', [result[2]])
+        counts = json.loads(counts)
+        logger.info("These are the counts %s", counts)
+        for count in counts:
+            if count[0] == 1:
+                user_count[index][1] += 1
+            elif count[0] == -1:
+                user_count[index][2] += 1
+            elif count[0] == 0:
+                user_count[index][3] += 1
+        index += 1
+    logger.info("Q2 TIHS IS THE OUTPUT LIST %s", user_count)
+    output_json = json.dumps(user_count)
+    resp = Response(response=output_json,
+                    status=200,
+                    mimetype="text/plain")
+
+    return resp
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
