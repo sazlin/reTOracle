@@ -17,7 +17,10 @@ import boto.emr
 from boto.emr.step import StreamingStep
 import SA_Mapper
 from SentimentAnalysis import agg_sent
+from logger import make_logger
+import inspect
 
+logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 
 # At most the worker will check for more Tweets to
 # analyze every MIN_EXECUTION_PERIOD seconds
