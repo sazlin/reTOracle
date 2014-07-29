@@ -214,13 +214,17 @@ def push_sa_results_to_sql_from_s3(bucket):
 
 
 def main():
+    logger.info('SA_Worker: initializing sql...')
     sql_q.init()
+    logger.info('SA_Worker: initializing SA_Mapper...')
     SA_Mapper.setup_SA()
     while True:
+        logger.info('SA_Worker: Getting number of tweets that need SA...')
         num_todo = _get_num_tweets_need_sa()
+        logger.info("SA_Worker: num_todo: %s", num_todo)
         last_check = time.time()
-        print "Num Todo:", num_todo
         if num_todo >= EMR_THRESHOLD and ALLOW_EMR:
+            logger.info("SA_Worker: Using Hadoop to do SA")
             # There's a lot of Tweets to analyze, so spin up
             # a EMR job to tackle them one BATCH_SIZE at a time
 
@@ -250,9 +254,11 @@ def main():
             push_sa_results_to_sql_from_s3(bucket)
 
         else:
+            logger.info("SA_Worker: Doing SA locally")
             #Process Tweets using this worker (not EMR)
 
             #Get the remaining Tweets that need SA
+            logger.info("SA_Worker: Getting Tweet batch...")
             tweet_batch = json.loads(
                 sql_q.get_query_results(
                     'tweet_batch',
@@ -261,6 +267,7 @@ def main():
             #Run SA on each Tweet and then upload its results to SQL
             count = 1
             total = len(tweet_batch)
+            logger.info("SA_Worker: Running SA on each Tweet...")
             for tweet in tweet_batch:
                 #do SA magics locally
                 result_dict = SA_Mapper.run_SA(tweet)
