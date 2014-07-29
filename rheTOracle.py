@@ -143,6 +143,8 @@ def q2_query():
                 user_count[index][2] += 1
             elif count[0] == 0:
                 user_count[index][3] += 1
+            else:
+                raise Exception("Q2: unexpected agg_sent")
         index += 1
     logger.info("Q2 TIHS IS THE OUTPUT LIST %s", user_count)
     output_json = json.dumps(user_count)
