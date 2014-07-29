@@ -8,7 +8,7 @@ from rheTOracle import app
 def setup_app():
     print "This happens before all the lettuce tests begin"
     site_url = 'localhost:5000'
-    driver = webdriver.Chrome()
+    driver = webdriver.Firefox()
     driver.get(site_url)
     lettuce.world.driver = driver
 
