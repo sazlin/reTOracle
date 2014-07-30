@@ -29,7 +29,7 @@ IN
 (SELECT tweet_id FROM tweets EXCEPT select tweet_id FROM tweet_sent)
 LIMIT %s;
 """
-SET_TWEET_SENT = """INSERT INTO tweet_sent SELECT * FROM json_populate_record(NULL::tweet_sent, %s);"""
+SET_TWEET_SENT = """INSERT INTO tweet_sent SELECT * FROM json_populate_recordset(NULL::tweet_sent, %s);"""
 
 
 

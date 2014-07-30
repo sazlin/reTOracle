@@ -61,6 +61,9 @@ EMR_KP = 'kp1'
 # Enable debugging on instances?
 EMR_DEBUGGING = False
 
+# How many SA records to batch up per insert transaction to SQL
+SQL_INSERT_BATCH_SIZE = 250
+
 
 def _delete_key_if_exists(bucket, key_str):
     """delete a specified key from S3 if the key exists"""
@@ -265,7 +268,8 @@ def main():
                     [min(num_todo, MAX_BATCH_SIZE)]))
 
             #Run SA on each Tweet and then upload its results to SQL
-            count = 1
+            count = 0
+            current_batch = []
             total = len(tweet_batch)
             logger.info("SA_Worker: Running SA on each Tweet...")
             for tweet in tweet_batch:
@@ -281,13 +285,18 @@ def main():
                 agg_sent_result = agg_sent.get_agg_sent(neg_probs, pos_probs)
                 result_dict['agg_sent'] = agg_sent_result[0]
                 result_dict['agg_prob'] = agg_sent_result[1]
-                delicious_payload = json.dumps(result_dict)
-                sql_q.get_query_results(
-                    'set_tweet_sent',
-                    [delicious_payload.lower()],  # must be a iterable
-                    False)
-                #print delicious_payload.lower(), "[", count, "of", total, "]"
+                current_batch.append(result_dict)
                 count += 1
+                if len(current_batch) >= SQL_INSERT_BATCH_SIZE or \
+                    count == total:
+                    delicious_payload = json.dumps(current_batch)
+                    logger.debug("Inserting into SQL: %s", delicious_payload.lower())
+                    sql_q.get_query_results(
+                        'set_tweet_sent',
+                        [delicious_payload.lower()],
+                        False)
+                    logger.info("Inserted %s of %s into SQL", count, total)
+                    current_batch = []
 
         #Wait a short while (if needed) before checking for more Tweets
         time_spent = time.time() - last_check
