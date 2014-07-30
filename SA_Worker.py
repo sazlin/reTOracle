@@ -62,7 +62,7 @@ EMR_KP = 'kp1'
 EMR_DEBUGGING = False
 
 # How many SA records to batch up per insert transaction to SQL
-SQL_INSERT_BATCH_SIZE = 250
+SQL_INSERT_BATCH_SIZE = 100
 
 
 def _delete_key_if_exists(bucket, key_str):
