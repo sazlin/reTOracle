@@ -23,9 +23,6 @@ def make_logger(loggerName, filename):
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-
-    # create console handler with a higher log level
-    ch = logging.StreamHandler()
     if ARGS.verbosity == 4:
         ch.setLevel(logging.DEBUG)
     elif ARGS.verbosity == 3:

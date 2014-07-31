@@ -255,7 +255,7 @@ def _query_filter_tweets_counts():
 def _query_popular_users():
     final_result = []
     sql1_result = _execute_query("""SELECT filter_name FROM filters ORDER BY tweet_count DESC""")
-    logger.debug("_Q_P_U: sql1 result: %s", sql1_result)
+    logger.info("RESULTS FROM QUERY POP USERS %s", sql1_result)
     sql1_result = json.loads(sql1_result)
     for filter_ in sql1_result:
         logger.debug("-->filter: %s", filter_[0])

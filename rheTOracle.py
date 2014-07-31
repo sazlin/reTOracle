@@ -63,21 +63,21 @@ def map_q1_results_to_language(parsed_results):
     return json.dumps(final_result)
 
 
-def map_q2_results_to_language(parsed_results):
-    """use the filter_list to group and sum the results parsed from Q2's query results
-        into a new list of lists that will be returned to the client for rendering"""
-    final_result = []
-    for item in parsed_results:
-        final_result.append([item[0], item[1], item[2]])
+# def map_q2_results_to_language(parsed_results):
+#     """use the filter_list to group and sum the results parsed from Q2's query results
+#         into a new list of lists that will be returned to the client for rendering"""
+#     final_result = []
+#     for item in parsed_results:
+#         final_result.append([item[0], item[1], item[2]])
 
-    for lang in filter_list:
-        _found = False
-        for item in parsed_results:
-            if lang.lower() == item[0]:
-                _found = True
-        if not _found:
-            final_result.append([lang, 0, ' '])
-    return json.dumps(final_result)
+#     for lang in filter_list:
+#         _found = False
+#         for item in parsed_results:
+#             if lang.lower() == item[0]:
+#                 _found = True
+#         if not _found:
+#             final_result.append([lang, 0, ' '])
+#     return json.dumps(final_result)
 
 
 def update_redis():

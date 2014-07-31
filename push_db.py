@@ -113,6 +113,7 @@ class StdOutListener(StreamListener):
         user_row = json.loads(user_row)
         if user_row:
             tw_count = user_row[0][1]+1
+            logger.info("Updating USER TWEET COUNT, %s", tw_count)
             sql_q.get_query_results( 'update_user_tw_count', [tw_count, screen_name], False)
             sql_q.get_query_results( 'update_user_timestamp', [datetime.datetime.now(), screen_name], False)
         else :
