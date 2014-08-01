@@ -6,6 +6,35 @@ $(document).ready(function(){
   //var frm3 = $('#q3_form');
   //var frm4 = $('#q4_form');
   //frm1
+  var chart1LargestBarSize = 0;
+
+  function getLargestBarLength(dataTable, firstCol, lastCol){
+    var numRows = dataTable.getNumberOfRows();
+    var largestSum = 0;
+    for (i = 1; i < numRows; i++) {
+      var rowSum = 0;
+      for (j = firstCol; j <= lastCol; j++){
+        rowSum += dataTable.getValue(i, j);
+      }
+      if(rowSum > largestSum){
+        largestSum = rowSum;
+      }
+    }
+    return largestSum;
+  }
+
+  function getValueAt(column, dataTable, row) {
+        //A simple attempt to make sure we only show a value if it fits
+        var current_value = dataTable.getFormattedValue(row, column);
+        var threshold = chart1LargestBarSize / 10;
+        if(current_value < threshold){
+          return null;
+        }
+        else{
+          return current_value;
+        }
+  }
+
   frm1.submit(function(ev){
     $.ajax({
         type: frm1.attr('method'),
@@ -16,6 +45,7 @@ $(document).ready(function(){
           resultArray.unshift(chart1DataHeader);
           console.log("Chart 1 array" + resultArray);
           chart1Data = google.visualization.arrayToDataTable(resultArray);
+          chart1LargestBarSize = getLargestBarLength(chart1Data, 1, 3);
           drawChart1();
         }
     });
@@ -43,7 +73,7 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0, 0, 0]]);
   var chart1View;
-  var chart1Options = {width:550, height:300,
+  var chart1Options = {width:550, height:450,
                  vAxis: {
                   textStyle:{
                     bold: true,
@@ -63,7 +93,9 @@ $(document).ready(function(){
                   },
                   annotations:{
                     textStyle:{
-                    auraColor: '#FFF',
+                    color: '#FFF',
+                    auraColor: '#F00',
+                    opacity: 0.8
                     },
                   },
                   isStacked: true
@@ -72,11 +104,24 @@ $(document).ready(function(){
   //Create the function that will redraw and animate Chart1
   function drawChart1(){
     chart1View = new google.visualization.DataView(chart1Data);
-    // chart1View.setColumns([0, 1,
-    //                { calc: "stringify",
-    //                  sourceColumn: 1,
-    //                  type: "string",
-    //                  role: "annotation" }]);
+    chart1View.setColumns([
+      0,
+      1,
+       { calc: getValueAt.bind(undefined, 1),
+         sourceColumn: 1,
+         type: "string",
+         role: "annotation" },
+      2,
+       { calc: getValueAt.bind(undefined, 2),
+         sourceColumn: 2,
+         type: "string",
+         role: "annotation" },
+      3,
+       { calc: getValueAt.bind(undefined, 3),
+         sourceColumn: 3,
+         type: "string",
+         role: "annotation" },
+         ]);
     if(!chart1){
       chart1 = new google.visualization.BarChart(document.getElementById('visualization1'));
     }
@@ -89,7 +134,7 @@ $(document).ready(function(){
   var chart2DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, 0, 0]]);
   var chart2View;
-  var chart2Options = {width:550, height:300,
+  var chart2Options = {width:550, height:450,
                  vAxis: {
                   textStyle:{
                     bold: true,
