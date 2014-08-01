@@ -73,7 +73,7 @@ $(document).ready(function(){
   var chart1DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart1Data = google.visualization.arrayToDataTable([chart1DataHeader,["Loading...", 0, 0, 0]]);
   var chart1View;
-  var chart1Options = {width:550, height:450,
+  var chart1Options = {width:580, height:450,
                  vAxis: {
                   textStyle:{
                     bold: true,
@@ -134,7 +134,7 @@ $(document).ready(function(){
   var chart2DataHeader = ["Hashtag", "Positive", "Negative", "Neutral"];
   var chart2Data = google.visualization.arrayToDataTable([chart2DataHeader,["Loading...", 0, 0, 0]]);
   var chart2View;
-  var chart2Options = {width:550, height:450,
+  var chart2Options = {width:580, height:450,
                  vAxis: {
                   textStyle:{
                     bold: true,
