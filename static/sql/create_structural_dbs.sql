@@ -17,7 +17,7 @@ CREATE TABLE users
 CREATE TABLE filters(
   filter_name text PRIMARY KEY,
   last_tweet_timestamp timestamp DEFAULT CURRENT_TIMESTAMP,
-  tweet_count smallint
+  tweet_count integer
 );
 
 CREATE TABLE tweets(
