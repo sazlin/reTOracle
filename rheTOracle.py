@@ -212,6 +212,11 @@ def q1_query():
     for key in build_count_table:
         output_list.append([key] + build_count_table[key])
     try:
+        # sort chart1's bars by total number of tweets
+        output_list.sort(key=lambda x: sum(x[1:]), reverse=True)
+    except Exception as x:
+        logger.error("Q1: Error sorting output_list: %s", x.args)
+    try:
         logger.debug("Q1: Dumping output_list into JSON...")
         output_json = json.dumps(output_list)
     except Exception as x:
