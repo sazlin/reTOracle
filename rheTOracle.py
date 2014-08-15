@@ -98,7 +98,7 @@ def q2_query():
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
     try:
-        json_result = sql_q.get_query_results('geomap1')
+        json_result = re.get_redis_query('geomap1')
         parsed_results = json.loads(json_result)
         latitude = parsed_results[0][3][0]
         longitude = parsed_results[0][3][1]
