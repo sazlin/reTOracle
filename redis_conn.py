@@ -9,9 +9,11 @@ import inspect
 
 logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 POOL = None
+TTL = 5  # How long to cache SQL results for before expiring them
+
 
 def init_pool():
-    global POOL # HACK, fix later
+    global POOL  # HACK, fix later
     r_config = os.environ.get('R_CONFIG')
     if r_config == 'Prod':
         logger.info("REDIS: Using Prod Redis Service")
@@ -27,54 +29,46 @@ def init_pool():
         raise Exception('R_CONFIG not set.')
 
 
+def get_redis_query(query):
+    global POOL
+    global TTL
 
-def get_redis_query(q_type):
+    # make sure this is a valid query for reTOracle...
+    if query not in sql_q.QUERY_STRINGS:
+        logger.error('REDIS: query not in sql_q.QUERY_STRINGS')
+        return
+
+    # make sure we can work against redis
     if not POOL:
         raise Exception('POOL not initiated. Call init_pool().')
     r_server = redis.Redis(connection_pool=POOL)
-    if q_type in sql_q.QUERY_STRINGS:
-        json_list = r_server.get(q_type)
-        return json_list
+
+    # return the cached value if it exists. If it doesn't then
+    # query SQL and cache the result
+    logger.debug("REDIS: Getting values from redis for %s", query)
+    cached_results = r_server.get(query)
+    pttl = r_server.pttl(query)
+    if cached_results and pttl > 0:
+        logger.debug("REDIS: Got cached value for %s", query)
+        return cached_results
     else:
-        raise ValueError("q_type not in REDIS")
-        logger.error('Requested query not in REDIS', exc_info=True)
-
-
-def _set_to_redis(key, value):
-    if not POOL:
-        raise Exception('POOL not initiated. Call init_pool().')
-    logger.info('getting r_server')
-    r_server = redis.Redis(connection_pool=POOL)
-    logger.info("setting key value on redis: %s = %s", key, value)
-    r_server.set(key, value)
-    logger.info('done')
-
-
-def maint_redis():
-    if not POOL:
-        raise Exception('POOL not initiated. Call init_pool().')
-    for key in sql_q.QUERY_STRINGS.iterkeys():
-        if not 'fetch' in key:
-            continue
-        logger.info("Redis: Querying SQL and getting results...")
-        result = None
+        # result not cached (or no TTL set), so hit sql and cache the result w/ TTL
         try:
-            result = sql_q.get_query_results(key)
+            result = sql_q.get_query_results(query)
         except Exception as x:
-            logger.error("Redis: something went wrong getting results for %s : %s", key, x.args, exc_info=True)
+            logger.error("REDIS: something went wrong getting sql results for %s: %s", query, x.args, exc_info=True)
         if result is None:
-            # raise Exception("REDIS: SQL Query result is None for ", key)
-            logger.error("SQL query result is none for %s", key, exc_info=True)
-        else:
-            logger.info("Redis: Settings query results in redis for %s", key)
+            logger.error("REDIS: SQL query result is none for %s", query, exc_info=True)
+            return
+        logger.info("REDIS: Settings query results in redis for %s", query)
         try:
             if(isinstance(result, basestring)):
-                _set_to_redis(key, result)
+                r_server.set(query, result)
             else:
-                _set_to_redis(key, result[0])
+                r_server.set(query, result[0])
+            r_server.expire(query, TTL)
         except Exception as x:
             logger.error("Redis: Something went wrong while setting k,v pair on redis: %s ", x.args, exc_info=True)
-        else:
-            logger.info('Redis: [SUCCESS] results set for %s ', key)
-            logger.debug('-->Results are: %s', result)
-
+        logger.info('Redis: [SUCCESS] results set for %s ', query)
+        logger.debug('-->Results are: %s', result)
+        return result

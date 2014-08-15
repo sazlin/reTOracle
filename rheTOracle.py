@@ -7,7 +7,6 @@ from filters_json import filter_list
 import json
 import sql_queries as sql_q
 import redis_conn as re
-from time import time
 import os
 from logger import make_logger
 import argparse
@@ -79,47 +78,11 @@ def map_q2_results_to_language(parsed_results):
     return json.dumps(final_result)
 
 
-def update_redis():
-    new_time = time()
-    if (new_time - app.config['LAST_REDIS_UPDATE']) > app.config['REDIS_UPDATE_INTERVAL']:
-        re.maint_redis()
-        app.config['LAST_REDIS_UPDATE'] = new_time
-
-
-# @app.route('/q1', methods=['GET'])
-# def q1_query():
-#     """Which programming language is being talked about the most?"""
-#     update_redis()
-#     try:
-#         logger.debug("Q1: Getting values from redis")
-
-#         json_result = re.get_redis_query('chart1')
-#     except:
-#         logger.error("Q1: redis failed. Trying SQL instead")
-#         json_result = sql_q.get_query_results('chart1')
-#     parsed_results = json.loads(json_result)
-#     final_result = map_q1_results_to_language(parsed_results)
-#     return final_result
-
-
-
 @app.route('/q2', methods=['GET'])
 def q2_query():
     """Who is *the* person to follow for a given language?"""
-    update_redis()
-    try:
-        logger.debug("Q2: Getting values from redis...")
-        json_result = re.get_redis_query('fetch_popular_users')
-        logger.debug("Q2: Succes! From Redis: %s", json_result)
-    except Exception as x:
-        logger.error("Q2: Redis Query Failed! %s", x.args)
-        try:
-            logger.debug("Q2: Trying SQL instead...")
-            json_result = sql_q.get_query_results('fetch_popular_users')
-            logger.debug("Q2: Success! From SQL: %s", json_result)
-        except Exception as x:
-            logger.critical("Q2: SQL Query also Failed! %s", x.args)
-            raise x
+    logger.debug("Q2: Getting values from redis...")
+    json_result = re.get_redis_query('fetch_popular_users')
     logger.debug("Q2: loading json_result...")
     try:
         parsed_results = json.loads(json_result)
@@ -134,8 +97,6 @@ def q2_query():
 
 @app.route('/geotweet', methods=['GET'])
 def get_latest_geo_tweet():
-    # update_redis()
-
     try:
         json_result = sql_q.get_query_results('geomap1')
         parsed_results = json.loads(json_result)
@@ -186,18 +147,13 @@ def ticker_fetch():
 @app.route('/q1', methods=['GET'])
 def q1_query():
     build_count_table = {}
-    logger.info("Q1: Assembling response...")
-    try:
-        logger.debug("Q1: Getting values from redis")
-        filter_sent_counts = re.get_redis_query('fetch_filter_sent_counts')
-        filter_sent_counts = json.loads(filter_sent_counts)
-    except:
-        logger.debug("Q1: redis failed. Trying SQL instead")
-        filter_sent_counts = json.loads(sql_q.get_query_results('fetch_filter_sent_counts'))
+    logger.debug("Q1: Getting values from redis")
+    filter_sent_counts = re.get_redis_query('fetch_filter_sent_counts')
+    filter_sent_counts = json.loads(filter_sent_counts)
 
     for language in filter_list:
         logger.debug("Q1: Current language %s", language)
-        build_count_table[language] = [0,0,0]
+        build_count_table[language] = [0, 0, 0]
 
     for record in filter_sent_counts:
         if record[1] == 1:
@@ -251,10 +207,7 @@ if __name__ == '__main__':
 
     app.config['DB_CONNECTION'] = None
     app.config['DB_CURSOR'] = None
-    app.config['REDIS_UPDATE_INTERVAL'] = 3
 
     sql_q.init()
     re.init_pool()
-    re.maint_redis()
-    app.config['LAST_REDIS_UPDATE'] = time()
     app.run()
