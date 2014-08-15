@@ -67,8 +67,8 @@ def get_redis_query(query):
             else:
                 r_server.set(query, result[0])
             r_server.expire(query, TTL)
+            logger.info('Redis: [SUCCESS] results set for %s ', query)
+            logger.debug('-->Results are: %s', result)
         except Exception as x:
             logger.error("Redis: Something went wrong while setting k,v pair on redis: %s ", x.args, exc_info=True)
-        logger.info('Redis: [SUCCESS] results set for %s ', query)
-        logger.debug('-->Results are: %s', result)
         return result
