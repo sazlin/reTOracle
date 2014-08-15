@@ -136,7 +136,7 @@ def get_latest_geo_tweet():
 @app.route('/ticker', methods=['GET'])
 def ticker_fetch():
     """Return JSON for recent tweet"""
-    json_result = sql_q.get_query_results('ticker1')
+    json_result = re.get_redis_query('ticker1')
 
     resp = Response(response=json_result,
                     status=200,
