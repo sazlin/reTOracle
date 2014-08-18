@@ -48,21 +48,21 @@ def _build_connection_string():
 
 
 def _init_db_config():
-    r_config = os.environ.get('R_CONFIG')
-    if r_config == 'Prod':
-        DB_CONFIG['DB_HOST'] = os.environ.get('R_DB_HOST')
-        DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
-        DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
-        DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
-    elif r_config == 'Test' or r_config == 'Local':
-        DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
-        DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
-        DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
-        DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
-    else:
-        logger.error("R_CONFIG not set.", exc_info=True)
-        raise Exception("R_CONFIG not set.")
-        logger.error("R_CONFIG not set.")
+    # r_config = os.environ.get('R_CONFIG')
+    # if r_config == 'Prod':
+    DB_CONFIG['DB_HOST'] = os.environ.get('R_DB_HOST')
+    DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
+    DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
+    DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
+    # elif r_config == 'Test' or r_config == 'Local':
+    #     DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
+    #     DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
+    #     DB_CONFIG['DB_USERNAME'] = os.environ.get('R_TEST_DB_USERNAME')
+    #     DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_TEST_DB_PASSWORD')
+    # else:
+    #     logger.error("R_CONFIG not set.", exc_info=True)
+    #     raise Exception("R_CONFIG not set.")
+    #     logger.error("R_CONFIG not set.")
 
     DB_CONFIG['DB_CONNECTION_STRING'] = _build_connection_string()
 

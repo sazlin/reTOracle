@@ -194,16 +194,16 @@ if __name__ == '__main__':
     sql_q.init()
     logger.info('Connected to DB')
     auth = None
-    if sys.argv[1] == 'Prod':
-        auth = OAuthHandler(os.environ.get('R_TWITTER_CONSUMER_KEY'),
-                            os.environ.get('R_TWITTER_CONSUMER_SECRET'))
-        auth.set_access_token(os.environ.get('R_TWITTER_ACCESS_TOKEN'),
-                              os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
-    elif sys.argv[1] == 'Test':
-        auth = OAuthHandler(os.environ.get('R_TEST_TWITTER_CONSUMER_KEY'),
-                            os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
-        auth.set_access_token(os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN'),
-                              os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
+    # if sys.argv[1] == 'Prod':
+    auth = OAuthHandler(os.environ.get('R_TWITTER_CONSUMER_KEY'),
+                        os.environ.get('R_TWITTER_CONSUMER_SECRET'))
+    auth.set_access_token(os.environ.get('R_TWITTER_ACCESS_TOKEN'),
+                          os.environ.get('R_TWITTER_ACCESS_TOKEN_SECRET'))
+    # elif sys.argv[1] == 'Test':
+    #     auth = OAuthHandler(os.environ.get('R_TEST_TWITTER_CONSUMER_KEY'),
+    #                         os.environ.get('R_TEST_TWITTER_CONSUMER_SECRET'))
+    #     auth.set_access_token(os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN'),
+    #                           os.environ.get('R_TEST_TWITTER_ACCESS_TOKEN_SECRET'))
 
     l = StdOutListener()
     stream_filters = return_filters()
