@@ -8,7 +8,7 @@ import json
 import sql_queries as sql_q
 import redis_conn as re
 import os
-from logger import make_logger
+from logger import make_logger, ARGS
 import argparse
 import inspect
 
@@ -184,12 +184,6 @@ def q1_query():
                         status=200,
                         mimetype="text/plain")
         return resp
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('setting')
-parser.add_argument('-v', '--verbosity', type=int)
-ARGS = parser.parse_args()
 
 
 if __name__ == '__main__':
