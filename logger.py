@@ -5,7 +5,7 @@ import argparse
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('setting')
+parser.add_argument('-s', '--setting', choices=['Prod', 'Test'])
 parser.add_argument('-v', '--verbosity', type=int)
 ARGS = parser.parse_args()
 
