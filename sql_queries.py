@@ -32,7 +32,6 @@ LIMIT %s;
 SET_TWEET_SENT = """INSERT INTO tweet_sent SELECT * FROM json_populate_recordset(NULL::tweet_sent, %s);"""
 
 
-
 def init():
     _init_db_config()
     _build_query_strings()
@@ -54,6 +53,13 @@ def _init_db_config():
     DB_CONFIG['DB_NAME'] = os.environ.get('R_DB_NAME')
     DB_CONFIG['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
     DB_CONFIG['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
+
+    if DB_CONFIG['DB_HOST'] is None or \
+       DB_CONFIG['DB_NAME'] is None or \
+       DB_CONFIG['DB_USERNAME'] is None or \
+       DB_CONFIG['DB_PASSWORD'] is None:
+       logger.critical("SQL: DB env variables not set.")
+       raise Exception("SQL: DB env variables not set.")
     # elif r_config == 'Test' or r_config == 'Local':
     #     DB_CONFIG['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
     #     DB_CONFIG['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')

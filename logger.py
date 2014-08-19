@@ -1,17 +1,17 @@
 #!/usr/bin/python
-
+import os
 import logging
-import argparse
+#import argparse
 
 
-parser = argparse.ArgumentParser()
+#parser = argparse.ArgumentParser()
 #parser.add_argument('-s', '--setting', choices=['Prod', 'Test'])
-parser.add_argument('-v', '--verbosity', type=int)
-ARGS = parser.parse_args()
+#parser.add_argument('-v', '--verbosity', type=int)
+#ARGS = parser.parse_args()
 
 
 def make_logger(loggerName, filename):
-
+    verbosity = os.environ.get('R_LOGGING_LEVEL', 2)
     # create logger with 'spam_application'
     logger = logging.getLogger(loggerName)
     logger.setLevel(logging.DEBUG)
@@ -22,17 +22,17 @@ def make_logger(loggerName, filename):
     fh.setLevel(logging.INFO)
 
     # create console handler with a higher log level
-    ch = logging.StreamHandler()
+    # ch = logging.StreamHandler()
 
     # create console handler with a higher log level
     ch = logging.StreamHandler()
-    if ARGS.verbosity == 4:
+    if verbosity == 4:
         ch.setLevel(logging.DEBUG)
-    elif ARGS.verbosity == 3:
+    elif verbosity == 3:
         ch.setLevel(logging.INFO)
-    elif ARGS.verbosity == 2:
+    elif verbosity == 2:
         ch.setLevel(logging.WARNING)
-    elif ARGS.verbosity == 1:
+    elif verbosity == 1:
         ch.setLevel(logging.ERROR)
     else:
         ch.setLevel(logging.CRITICAL)# in case there is an issue with env variable
