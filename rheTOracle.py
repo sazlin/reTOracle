@@ -14,7 +14,6 @@ import inspect
 
 logger = make_logger(inspect.stack()[0][1], 'retoracle.log')
 
-
 app = Flask(__name__)
 # app.config['DB_HOST'] = os.environ.get('R_TEST_DB_HOST')
 # app.config['DB_NAME'] = os.environ.get('R_TEST_DB_NAME')
@@ -26,7 +25,7 @@ app.config['DB_USERNAME'] = os.environ.get('R_DB_USERNAME')
 app.config['DB_PASSWORD'] = os.environ.get('R_DB_PASSWORD')
 app.config['DB_CONNECTION'] = None
 app.config['DB_CURSOR'] = None
-print os.environ
+
 sql_q.init()
 re.init_pool()
 

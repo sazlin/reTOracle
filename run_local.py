@@ -2,8 +2,8 @@ import os
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('env', choices=['Prod', 'Test'], default='Test')
-parser.add_argument('verbosity', type=int, default=2)
+parser.add_argument('env', choices=['Prod', 'Test'])
+parser.add_argument('verbosity', type=int)
 ARGS = parser.parse_args()
 
 
@@ -24,6 +24,7 @@ def create_uwsgi_env_string():
     retval.append(''.join(['R_LOGGING_LEVEL', '=', os.environ['R_LOGGING_LEVEL']]))
     return ';'.join(retval)
 
+
 def create_uwsgi_command_string():
     """Create a string that can be used to start uWSGI (blocking) for rheTOracle.py"""
     uwsgi_command = []
@@ -32,8 +33,9 @@ def create_uwsgi_command_string():
     uwsgi_command.append('--protocol=http')
     uwsgi_command.append('--module rheTOracle')
     uwsgi_command.append('--callable app')
+    uwsgi_command.append('--logformat="%(ltime) - uWSGI - %(uri) - status: %(status) - req time(ms): %(msecs)"')
     uwsgi_command.append('--master')
-    uwsgi_command.append('--processes 2')
+    uwsgi_command.append('--processes 1')
     uwsgi_command.append('--threads 1')  # LEAVE AT 1. >1 causes 500 responses (psycopg2 issue?)
     #uwsgi_command.append('--logto ~/r_uwsgi.log')
     uwsgi_command.append('--env=' + create_uwsgi_env_string())
